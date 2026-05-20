@@ -1,0 +1,10 @@
+*
+!Experts/
+!Experts/MRH_XAUUSD_X8/
+!Experts/MRH_XAUUSD_X8/**
+
+!Include/
+!Include/MRH_XAUUSD_X8/
+!Include/MRH_XAUUSD_X8/**
+
+!.gitignore
