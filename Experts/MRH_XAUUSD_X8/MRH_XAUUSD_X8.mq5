@@ -332,9 +332,9 @@ void MRH_ExecuteTrade()
 //+------------------------------------------------------------------+
 int OnInit()
 {
-   MRH_Log("SYSTEM", "INIT", "MRH_XAUUSD_X8 initialized successfully");
+   MRH_Log("SYSTEM", "INIT", "MRH_XAUUSD_X8 initialization started");
 
-   Trade.SetExpertMagicNumber(MagicNumber);
+   Trade.SetExpertMagicNumber(270127);
    Trade.SetDeviationInPoints(30);
 
    SharedMemory.Init();
@@ -347,6 +347,21 @@ int OnInit()
    SafetyManager.Init(&SharedMemory);
    TradeManagementEngine.Init(&SharedMemory);
    MLDatasetEngine.Init(&SharedMemory);
+
+   /*
+if(!SharedMemory.Ready())
+{
+   MRH_Log("SYSTEM",
+           "INIT_FAILED",
+           "SharedMemory failed to initialize");
+
+   return INIT_FAILED;
+}
+*/
+
+   MRH_Log("SYSTEM",
+           "INIT",
+           "MRH_XAUUSD_X8 initialized successfully");
 
    return INIT_SUCCEEDED;
 }

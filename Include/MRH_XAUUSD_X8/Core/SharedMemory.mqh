@@ -41,11 +41,15 @@ public:
       Structure.Bias          = BIAS_NEUTRAL;
       Structure.LastSwingHigh = 0.0;
       Structure.LastSwingLow  = 0.0;
+      Structure.PreviousSwingHigh = 0.0;
+      Structure.PreviousSwingLow  = 0.0;
       Structure.LastBOS       = 0;
       Structure.LastCHOCH     = 0;
       Structure.State         = STRUCTURE_RANGE;
-Structure.LastSwingType = SWING_NONE;
-Structure.LastSwingTime = 0;
+      Structure.LastSwingType = SWING_NONE;
+      Structure.LastSwingTime = 0;
+      Structure.LastProcessedSwingTime = 0;
+      Structure.LastSwingClass = SWING_CLASS_NONE;
       Liquidity.State             = LIQUIDITY_BALANCED;
       Liquidity.SweepDetected     = false;
       Liquidity.BuySideLiquidity  = 0.0;

@@ -74,6 +74,17 @@ enum ENUM_SWING_TYPE
    SWING_LOW = 2
 };
 //==================================================
+// Swing Classification
+//==================================================
+enum ENUM_SWING_CLASS
+{
+   SWING_CLASS_NONE = 0,
+   SWING_CLASS_HH   = 1,
+   SWING_CLASS_HL   = 2,
+   SWING_CLASS_LH   = 3,
+   SWING_CLASS_LL   = 4
+};
+//==================================================
 // Structure Shared Model
 //==================================================
 struct StructureData
@@ -82,13 +93,18 @@ struct StructureData
 
    double LastSwingHigh;
    double LastSwingLow;
-
+   double PreviousSwingHigh;
+   double PreviousSwingLow;
    datetime LastBOS;
    datetime LastCHOCH;
 
    ENUM_STRUCTURE_STATE State;
-   ENUM_SWING_TYPE LastSwingType;
-datetime        LastSwingTime;
+
+ENUM_SWING_TYPE  LastSwingType;
+datetime         LastSwingTime;
+datetime         LastProcessedSwingTime;
+
+ENUM_SWING_CLASS LastSwingClass;
 };
 
 //==================================================

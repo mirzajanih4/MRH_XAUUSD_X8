@@ -85,9 +85,33 @@ void DetectLatestSwing()
    {
       if(IsSwingHigh(i))
       {
-         m_memory.Structure.LastSwingHigh = iHigh(_Symbol, _Period, i);
+         m_memory.Structure.PreviousSwingHigh =
+         m_memory.Structure.LastSwingHigh;
+
+         m_memory.Structure.LastSwingHigh =
+          iHigh(_Symbol, _Period, i);
+          if(m_memory.Structure.PreviousSwingHigh > 0.0)
+{
+   if(m_memory.Structure.LastSwingHigh >
+      m_memory.Structure.PreviousSwingHigh)
+   {
+      m_memory.Structure.LastSwingClass = SWING_CLASS_HH;
+   }
+   else
+   {
+      m_memory.Structure.LastSwingClass = SWING_CLASS_LH;
+   }
+}
          m_memory.Structure.LastSwingType = SWING_HIGH;
-         m_memory.Structure.LastSwingTime = iTime(_Symbol, _Period, i);
+         datetime swingTime = iTime(_Symbol, _Period, i);
+
+if(swingTime == m_memory.Structure.LastProcessedSwingTime)
+{
+   return;
+}
+
+m_memory.Structure.LastSwingTime = swingTime;
+m_memory.Structure.LastProcessedSwingTime = swingTime;
 
          MRH_Log("STRUCTURE_ENGINE", "SWING_HIGH", "Latest swing high detected");
          return;
@@ -95,9 +119,33 @@ void DetectLatestSwing()
 
       if(IsSwingLow(i))
       {
-         m_memory.Structure.LastSwingLow = iLow(_Symbol, _Period, i);
+         m_memory.Structure.PreviousSwingLow =
+         m_memory.Structure.LastSwingLow;
+
+         m_memory.Structure.LastSwingLow =
+          iLow(_Symbol, _Period, i);
+          if(m_memory.Structure.PreviousSwingLow > 0.0)
+{
+   if(m_memory.Structure.LastSwingLow >
+      m_memory.Structure.PreviousSwingLow)
+   {
+      m_memory.Structure.LastSwingClass = SWING_CLASS_HL;
+   }
+   else
+   {
+      m_memory.Structure.LastSwingClass = SWING_CLASS_LL;
+   }
+}
          m_memory.Structure.LastSwingType = SWING_LOW;
-         m_memory.Structure.LastSwingTime = iTime(_Symbol, _Period, i);
+         datetime swingTime = iTime(_Symbol, _Period, i);
+
+if(swingTime == m_memory.Structure.LastProcessedSwingTime)
+{
+   return;
+}
+
+m_memory.Structure.LastSwingTime = swingTime;
+m_memory.Structure.LastProcessedSwingTime = swingTime;
 
          MRH_Log("STRUCTURE_ENGINE", "SWING_LOW", "Latest swing low detected");
          return;
@@ -117,23 +165,31 @@ void UpdateInitialBias()
       return;
    }
 
-   double currentClose = iClose(_Symbol, _Period, 1);
+  if(m_memory.Structure.LastSwingClass == SWING_CLASS_HH ||
+   m_memory.Structure.LastSwingClass == SWING_CLASS_HL)
+{
+   m_memory.Structure.Bias  = BIAS_BULLISH;
+   m_memory.Structure.State = STRUCTURE_TRENDING;
 
-   if(currentClose > m_memory.Structure.LastSwingHigh)
-   {
-      m_memory.Structure.Bias  = BIAS_BULLISH;
-      m_memory.Structure.State = STRUCTURE_TRENDING;
-      MRH_Log("STRUCTURE_ENGINE", "BIAS", "Initial bullish bias detected");
-      return;
-   }
+   MRH_Log("STRUCTURE_ENGINE",
+           "BIAS",
+           "Bullish structure sequence detected");
 
-   if(currentClose < m_memory.Structure.LastSwingLow)
-   {
-      m_memory.Structure.Bias  = BIAS_BEARISH;
-      m_memory.Structure.State = STRUCTURE_TRENDING;
-      MRH_Log("STRUCTURE_ENGINE", "BIAS", "Initial bearish bias detected");
-      return;
-   }
+   return;
+}
+
+if(m_memory.Structure.LastSwingClass == SWING_CLASS_LH ||
+   m_memory.Structure.LastSwingClass == SWING_CLASS_LL)
+{
+   m_memory.Structure.Bias  = BIAS_BEARISH;
+   m_memory.Structure.State = STRUCTURE_TRENDING;
+
+   MRH_Log("STRUCTURE_ENGINE",
+           "BIAS",
+           "Bearish structure sequence detected");
+
+   return;
+}
 
    m_memory.Structure.Bias  = BIAS_NEUTRAL;
    m_memory.Structure.State = STRUCTURE_RANGE;
@@ -151,20 +207,34 @@ void DetectStructureBreak()
    {
       if(m_memory.Structure.Bias == BIAS_BEARISH)
       {
-         m_memory.Structure.LastCHOCH = closeTime;
-         m_memory.Structure.Bias = BIAS_BULLISH;
-         m_memory.Structure.State = STRUCTURE_TRANSITION;
+         if(m_memory.Structure.LastSwingClass == SWING_CLASS_HH ||
+   m_memory.Structure.LastSwingClass == SWING_CLASS_HL)
+{
+   m_memory.Structure.LastCHOCH = closeTime;
+   m_memory.Structure.Bias = BIAS_BULLISH;
+   m_memory.Structure.State = STRUCTURE_TRANSITION;
 
-         MRH_Log("STRUCTURE_ENGINE", "CHOCH", "Bullish CHOCH detected");
-         return;
+   MRH_Log("STRUCTURE_ENGINE",
+           "CHOCH",
+           "Bullish CHOCH confirmed by HH/HL reversal");
+
+   return;
+}
       }
 
-      m_memory.Structure.LastBOS = closeTime;
-      m_memory.Structure.Bias = BIAS_BULLISH;
-      m_memory.Structure.State = STRUCTURE_TRENDING;
+      if(m_memory.Structure.LastSwingClass == SWING_CLASS_HH ||
+   m_memory.Structure.LastSwingClass == SWING_CLASS_HL)
+{
+   m_memory.Structure.LastBOS = closeTime;
+   m_memory.Structure.Bias = BIAS_BULLISH;
+   m_memory.Structure.State = STRUCTURE_TRENDING;
 
-      MRH_Log("STRUCTURE_ENGINE", "BOS", "Bullish BOS detected");
-      return;
+   MRH_Log("STRUCTURE_ENGINE",
+           "BOS",
+           "Bullish BOS confirmed by HH/HL structure");
+
+   return;
+}
    }
 
    if(m_memory.Structure.LastSwingLow > 0.0 &&
@@ -172,20 +242,34 @@ void DetectStructureBreak()
    {
       if(m_memory.Structure.Bias == BIAS_BULLISH)
       {
-         m_memory.Structure.LastCHOCH = closeTime;
-         m_memory.Structure.Bias = BIAS_BEARISH;
-         m_memory.Structure.State = STRUCTURE_TRANSITION;
+         if(m_memory.Structure.LastSwingClass == SWING_CLASS_LH ||
+   m_memory.Structure.LastSwingClass == SWING_CLASS_LL)
+{
+   m_memory.Structure.LastCHOCH = closeTime;
+   m_memory.Structure.Bias = BIAS_BEARISH;
+   m_memory.Structure.State = STRUCTURE_TRANSITION;
 
-         MRH_Log("STRUCTURE_ENGINE", "CHOCH", "Bearish CHOCH detected");
-         return;
+   MRH_Log("STRUCTURE_ENGINE",
+           "CHOCH",
+           "Bearish CHOCH confirmed by LH/LL reversal");
+
+   return;
+}
       }
 
-      m_memory.Structure.LastBOS = closeTime;
-      m_memory.Structure.Bias = BIAS_BEARISH;
-      m_memory.Structure.State = STRUCTURE_TRENDING;
+      if(m_memory.Structure.LastSwingClass == SWING_CLASS_LH ||
+   m_memory.Structure.LastSwingClass == SWING_CLASS_LL)
+{
+   m_memory.Structure.LastBOS = closeTime;
+   m_memory.Structure.Bias = BIAS_BEARISH;
+   m_memory.Structure.State = STRUCTURE_TRENDING;
 
-      MRH_Log("STRUCTURE_ENGINE", "BOS", "Bearish BOS detected");
-      return;
+   MRH_Log("STRUCTURE_ENGINE",
+           "BOS",
+           "Bearish BOS confirmed by LH/LL structure");
+
+   return;
+}
    }
 }
 void DebugStructureState()
@@ -207,12 +291,24 @@ void DebugStructureState()
    else if(m_memory.Structure.State == STRUCTURE_TRANSITION)
       stateText = "TRANSITION";
 
+   string swingClassText = "NONE";
+
+   if(m_memory.Structure.LastSwingClass == SWING_CLASS_HH)
+      swingClassText = "HH";
+   else if(m_memory.Structure.LastSwingClass == SWING_CLASS_HL)
+      swingClassText = "HL";
+   else if(m_memory.Structure.LastSwingClass == SWING_CLASS_LH)
+      swingClassText = "LH";
+   else if(m_memory.Structure.LastSwingClass == SWING_CLASS_LL)
+      swingClassText = "LL";
+
    MRH_Log("STRUCTURE_ENGINE",
            "DEBUG",
            "Bias=" + biasText +
            " | State=" + stateText +
            " | LastHigh=" + DoubleToString(m_memory.Structure.LastSwingHigh, _Digits) +
-           " | LastLow=" + DoubleToString(m_memory.Structure.LastSwingLow, _Digits));
+           " | LastLow=" + DoubleToString(m_memory.Structure.LastSwingLow, _Digits) +
+           " | SwingClass=" + swingClassText);
 }
   void Update()
 {
