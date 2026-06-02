@@ -55,7 +55,7 @@ void DetectBasicOB()
          m_memory.OB.Low  = iLow(_Symbol, _Period, 2);
          m_memory.OB.Valid = true;
          m_memory.OB.Strength = OB_MEDIUM;
-    DetectBasicOB();
+    
          MRH_Log("OB_ENGINE", "VALID", "Basic bearish OB detected");
       }
    }

@@ -388,17 +388,17 @@ void OnTick()
    if(MRH_IsNewBar(_Symbol, _Period))
    {
       SharedMemory.BeginUpdateCycle();
-
+      
       StructureEngine.Update();
-      LiquidityEngine.Update();
-      OBEngine.Update();
-      ExecutionEngine.Update();
-      RiskManager.Update();
-      SafetyManager.Update();
-      TradeManagementEngine.Update();
-      MLDatasetEngine.Update();
+LiquidityEngine.Update();
+OBEngine.Update();
+ExecutionEngine.Update();
+RiskManager.Update();
+SafetyManager.Update();
+TradeManagementEngine.Update();
+MLDatasetEngine.Update();
 
-      MRH_DryExecutionCheck();
-      MRH_ExecuteTrade();
+//MRH_DryExecutionCheck();
+//MRH_ExecuteTrade();
    }
 }

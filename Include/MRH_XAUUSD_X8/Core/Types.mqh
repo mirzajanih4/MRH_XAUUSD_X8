@@ -106,7 +106,15 @@ datetime         LastProcessedSwingTime;
 
 ENUM_SWING_CLASS LastSwingClass;
 };
-
+//==================================================
+// Liquidity Sweep Type
+//==================================================
+enum ENUM_SWEEP_TYPE
+{
+   SWEEP_NONE = 0,
+   SWEEP_BUY_SIDE = 1,
+   SWEEP_SELL_SIDE = 2
+};
 //==================================================
 // Liquidity Shared Model
 //==================================================
@@ -115,10 +123,14 @@ struct LiquidityData
    ENUM_LIQUIDITY_STATE State;
 
    bool SweepDetected;
-
+   ENUM_SWEEP_TYPE SweepType;
    double BuySideLiquidity;
    double SellSideLiquidity;
+   bool EqualHighDetected;
+   bool EqualLowDetected;
 
+   double EqualHighLevel;
+   double EqualLowLevel;
    double TargetLiquidity;
 };
 

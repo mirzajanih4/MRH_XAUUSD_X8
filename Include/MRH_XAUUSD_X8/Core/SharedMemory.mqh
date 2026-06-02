@@ -52,8 +52,14 @@ public:
       Structure.LastSwingClass = SWING_CLASS_NONE;
       Liquidity.State             = LIQUIDITY_BALANCED;
       Liquidity.SweepDetected     = false;
+      Liquidity.SweepType         = SWEEP_NONE;
       Liquidity.BuySideLiquidity  = 0.0;
       Liquidity.SellSideLiquidity = 0.0;
+      Liquidity.EqualHighDetected = false;
+      Liquidity.EqualLowDetected  = false;
+
+      Liquidity.EqualHighLevel = 0.0;
+      Liquidity.EqualLowLevel  = 0.0;
       Liquidity.TargetLiquidity   = 0.0;
 
       OB.Valid       = false;
