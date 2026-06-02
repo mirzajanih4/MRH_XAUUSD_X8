@@ -151,6 +151,7 @@ struct LiquidityData
    ENUM_LIQUIDITY_STRENGTH PoolStrength;
    ENUM_LIQUIDITY_LEVEL_TYPE LiquidityType;
    int LiquidityRank;
+   bool PriorityTarget;
    double TargetLiquidity;
 };
 

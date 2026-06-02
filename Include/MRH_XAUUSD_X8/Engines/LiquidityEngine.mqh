@@ -120,7 +120,7 @@ break;
    {
       if(m_memory == NULL)
          return;
-
+      m_memory.Liquidity.PriorityTarget = false;
       m_memory.Liquidity.BuySideLiquidity  = m_memory.Structure.LastSwingHigh;
       m_memory.Liquidity.SellSideLiquidity = m_memory.Structure.LastSwingLow;
 
@@ -133,6 +133,11 @@ break;
             m_memory.Liquidity.TargetLiquidity = m_memory.Liquidity.EqualHighLevel;
          else
             m_memory.Liquidity.TargetLiquidity = m_memory.Liquidity.BuySideLiquidity;
+            if(m_memory.Liquidity.LiquidityRank >= 3 &&
+            m_memory.Liquidity.TargetLiquidity > 0.0)
+{
+            m_memory.Liquidity.PriorityTarget = true;
+}
       }
       else if(m_memory.Structure.Bias == BIAS_BEARISH)
       {
@@ -143,6 +148,11 @@ break;
             m_memory.Liquidity.TargetLiquidity = m_memory.Liquidity.EqualLowLevel;
          else
             m_memory.Liquidity.TargetLiquidity = m_memory.Liquidity.SellSideLiquidity;
+            if(m_memory.Liquidity.LiquidityRank >= 3 &&
+   m_memory.Liquidity.TargetLiquidity > 0.0)
+{
+   m_memory.Liquidity.PriorityTarget = true;
+}
       }
       else
       {
@@ -184,7 +194,7 @@ break;
       }
    }
 
-   void DebugLiquidityState()
+  void DebugLiquidityState()
 {
    if(m_memory == NULL)
       return;
@@ -219,16 +229,20 @@ break;
 
    if(m_memory.Liquidity.LiquidityType == EXTERNAL_LIQUIDITY)
       liquidityTypeText = "EXTERNAL";
- MRH_Log("LIQUIDITY_ENGINE",
-        "DEBUG",
-        "State=" + stateText +
-        " | Target=" + DoubleToString(m_memory.Liquidity.TargetLiquidity, _Digits) +
-        " | Strength=" + poolStrengthText +
-        " | Type=" + liquidityTypeText +
-        " | Rank=" + IntegerToString(m_memory.Liquidity.LiquidityRank));
-  
-  
-           
+
+   string priorityText = "false";
+
+   if(m_memory.Liquidity.PriorityTarget)
+      priorityText = "true";
+
+   MRH_Log("LIQUIDITY_ENGINE",
+           "DEBUG",
+           "State=" + stateText +
+           " | Target=" + DoubleToString(m_memory.Liquidity.TargetLiquidity, _Digits) +
+           " | Strength=" + poolStrengthText +
+           " | Type=" + liquidityTypeText +
+           " | Rank=" + IntegerToString(m_memory.Liquidity.LiquidityRank) +
+           " | Priority=" + priorityText);
 }
 
    void Update()
