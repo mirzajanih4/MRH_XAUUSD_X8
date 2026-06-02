@@ -184,8 +184,9 @@ struct ExecutionData
    double EntryPrice;
    double StopLoss;
    double TakeProfit;
-
    double Confidence;
+   double PermissionScore;
+   bool ScoreApproved;
 };
 
 //==================================================
