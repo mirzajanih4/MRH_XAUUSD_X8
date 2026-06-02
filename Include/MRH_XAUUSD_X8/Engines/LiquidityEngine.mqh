@@ -158,6 +158,18 @@ break;
       {
          m_memory.Liquidity.State = LIQUIDITY_BALANCED;
          m_memory.Liquidity.TargetLiquidity = 0.0;
+         m_memory.Liquidity.LiquidityScore = 0.0;
+
+m_memory.Liquidity.LiquidityScore += m_memory.Liquidity.LiquidityRank * 10.0;
+
+if(m_memory.Liquidity.PriorityTarget)
+   m_memory.Liquidity.LiquidityScore += 20.0;
+
+if(m_memory.Liquidity.SweepDetected)
+   m_memory.Liquidity.LiquidityScore += 15.0;
+
+if(m_memory.Liquidity.LiquidityScore > 100.0)
+   m_memory.Liquidity.LiquidityScore = 100.0;
       }
    }
 
@@ -194,7 +206,7 @@ break;
       }
    }
 
-  void DebugLiquidityState()
+ void DebugLiquidityState()
 {
    if(m_memory == NULL)
       return;
@@ -235,6 +247,23 @@ break;
    if(m_memory.Liquidity.PriorityTarget)
       priorityText = "true";
 
+   //==================================================
+   // Liquidity Score Calculation
+   //==================================================
+   m_memory.Liquidity.LiquidityScore = 0.0;
+
+   m_memory.Liquidity.LiquidityScore +=
+      m_memory.Liquidity.LiquidityRank * 10.0;
+
+   if(m_memory.Liquidity.PriorityTarget)
+      m_memory.Liquidity.LiquidityScore += 20.0;
+
+   if(m_memory.Liquidity.SweepDetected)
+      m_memory.Liquidity.LiquidityScore += 15.0;
+
+   if(m_memory.Liquidity.LiquidityScore > 100.0)
+      m_memory.Liquidity.LiquidityScore = 100.0;
+
    MRH_Log("LIQUIDITY_ENGINE",
            "DEBUG",
            "State=" + stateText +
@@ -242,7 +271,8 @@ break;
            " | Strength=" + poolStrengthText +
            " | Type=" + liquidityTypeText +
            " | Rank=" + IntegerToString(m_memory.Liquidity.LiquidityRank) +
-           " | Priority=" + priorityText);
+           " | Priority=" + priorityText +
+           " | Score=" + DoubleToString(m_memory.Liquidity.LiquidityScore, 1));
 }
 
    void Update()
