@@ -40,6 +40,7 @@ public:
       m_memory.Liquidity.EqualLowLevel     = 0.0;
       m_memory.Liquidity.PoolStrength = LIQUIDITY_WEAK;
       m_memory.Liquidity.LiquidityType = INTERNAL_LIQUIDITY;
+      m_memory.Liquidity.LiquidityRank = 1;
       double tolerancePrice = 100 * _Point;
       int bars = Bars(_Symbol, _Period);
 
@@ -67,7 +68,15 @@ else if(diff <= 50 * _Point)
    m_memory.Liquidity.PoolStrength = LIQUIDITY_MEDIUM;
 else
    m_memory.Liquidity.PoolStrength = LIQUIDITY_WEAK;
+m_memory.Liquidity.LiquidityRank = 1;
 
+if(m_memory.Liquidity.LiquidityType == EXTERNAL_LIQUIDITY)
+   m_memory.Liquidity.LiquidityRank += 3;
+
+if(m_memory.Liquidity.PoolStrength == LIQUIDITY_MEDIUM)
+   m_memory.Liquidity.LiquidityRank += 1;
+else if(m_memory.Liquidity.PoolStrength == LIQUIDITY_STRONG)
+   m_memory.Liquidity.LiquidityRank += 2;
 break;
          }
       }
@@ -93,7 +102,15 @@ else if(diff <= 50 * _Point)
    m_memory.Liquidity.PoolStrength = LIQUIDITY_MEDIUM;
 else
    m_memory.Liquidity.PoolStrength = LIQUIDITY_WEAK;
+m_memory.Liquidity.LiquidityRank = 1;
 
+if(m_memory.Liquidity.LiquidityType == EXTERNAL_LIQUIDITY)
+   m_memory.Liquidity.LiquidityRank += 3;
+
+if(m_memory.Liquidity.PoolStrength == LIQUIDITY_MEDIUM)
+   m_memory.Liquidity.LiquidityRank += 1;
+else if(m_memory.Liquidity.PoolStrength == LIQUIDITY_STRONG)
+   m_memory.Liquidity.LiquidityRank += 2;
 break;
          }
       }
@@ -168,49 +185,51 @@ break;
    }
 
    void DebugLiquidityState()
-   {
-      if(m_memory == NULL)
-         return;
+{
+   if(m_memory == NULL)
+      return;
 
-      string stateText = "BALANCED";
-      if(m_memory.Liquidity.State == LIQUIDITY_BUY_SIDE)
-         stateText = "BUY_SIDE";
-      else if(m_memory.Liquidity.State == LIQUIDITY_SELL_SIDE)
-         stateText = "SELL_SIDE";
+   string stateText = "BALANCED";
 
-      string sweepText = m_memory.Liquidity.SweepDetected ? "true" : "false";
+   if(m_memory.Liquidity.State == LIQUIDITY_BUY_SIDE)
+      stateText = "BUY_SIDE";
+   else if(m_memory.Liquidity.State == LIQUIDITY_SELL_SIDE)
+      stateText = "SELL_SIDE";
 
-      string sweepTypeText = "NONE";
-      if(m_memory.Liquidity.SweepType == SWEEP_BUY_SIDE)
-         sweepTypeText = "BUY_SIDE";
-      else if(m_memory.Liquidity.SweepType == SWEEP_SELL_SIDE)
-         sweepTypeText = "SELL_SIDE";
+   string sweepText = m_memory.Liquidity.SweepDetected ? "true" : "false";
 
-      string eqhText = m_memory.Liquidity.EqualHighDetected ? "true" : "false";
-      string eqlText = m_memory.Liquidity.EqualLowDetected ? "true" : "false";
-string poolStrengthText = "WEAK";
+   string sweepTypeText = "NONE";
 
-if(m_memory.Liquidity.PoolStrength == LIQUIDITY_MEDIUM)
-   poolStrengthText = "MEDIUM";
-else if(m_memory.Liquidity.PoolStrength == LIQUIDITY_STRONG)
-   poolStrengthText = "STRONG";
+   if(m_memory.Liquidity.SweepType == SWEEP_BUY_SIDE)
+      sweepTypeText = "BUY_SIDE";
+   else if(m_memory.Liquidity.SweepType == SWEEP_SELL_SIDE)
+      sweepTypeText = "SELL_SIDE";
+
+   string eqhText = m_memory.Liquidity.EqualHighDetected ? "true" : "false";
+   string eqlText = m_memory.Liquidity.EqualLowDetected ? "true" : "false";
+
+   string poolStrengthText = "WEAK";
+
+   if(m_memory.Liquidity.PoolStrength == LIQUIDITY_MEDIUM)
+      poolStrengthText = "MEDIUM";
+   else if(m_memory.Liquidity.PoolStrength == LIQUIDITY_STRONG)
+      poolStrengthText = "STRONG";
+
    string liquidityTypeText = "INTERNAL";
 
-if(m_memory.Liquidity.LiquidityType == EXTERNAL_LIQUIDITY)
-   liquidityTypeText = "EXTERNAL";
-      MRH_Log("LIQUIDITY_ENGINE",
-              "DEBUG",
-              "State=" + stateText +
-              " | BuySide=" + DoubleToString(m_memory.Liquidity.BuySideLiquidity, _Digits) +
-              " | SellSide=" + DoubleToString(m_memory.Liquidity.SellSideLiquidity, _Digits) +
-              " | Target=" + DoubleToString(m_memory.Liquidity.TargetLiquidity, _Digits) +
-              " | Sweep=" + sweepText +
-              " | SweepType=" + sweepTypeText +
-              " | EQH=" + eqhText +
-              " | EQL=" + eqlText +
-              " | PoolStrength=" + poolStrengthText +
-              " | LiquidityType=" + liquidityTypeText);
-   }
+   if(m_memory.Liquidity.LiquidityType == EXTERNAL_LIQUIDITY)
+      liquidityTypeText = "EXTERNAL";
+ MRH_Log("LIQUIDITY_ENGINE",
+        "DEBUG",
+        "State=" + stateText +
+        " | Target=" + DoubleToString(m_memory.Liquidity.TargetLiquidity, _Digits) +
+        " | Strength=" + poolStrengthText +
+        " | Type=" + liquidityTypeText +
+        " | Rank=" + IntegerToString(m_memory.Liquidity.LiquidityRank));
+  
+  
+           
+}
 
    void Update()
    {
