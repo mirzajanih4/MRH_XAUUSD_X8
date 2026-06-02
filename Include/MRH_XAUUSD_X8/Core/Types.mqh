@@ -116,6 +116,15 @@ enum ENUM_SWEEP_TYPE
    SWEEP_SELL_SIDE = 2
 };
 //==================================================
+// Liquidity Pool Strength
+//==================================================
+enum ENUM_LIQUIDITY_STRENGTH
+{
+   LIQUIDITY_WEAK = 0,
+   LIQUIDITY_MEDIUM = 1,
+   LIQUIDITY_STRONG = 2
+};
+//==================================================
 // Liquidity Shared Model
 //==================================================
 struct LiquidityData
@@ -131,6 +140,7 @@ struct LiquidityData
 
    double EqualHighLevel;
    double EqualLowLevel;
+   ENUM_LIQUIDITY_STRENGTH PoolStrength;
    double TargetLiquidity;
 };
 

@@ -38,7 +38,7 @@ public:
       m_memory.Liquidity.EqualLowDetected  = false;
       m_memory.Liquidity.EqualHighLevel    = 0.0;
       m_memory.Liquidity.EqualLowLevel     = 0.0;
-
+      m_memory.Liquidity.PoolStrength = LIQUIDITY_WEAK;
       double tolerancePrice = 100 * _Point;
       int bars = Bars(_Symbol, _Period);
 
@@ -52,9 +52,19 @@ public:
 
          if(MathAbs(highA - highB) <= tolerancePrice)
          {
-            m_memory.Liquidity.EqualHighDetected = true;
-            m_memory.Liquidity.EqualHighLevel = (highA + highB) / 2.0;
-            break;
+           m_memory.Liquidity.EqualHighDetected = true;
+m_memory.Liquidity.EqualHighLevel = (highA + highB) / 2.0;
+
+double diff = MathAbs(highA - highB);
+
+if(diff <= 20 * _Point)
+   m_memory.Liquidity.PoolStrength = LIQUIDITY_STRONG;
+else if(diff <= 50 * _Point)
+   m_memory.Liquidity.PoolStrength = LIQUIDITY_MEDIUM;
+else
+   m_memory.Liquidity.PoolStrength = LIQUIDITY_WEAK;
+
+break;
          }
       }
 
@@ -65,9 +75,19 @@ public:
 
          if(MathAbs(lowA - lowB) <= tolerancePrice)
          {
-            m_memory.Liquidity.EqualLowDetected = true;
-            m_memory.Liquidity.EqualLowLevel = (lowA + lowB) / 2.0;
-            break;
+           m_memory.Liquidity.EqualLowDetected = true;
+m_memory.Liquidity.EqualLowLevel = (lowA + lowB) / 2.0;
+
+double diff = MathAbs(lowA - lowB);
+
+if(diff <= 20 * _Point)
+   m_memory.Liquidity.PoolStrength = LIQUIDITY_STRONG;
+else if(diff <= 50 * _Point)
+   m_memory.Liquidity.PoolStrength = LIQUIDITY_MEDIUM;
+else
+   m_memory.Liquidity.PoolStrength = LIQUIDITY_WEAK;
+
+break;
          }
       }
    }
@@ -161,7 +181,12 @@ public:
 
       string eqhText = m_memory.Liquidity.EqualHighDetected ? "true" : "false";
       string eqlText = m_memory.Liquidity.EqualLowDetected ? "true" : "false";
+string poolStrengthText = "WEAK";
 
+if(m_memory.Liquidity.PoolStrength == LIQUIDITY_MEDIUM)
+   poolStrengthText = "MEDIUM";
+else if(m_memory.Liquidity.PoolStrength == LIQUIDITY_STRONG)
+   poolStrengthText = "STRONG";
       MRH_Log("LIQUIDITY_ENGINE",
               "DEBUG",
               "State=" + stateText +
@@ -171,7 +196,8 @@ public:
               " | Sweep=" + sweepText +
               " | SweepType=" + sweepTypeText +
               " | EQH=" + eqhText +
-              " | EQL=" + eqlText);
+              " | EQL=" + eqlText +
+              " | PoolStrength=" + poolStrengthText);
    }
 
    void Update()
