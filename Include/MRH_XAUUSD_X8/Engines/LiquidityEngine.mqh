@@ -39,6 +39,7 @@ public:
       m_memory.Liquidity.EqualHighLevel    = 0.0;
       m_memory.Liquidity.EqualLowLevel     = 0.0;
       m_memory.Liquidity.PoolStrength = LIQUIDITY_WEAK;
+      m_memory.Liquidity.LiquidityType = INTERNAL_LIQUIDITY;
       double tolerancePrice = 100 * _Point;
       int bars = Bars(_Symbol, _Period);
 
@@ -54,7 +55,10 @@ public:
          {
            m_memory.Liquidity.EqualHighDetected = true;
 m_memory.Liquidity.EqualHighLevel = (highA + highB) / 2.0;
-
+if(i >= 6)
+   m_memory.Liquidity.LiquidityType = EXTERNAL_LIQUIDITY;
+else
+   m_memory.Liquidity.LiquidityType = INTERNAL_LIQUIDITY;
 double diff = MathAbs(highA - highB);
 
 if(diff <= 20 * _Point)
@@ -77,7 +81,10 @@ break;
          {
            m_memory.Liquidity.EqualLowDetected = true;
 m_memory.Liquidity.EqualLowLevel = (lowA + lowB) / 2.0;
-
+if(i >= 6)
+   m_memory.Liquidity.LiquidityType = EXTERNAL_LIQUIDITY;
+else
+   m_memory.Liquidity.LiquidityType = INTERNAL_LIQUIDITY;
 double diff = MathAbs(lowA - lowB);
 
 if(diff <= 20 * _Point)
@@ -187,6 +194,10 @@ if(m_memory.Liquidity.PoolStrength == LIQUIDITY_MEDIUM)
    poolStrengthText = "MEDIUM";
 else if(m_memory.Liquidity.PoolStrength == LIQUIDITY_STRONG)
    poolStrengthText = "STRONG";
+   string liquidityTypeText = "INTERNAL";
+
+if(m_memory.Liquidity.LiquidityType == EXTERNAL_LIQUIDITY)
+   liquidityTypeText = "EXTERNAL";
       MRH_Log("LIQUIDITY_ENGINE",
               "DEBUG",
               "State=" + stateText +
@@ -197,7 +208,8 @@ else if(m_memory.Liquidity.PoolStrength == LIQUIDITY_STRONG)
               " | SweepType=" + sweepTypeText +
               " | EQH=" + eqhText +
               " | EQL=" + eqlText +
-              " | PoolStrength=" + poolStrengthText);
+              " | PoolStrength=" + poolStrengthText +
+              " | LiquidityType=" + liquidityTypeText);
    }
 
    void Update()

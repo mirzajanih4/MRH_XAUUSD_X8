@@ -125,6 +125,14 @@ enum ENUM_LIQUIDITY_STRENGTH
    LIQUIDITY_STRONG = 2
 };
 //==================================================
+// Liquidity Level Type
+//==================================================
+enum ENUM_LIQUIDITY_LEVEL_TYPE
+{
+   INTERNAL_LIQUIDITY = 0,
+   EXTERNAL_LIQUIDITY = 1
+};
+//==================================================
 // Liquidity Shared Model
 //==================================================
 struct LiquidityData
@@ -141,6 +149,7 @@ struct LiquidityData
    double EqualHighLevel;
    double EqualLowLevel;
    ENUM_LIQUIDITY_STRENGTH PoolStrength;
+   ENUM_LIQUIDITY_LEVEL_TYPE LiquidityType;
    double TargetLiquidity;
 };
 

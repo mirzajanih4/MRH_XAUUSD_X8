@@ -61,6 +61,7 @@ public:
       Liquidity.EqualHighLevel = 0.0;
       Liquidity.EqualLowLevel  = 0.0;
       Liquidity.PoolStrength = LIQUIDITY_WEAK;
+      Liquidity.LiquidityType = INTERNAL_LIQUIDITY;
       Liquidity.TargetLiquidity   = 0.0;
 
       OB.Valid       = false;
