@@ -55,9 +55,8 @@ void CalculatePermissionScore()
    //==================================
    // OB Score
    //==================================
-   if(m_memory.OB.Valid)
-      m_memory.Execution.OBScore = 20.0;
-
+  if(m_memory.OB.Valid)
+   m_memory.Execution.OBScore = m_memory.OB.OBScore;
    //==================================
    // Final Permission Score
    //==================================

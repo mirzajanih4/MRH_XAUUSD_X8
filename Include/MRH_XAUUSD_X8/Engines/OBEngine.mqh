@@ -42,7 +42,7 @@ void DetectBasicOB()
          m_memory.OB.Low  = iLow(_Symbol, _Period, 2);
          m_memory.OB.Valid = true;
          m_memory.OB.Strength = OB_MEDIUM;
-
+         m_memory.OB.OBScore = 20.0;
          MRH_Log("OB_ENGINE", "VALID", "Basic bullish OB detected");
       }
    }
@@ -55,7 +55,7 @@ void DetectBasicOB()
          m_memory.OB.Low  = iLow(_Symbol, _Period, 2);
          m_memory.OB.Valid = true;
          m_memory.OB.Strength = OB_MEDIUM;
-    
+         m_memory.OB.OBScore = 20.0;
          MRH_Log("OB_ENGINE", "VALID", "Basic bearish OB detected");
       }
    }
@@ -118,13 +118,21 @@ void DebugOBState()
 
    if(m_memory.OB.Invalidated)
       invalidatedText = "true";
+string strengthText = "WEAK";
 
+if(m_memory.OB.Strength == OB_MEDIUM)
+   strengthText = "MEDIUM";
+else if(m_memory.OB.Strength == OB_STRONG)
+   strengthText = "STRONG";
+else if(m_memory.OB.Strength == OB_INSTITUTIONAL)
+   strengthText = "INSTITUTIONAL";
    MRH_Log("OB_ENGINE",
            "DEBUG",
            "Valid=" + validText +
            " | High=" + DoubleToString(m_memory.OB.High, _Digits) +
            " | Low=" + DoubleToString(m_memory.OB.Low, _Digits) +
-           " | Strength=" + IntegerToString((int)m_memory.OB.Strength) +
+           " | Strength=" + strengthText +
+           " | OBScore=" + DoubleToString(m_memory.OB.OBScore, 1) +
            " | Mitigated=" + mitigatedText +
            " | Invalidated=" + invalidatedText);
 }

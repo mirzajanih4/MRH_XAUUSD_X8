@@ -167,7 +167,7 @@ struct OBData
    double Low;
 
    ENUM_OB_STRENGTH Strength;
-
+   double OBScore;
    bool Mitigated;
    bool Invalidated;
 };
