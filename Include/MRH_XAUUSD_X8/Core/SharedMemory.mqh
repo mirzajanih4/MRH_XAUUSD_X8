@@ -92,6 +92,7 @@ public:
       Risk.LotSize         = 0.0;
       Risk.RiskApproved    = false;
       Risk.ExecutionRiskApproved = false;
+      Risk.RiskProfile = "NO_RISK";
       Risk.CurrentDrawdown = 0.0;
 
       Trade.State              = TRADE_NONE;

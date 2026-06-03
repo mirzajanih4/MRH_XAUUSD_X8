@@ -111,9 +111,10 @@ if(m_memory.Risk.ExecutionRiskApproved)
    MRH_Log("RISK_MANAGER",
            "DEBUG",
            "Approved=" + approvedText +
-" | ExecutionRiskApproved=" + executionRiskText +
-" | RecommendedRisk=" + DoubleToString(m_memory.Execution.RecommendedRiskPercent, 2) +
-" | RiskPercent=" + DoubleToString(m_memory.Risk.RiskPercent, 2) +
+           " | ExecutionRiskApproved=" + executionRiskText +
+           " | RecommendedRisk=" + DoubleToString(m_memory.Execution.RecommendedRiskPercent, 2) +
+           " | RiskPercent=" + DoubleToString(m_memory.Risk.RiskPercent, 2) +
+           " | RiskProfile=" + m_memory.Risk.RiskProfile +
            " | LotSize=" + DoubleToString(m_memory.Risk.LotSize, 2) +
            " | Drawdown=" + DoubleToString(m_memory.Risk.CurrentDrawdown, 2));
 }
@@ -126,6 +127,14 @@ if(HasRiskPermission())
   m_memory.Risk.RiskApproved = true;
   m_memory.Risk.ExecutionRiskApproved = true;
   m_memory.Risk.RiskPercent = m_memory.Execution.RecommendedRiskPercent;
+  m_memory.Risk.RiskProfile = "NO_RISK";
+
+if(m_memory.Execution.ConfluenceScore >= 80.0)
+   m_memory.Risk.RiskProfile = "LOW_RISK";
+else if(m_memory.Execution.ConfluenceScore >= 60.0)
+   m_memory.Risk.RiskProfile = "MEDIUM_RISK";
+else if(m_memory.Execution.ConfluenceScore >= 40.0)
+   m_memory.Risk.RiskProfile = "HIGH_RISK";
    m_memory.Risk.LotSize = CalculateBasicLotSize();
    MRH_Log("RISK_MANAGER", "APPROVED", "Risk permission granted");
 }
