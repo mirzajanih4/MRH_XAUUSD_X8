@@ -189,6 +189,7 @@ struct ExecutionData
    double StructureScore;
    double OBScore;
    bool ScoreApproved;
+   string ExecutionGrade;
 };
 
 //==================================================

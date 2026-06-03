@@ -84,6 +84,7 @@ public:
       Execution.StructureScore = 0.0;
       Execution.OBScore = 0.0;
       Execution.ScoreApproved = false;
+      Execution.ExecutionGrade = "BLOCKED";
       Risk.RiskPercent     = 0.0;
       Risk.LotSize         = 0.0;
       Risk.RiskApproved    = false;
