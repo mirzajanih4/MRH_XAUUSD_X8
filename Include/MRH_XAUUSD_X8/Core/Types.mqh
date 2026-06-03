@@ -204,7 +204,7 @@ struct RiskData
    double LotSize;
 
    bool RiskApproved;
-
+   bool ExecutionRiskApproved;
    double CurrentDrawdown;
 };
 

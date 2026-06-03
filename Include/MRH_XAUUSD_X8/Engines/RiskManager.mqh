@@ -103,11 +103,17 @@ void DebugRiskState()
 
    if(m_memory.Risk.RiskApproved)
       approvedText = "true";
+string executionRiskText = "false";
 
+if(m_memory.Risk.ExecutionRiskApproved)
+   executionRiskText = "true";
+   
    MRH_Log("RISK_MANAGER",
            "DEBUG",
            "Approved=" + approvedText +
-           " | RiskPercent=" + DoubleToString(m_memory.Risk.RiskPercent, 2) +
+" | ExecutionRiskApproved=" + executionRiskText +
+" | RecommendedRisk=" + DoubleToString(m_memory.Execution.RecommendedRiskPercent, 2) +
+" | RiskPercent=" + DoubleToString(m_memory.Risk.RiskPercent, 2) +
            " | LotSize=" + DoubleToString(m_memory.Risk.LotSize, 2) +
            " | Drawdown=" + DoubleToString(m_memory.Risk.CurrentDrawdown, 2));
 }
@@ -117,8 +123,9 @@ void DebugRiskState()
          return;
 if(HasRiskPermission())
 {
-   m_memory.Risk.RiskApproved = true;
-   m_memory.Risk.RiskPercent  = 0.50;
+  m_memory.Risk.RiskApproved = true;
+  m_memory.Risk.ExecutionRiskApproved = true;
+  m_memory.Risk.RiskPercent = m_memory.Execution.RecommendedRiskPercent;
    m_memory.Risk.LotSize = CalculateBasicLotSize();
    MRH_Log("RISK_MANAGER", "APPROVED", "Risk permission granted");
 }
