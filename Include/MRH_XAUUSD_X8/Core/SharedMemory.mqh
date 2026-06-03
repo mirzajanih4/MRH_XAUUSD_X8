@@ -85,6 +85,7 @@ public:
       Execution.OBScore = 0.0;
       Execution.ScoreApproved = false;
       Execution.ExecutionGrade = "BLOCKED";
+      Execution.ConfidenceLevel = "LOW";
       Risk.RiskPercent     = 0.0;
       Risk.LotSize         = 0.0;
       Risk.RiskApproved    = false;

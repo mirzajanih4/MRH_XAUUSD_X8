@@ -190,6 +190,7 @@ struct ExecutionData
    double OBScore;
    bool ScoreApproved;
    string ExecutionGrade;
+   string ConfidenceLevel;
 };
 
 //==================================================
