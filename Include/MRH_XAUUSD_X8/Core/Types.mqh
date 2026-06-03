@@ -192,6 +192,7 @@ struct ExecutionData
    string ExecutionGrade;
    string ConfidenceLevel;
    double ConfluenceScore;
+   double RecommendedRiskPercent;
 };
 
 //==================================================
