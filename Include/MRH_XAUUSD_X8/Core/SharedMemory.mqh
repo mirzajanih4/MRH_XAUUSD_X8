@@ -90,6 +90,7 @@ public:
       Execution.RecommendedRiskPercent = 0.0;
       Risk.RiskPercent     = 0.0;
       Risk.LotSize         = 0.0;
+      Risk.CalculatedLotSize = 0.0;
       Risk.RiskApproved    = false;
       Risk.ExecutionRiskApproved = false;
       Risk.RiskProfile = "NO_RISK";

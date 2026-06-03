@@ -202,7 +202,7 @@ struct RiskData
 {
    double RiskPercent;
    double LotSize;
-
+   double CalculatedLotSize;
    bool RiskApproved;
    bool ExecutionRiskApproved;
    string RiskProfile;

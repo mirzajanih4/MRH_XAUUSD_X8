@@ -116,6 +116,7 @@ if(m_memory.Risk.ExecutionRiskApproved)
            " | RiskPercent=" + DoubleToString(m_memory.Risk.RiskPercent, 2) +
            " | RiskProfile=" + m_memory.Risk.RiskProfile +
            " | LotSize=" + DoubleToString(m_memory.Risk.LotSize, 2) +
+           " | CalculatedLotSize=" + DoubleToString(m_memory.Risk.CalculatedLotSize, 2) +
            " | Drawdown=" + DoubleToString(m_memory.Risk.CurrentDrawdown, 2));
 }
    void Update()
@@ -136,6 +137,7 @@ else if(m_memory.Execution.ConfluenceScore >= 60.0)
 else if(m_memory.Execution.ConfluenceScore >= 40.0)
    m_memory.Risk.RiskProfile = "HIGH_RISK";
    m_memory.Risk.LotSize = CalculateBasicLotSize();
+   m_memory.Risk.CalculatedLotSize = m_memory.Risk.LotSize;
    MRH_Log("RISK_MANAGER", "APPROVED", "Risk permission granted");
 }
 else
