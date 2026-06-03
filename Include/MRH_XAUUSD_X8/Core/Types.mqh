@@ -186,6 +186,8 @@ struct ExecutionData
    double TakeProfit;
    double Confidence;
    double PermissionScore;
+   double StructureScore;
+   double OBScore;
    bool ScoreApproved;
 };
 

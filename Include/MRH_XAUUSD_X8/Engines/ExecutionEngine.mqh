@@ -8,11 +8,12 @@ class CExecutionEngine
 {
 private:
    CSharedMemory* m_memory;
-
+   double m_requiredPermissionScore;
 public:
    CExecutionEngine()
    {
       m_memory = NULL;
+      m_requiredPermissionScore = 40.0;
    }
 
    bool Init(CSharedMemory* memory)
@@ -29,46 +30,68 @@ public:
       return true;
    }
 
-   void CalculatePermissionScore()
-   {
-      if(m_memory == NULL)
-         return;
+  void CalculatePermissionScore()
+{
+   if(m_memory == NULL)
+      return;
 
-      m_memory.Execution.PermissionScore =
-         m_memory.Liquidity.LiquidityScore;
+   //==================================
+   // Reset Scores
+   //==================================
+   m_memory.Execution.PermissionScore = 0.0;
+   m_memory.Execution.StructureScore  = 0.0;
+   m_memory.Execution.OBScore         = 0.0;
 
-      if(m_memory.Execution.PermissionScore >= 40.0)
-         m_memory.Execution.ScoreApproved = true;
-      else
-         m_memory.Execution.ScoreApproved = false;
-   }
+   //==================================
+   // Structure Score
+   //==================================
+   if(m_memory.Structure.Bias != BIAS_NEUTRAL)
+      m_memory.Execution.StructureScore = 20.0;
 
-   bool HasExecutionPermission()
-   {
-      if(m_memory == NULL)
-         return false;
+   //==================================
+   // OB Score
+   //==================================
+   if(m_memory.OB.Valid)
+      m_memory.Execution.OBScore = 20.0;
 
-      if(m_memory.Structure.Bias == BIAS_NEUTRAL)
-         return false;
+   //==================================
+   // Final Permission Score
+   //==================================
+   m_memory.Execution.PermissionScore =
+      m_memory.Liquidity.LiquidityScore +
+      m_memory.Execution.StructureScore +
+      m_memory.Execution.OBScore;
 
-      if(m_memory.Structure.State == STRUCTURE_RANGE)
-         return false;
+   if(m_memory.Execution.PermissionScore >= m_requiredPermissionScore)
+      m_memory.Execution.ScoreApproved = true;
+   else
+      m_memory.Execution.ScoreApproved = false;
+}
+bool HasExecutionPermission()
+{
+   if(m_memory == NULL)
+      return false;
 
-      if(!m_memory.OB.Valid)
-         return false;
+   if(m_memory.Structure.Bias == BIAS_NEUTRAL)
+      return false;
 
-      if(m_memory.OB.Invalidated)
-         return false;
+   if(m_memory.Structure.State == STRUCTURE_RANGE)
+      return false;
 
-      if(m_memory.Liquidity.TargetLiquidity <= 0.0)
-         return false;
+   if(!m_memory.OB.Valid)
+      return false;
 
-      if(!m_memory.Execution.ScoreApproved)
-         return false;
+   if(m_memory.OB.Invalidated)
+      return false;
 
-      return true;
-   }
+   if(m_memory.Liquidity.TargetLiquidity <= 0.0)
+      return false;
 
+   if(!m_memory.Execution.ScoreApproved)
+      return false;
+
+   return true;
+}
    void Update()
    {
       if(m_memory == NULL)
@@ -90,9 +113,27 @@ public:
       MRH_Log("EXECUTION_ENGINE",
               "DEBUG",
               "PermissionScore=" + DoubleToString(m_memory.Execution.PermissionScore, 1) +
+              
               " | ScoreApproved=" + IntegerToString((int)m_memory.Execution.ScoreApproved));
+              
+     MRH_Log("EXECUTION_ENGINE",
+        "DEBUG_DETAIL",
+        "LiquidityScore=" +
+        DoubleToString(m_memory.Liquidity.LiquidityScore, 1) +
 
+        " | StructureScore=" +
+        DoubleToString(m_memory.Execution.StructureScore, 1) +
+
+        " | OBScore=" +
+        DoubleToString(m_memory.Execution.OBScore, 1) +
+
+        " | PermissionScore=" +
+        DoubleToString(m_memory.Execution.PermissionScore, 1) +
+
+        " | RequiredScore=" +
+        DoubleToString(m_requiredPermissionScore, 1));
       MRH_Log("EXECUTION_ENGINE", "UPDATE", "New bar update");
+      
    }
 };
 

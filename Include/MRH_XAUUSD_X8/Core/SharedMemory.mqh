@@ -81,6 +81,8 @@ public:
       Execution.TakeProfit  = 0.0;
       Execution.Confidence  = 0.0;
       Execution.PermissionScore = 0.0;
+      Execution.StructureScore = 0.0;
+      Execution.OBScore = 0.0;
       Execution.ScoreApproved = false;
       Risk.RiskPercent     = 0.0;
       Risk.LotSize         = 0.0;
