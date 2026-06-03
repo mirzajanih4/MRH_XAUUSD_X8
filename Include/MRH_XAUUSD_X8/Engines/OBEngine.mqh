@@ -26,6 +26,25 @@ public:
       MRH_Log("OB_ENGINE", "INIT", "Initialized with SharedMemory");
       return true;
    }
+   double GetOBStrengthScore()
+{
+   if(m_memory == NULL)
+      return 0.0;
+
+   if(m_memory.OB.Strength == OB_WEAK)
+      return 10.0;
+
+   if(m_memory.OB.Strength == OB_MEDIUM)
+      return 20.0;
+
+   if(m_memory.OB.Strength == OB_STRONG)
+      return 30.0;
+
+   if(m_memory.OB.Strength == OB_INSTITUTIONAL)
+      return 40.0;
+
+   return 0.0;
+}
 void DetectBasicOB()
 {
    if(m_memory == NULL)
@@ -42,7 +61,7 @@ void DetectBasicOB()
          m_memory.OB.Low  = iLow(_Symbol, _Period, 2);
          m_memory.OB.Valid = true;
          m_memory.OB.Strength = OB_MEDIUM;
-         m_memory.OB.OBScore = 20.0;
+         m_memory.OB.OBScore = GetOBStrengthScore();
          MRH_Log("OB_ENGINE", "VALID", "Basic bullish OB detected");
       }
    }
@@ -55,7 +74,7 @@ void DetectBasicOB()
          m_memory.OB.Low  = iLow(_Symbol, _Period, 2);
          m_memory.OB.Valid = true;
          m_memory.OB.Strength = OB_MEDIUM;
-         m_memory.OB.OBScore = 20.0;
+         m_memory.OB.OBScore = GetOBStrengthScore();
          MRH_Log("OB_ENGINE", "VALID", "Basic bearish OB detected");
       }
    }
