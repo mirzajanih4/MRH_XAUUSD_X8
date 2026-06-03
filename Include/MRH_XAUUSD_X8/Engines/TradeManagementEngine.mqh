@@ -100,8 +100,9 @@ void DebugTradeState()
   MRH_Log("TRADE_MANAGEMENT_ENGINE",
         "DEBUG",
         "State=" + stateText +
-        " | RR=" + DoubleToString(m_memory.Trade.CurrentRR, 2) +
-        " | Partial=" + partialText +
+" | RR=" + DoubleToString(m_memory.Trade.CurrentRR, 2) +
+" | BreakEvenRR=" + DoubleToString(m_memory.Trade.BreakEvenRR, 2) +
+" | Partial=" + partialText +
         " | BE=" + beText +
         " | ExitReason=" + exitReasonText);
 }
@@ -109,6 +110,19 @@ void DebugTradeState()
    {
       if(m_memory == NULL)
          return;
+         if(m_memory.Trade.State == TRADE_ACTIVE)
+{
+   if(!m_memory.Trade.BreakEvenActivated &&
+      m_memory.Trade.CurrentRR >= m_memory.Trade.BreakEvenRR)
+   {
+      m_memory.Trade.BreakEvenActivated = true;
+      m_memory.Trade.State = TRADE_BE;
+
+      MRH_Log("TRADE_MANAGEMENT_ENGINE",
+              "BREAK_EVEN",
+              "Break Even activated");
+   }
+}
    UpdateTradeStateMemory();
    CalculateCurrentRR();
    DebugTradeState();

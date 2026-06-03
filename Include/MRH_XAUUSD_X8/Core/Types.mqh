@@ -222,6 +222,7 @@ struct TradeData
    bool BreakEvenActivated;
 
    double CurrentRR;
+   double BreakEvenRR;
    string ExitReason;
 };
 //==================================================
