@@ -89,6 +89,16 @@ void CalculatePermissionScore()
       m_memory.Execution.ConfidenceLevel = "HIGH";
    else if(m_memory.Execution.PermissionScore >= 60.0)
       m_memory.Execution.ConfidenceLevel = "MEDIUM";
+      m_memory.Execution.ConfluenceScore =
+   m_memory.Execution.PermissionScore;
+
+if(m_memory.Execution.ConfidenceLevel == "MEDIUM")
+   m_memory.Execution.ConfluenceScore += 5.0;
+else if(m_memory.Execution.ConfidenceLevel == "HIGH")
+   m_memory.Execution.ConfluenceScore += 10.0;
+
+if(m_memory.Execution.ConfluenceScore > 100.0)
+   m_memory.Execution.ConfluenceScore = 100.0;
 }
    bool HasExecutionPermission()
 {
@@ -139,27 +149,30 @@ void CalculatePermissionScore()
               " | ScoreApproved=" + IntegerToString((int)m_memory.Execution.ScoreApproved));
 
       MRH_Log("EXECUTION_ENGINE",
-              "DEBUG_DETAIL",
-              "LiquidityScore=" +
-              DoubleToString(m_memory.Liquidity.LiquidityScore, 1) +
+        "DEBUG_DETAIL",
+        "LiquidityScore=" +
+        DoubleToString(m_memory.Liquidity.LiquidityScore, 1) +
 
-              " | StructureScore=" +
-              DoubleToString(m_memory.Execution.StructureScore, 1) +
+        " | StructureScore=" +
+        DoubleToString(m_memory.Execution.StructureScore, 1) +
 
-              " | OBScore=" +
-              DoubleToString(m_memory.Execution.OBScore, 1) +
+        " | OBScore=" +
+        DoubleToString(m_memory.Execution.OBScore, 1) +
 
-              " | PermissionScore=" +
-              DoubleToString(m_memory.Execution.PermissionScore, 1) +
+        " | PermissionScore=" +
+        DoubleToString(m_memory.Execution.PermissionScore, 1) +
 
-              " | RequiredScore=" +
-              DoubleToString(m_requiredPermissionScore, 1) +
+        " | RequiredScore=" +
+        DoubleToString(m_requiredPermissionScore, 1) +
 
-             " | Grade=" +
-             m_memory.Execution.ExecutionGrade +
+        " | Grade=" +
+        m_memory.Execution.ExecutionGrade +
 
-             " | Confidence=" +
-             m_memory.Execution.ConfidenceLevel);
+        " | Confidence=" +
+        m_memory.Execution.ConfidenceLevel +
+
+        " | ConfluenceScore=" +
+        DoubleToString(m_memory.Execution.ConfluenceScore, 1));
 
       MRH_Log("EXECUTION_ENGINE", "UPDATE", "New bar update");
    }

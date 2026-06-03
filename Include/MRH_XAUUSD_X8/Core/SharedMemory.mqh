@@ -86,6 +86,7 @@ public:
       Execution.ScoreApproved = false;
       Execution.ExecutionGrade = "BLOCKED";
       Execution.ConfidenceLevel = "LOW";
+      Execution.ConfluenceScore = 0.0;
       Risk.RiskPercent     = 0.0;
       Risk.LotSize         = 0.0;
       Risk.RiskApproved    = false;

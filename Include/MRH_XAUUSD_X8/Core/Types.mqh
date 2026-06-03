@@ -191,6 +191,7 @@ struct ExecutionData
    bool ScoreApproved;
    string ExecutionGrade;
    string ConfidenceLevel;
+   double ConfluenceScore;
 };
 
 //==================================================
