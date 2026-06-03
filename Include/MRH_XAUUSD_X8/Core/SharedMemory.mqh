@@ -103,6 +103,7 @@ public:
       Trade.PartialClosed      = false;
       Trade.BreakEvenActivated = false;
       Trade.CurrentRR          = 0.0;
+      Trade.ExitReason = "NONE";
       Safety.SymbolAllowed       = false;
       Safety.SpreadAllowed       = false;
       Safety.StopDistanceAllowed = false;

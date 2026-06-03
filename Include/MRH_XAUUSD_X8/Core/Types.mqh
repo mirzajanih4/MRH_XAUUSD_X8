@@ -222,6 +222,7 @@ struct TradeData
    bool BreakEvenActivated;
 
    double CurrentRR;
+   string ExitReason;
 };
 //==================================================
 // Safety Shared Model

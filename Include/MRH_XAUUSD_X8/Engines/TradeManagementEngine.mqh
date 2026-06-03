@@ -90,19 +90,20 @@ void DebugTradeState()
 
    string partialText = "false";
    string beText      = "false";
-
+   string exitReasonText = m_memory.Trade.ExitReason;
    if(m_memory.Trade.PartialClosed)
       partialText = "true";
 
    if(m_memory.Trade.BreakEvenActivated)
       beText = "true";
 
-   MRH_Log("TRADE_MANAGEMENT_ENGINE",
-           "DEBUG",
-           "State=" + stateText +
-           " | RR=" + DoubleToString(m_memory.Trade.CurrentRR, 2) +
-           " | Partial=" + partialText +
-           " | BE=" + beText);
+  MRH_Log("TRADE_MANAGEMENT_ENGINE",
+        "DEBUG",
+        "State=" + stateText +
+        " | RR=" + DoubleToString(m_memory.Trade.CurrentRR, 2) +
+        " | Partial=" + partialText +
+        " | BE=" + beText +
+        " | ExitReason=" + exitReasonText);
 }
    void Update()
    {
