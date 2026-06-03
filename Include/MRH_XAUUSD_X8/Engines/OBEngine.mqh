@@ -73,11 +73,15 @@ void CheckOBLifecycle()
    double closePrice = iClose(_Symbol, _Period, 1);
 
    // Mitigation: price touches OB zone
-   if(highPrice >= m_memory.OB.Low && lowPrice <= m_memory.OB.High)
-   {
-      m_memory.OB.Mitigated = true;
-      MRH_Log("OB_ENGINE", "MITIGATED", "OB zone touched");
-   }
+  if(highPrice >= m_memory.OB.Low && lowPrice <= m_memory.OB.High)
+{
+   m_memory.OB.Mitigated = true;
+
+   if(m_memory.OB.OBScore > 10.0)
+      m_memory.OB.OBScore = 10.0;
+
+   MRH_Log("OB_ENGINE", "MITIGATED", "OB zone touched and OBScore reduced");
+}
 
    // Bullish OB invalidation
    if(m_memory.Structure.Bias == BIAS_BULLISH)
@@ -86,6 +90,7 @@ void CheckOBLifecycle()
       {
          m_memory.OB.Invalidated = true;
          m_memory.OB.Valid = false;
+         m_memory.OB.OBScore = 0.0;
          MRH_Log("OB_ENGINE", "INVALIDATED", "Bullish OB invalidated");
       }
    }
@@ -97,6 +102,7 @@ void CheckOBLifecycle()
       {
          m_memory.OB.Invalidated = true;
          m_memory.OB.Valid = false;
+         m_memory.OB.OBScore = 0.0;
          MRH_Log("OB_ENGINE", "INVALIDATED", "Bearish OB invalidated");
       }
    }
