@@ -115,39 +115,54 @@ if(m_memory.Risk.ExecutionRiskApproved)
            " | RecommendedRisk=" + DoubleToString(m_memory.Execution.RecommendedRiskPercent, 2) +
            " | RiskPercent=" + DoubleToString(m_memory.Risk.RiskPercent, 2) +
            " | RiskProfile=" + m_memory.Risk.RiskProfile +
+           " | BlockReason=" + m_memory.Risk.RiskBlockReason +
            " | LotSize=" + DoubleToString(m_memory.Risk.LotSize, 2) +
            " | CalculatedLotSize=" + DoubleToString(m_memory.Risk.CalculatedLotSize, 2) +
            " | Drawdown=" + DoubleToString(m_memory.Risk.CurrentDrawdown, 2));
 }
-   void Update()
-   {
-      if(m_memory == NULL)
-         return;
-if(HasRiskPermission())
+  void Update()
 {
-  m_memory.Risk.RiskApproved = true;
-  m_memory.Risk.ExecutionRiskApproved = true;
-  m_memory.Risk.RiskPercent = m_memory.Execution.RecommendedRiskPercent;
-  m_memory.Risk.RiskProfile = "NO_RISK";
+   if(m_memory == NULL)
+      return;
 
-if(m_memory.Execution.ConfluenceScore >= 80.0)
-   m_memory.Risk.RiskProfile = "LOW_RISK";
-else if(m_memory.Execution.ConfluenceScore >= 60.0)
-   m_memory.Risk.RiskProfile = "MEDIUM_RISK";
-else if(m_memory.Execution.ConfluenceScore >= 40.0)
-   m_memory.Risk.RiskProfile = "HIGH_RISK";
-   m_memory.Risk.LotSize = CalculateBasicLotSize();
-   m_memory.Risk.CalculatedLotSize = m_memory.Risk.LotSize;
-   MRH_Log("RISK_MANAGER", "APPROVED", "Risk permission granted");
-}
-else
-{
-   m_memory.Risk.LotSize = 0.0;
    m_memory.Risk.RiskApproved = false;
-}
-   DebugRiskState();
-      MRH_Log("RISK_MANAGER", "UPDATE", "New bar update");
-   }
-};
+   m_memory.Risk.ExecutionRiskApproved = false;
+   m_memory.Risk.RiskBlockReason = "NONE";
 
+   if(HasRiskPermission())
+   {
+      m_memory.Risk.RiskApproved = true;
+      m_memory.Risk.ExecutionRiskApproved = true;
+      m_memory.Risk.RiskPercent = m_memory.Execution.RecommendedRiskPercent;
+
+      m_memory.Risk.RiskProfile = "NO_RISK";
+
+      if(m_memory.Execution.ConfluenceScore >= 80.0)
+         m_memory.Risk.RiskProfile = "LOW_RISK";
+      else if(m_memory.Execution.ConfluenceScore >= 60.0)
+         m_memory.Risk.RiskProfile = "MEDIUM_RISK";
+      else if(m_memory.Execution.ConfluenceScore >= 40.0)
+         m_memory.Risk.RiskProfile = "HIGH_RISK";
+
+      m_memory.Risk.LotSize = CalculateBasicLotSize();
+      m_memory.Risk.CalculatedLotSize = m_memory.Risk.LotSize;
+
+      MRH_Log("RISK_MANAGER", "APPROVED", "Risk permission granted");
+   }
+   else
+   {
+      m_memory.Risk.RiskBlockReason = "NO_EXECUTION_PERMISSION";
+      m_memory.Risk.LotSize = 0.0;
+      m_memory.Risk.CalculatedLotSize = 0.0;
+      m_memory.Risk.RiskApproved = false;
+      m_memory.Risk.ExecutionRiskApproved = false;
+      m_memory.Risk.RiskPercent = 0.0;
+      m_memory.Risk.RiskProfile = "NO_RISK";
+   }
+
+   DebugRiskState();
+
+   MRH_Log("RISK_MANAGER", "UPDATE", "New bar update");
+}
+};
 #endif

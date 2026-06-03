@@ -94,6 +94,7 @@ public:
       Risk.RiskApproved    = false;
       Risk.ExecutionRiskApproved = false;
       Risk.RiskProfile = "NO_RISK";
+      Risk.RiskBlockReason = "NONE";
       Risk.CurrentDrawdown = 0.0;
 
       Trade.State              = TRADE_NONE;

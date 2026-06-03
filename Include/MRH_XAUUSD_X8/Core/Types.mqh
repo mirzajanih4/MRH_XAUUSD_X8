@@ -206,6 +206,7 @@ struct RiskData
    bool RiskApproved;
    bool ExecutionRiskApproved;
    string RiskProfile;
+   string RiskBlockReason;
    double CurrentDrawdown;
 };
 
