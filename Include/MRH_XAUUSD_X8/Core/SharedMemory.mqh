@@ -72,6 +72,7 @@ public:
       OB.Low         = 0.0;
       OB.Strength    = OB_WEAK;
       OB.OBScore = 0.0;
+      OB.Freshness = 0;
       OB.Mitigated   = false;
       OB.Invalidated = false;
 

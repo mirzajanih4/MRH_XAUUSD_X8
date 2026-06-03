@@ -62,6 +62,7 @@ void DetectBasicOB()
          m_memory.OB.Valid = true;
          m_memory.OB.Strength = OB_MEDIUM;
          m_memory.OB.OBScore = GetOBStrengthScore();
+         m_memory.OB.Freshness = 1;
          MRH_Log("OB_ENGINE", "VALID", "Basic bullish OB detected");
       }
    }
@@ -75,6 +76,7 @@ void DetectBasicOB()
          m_memory.OB.Valid = true;
          m_memory.OB.Strength = OB_MEDIUM;
          m_memory.OB.OBScore = GetOBStrengthScore();
+         m_memory.OB.Freshness = 1;
          MRH_Log("OB_ENGINE", "VALID", "Basic bearish OB detected");
       }
    }
@@ -95,7 +97,7 @@ void CheckOBLifecycle()
   if(highPrice >= m_memory.OB.Low && lowPrice <= m_memory.OB.High)
 {
    m_memory.OB.Mitigated = true;
-
+   m_memory.OB.Freshness = 0;
    if(m_memory.OB.OBScore > 10.0)
       m_memory.OB.OBScore = 10.0;
 
@@ -158,6 +160,7 @@ else if(m_memory.OB.Strength == OB_INSTITUTIONAL)
            " | Low=" + DoubleToString(m_memory.OB.Low, _Digits) +
            " | Strength=" + strengthText +
            " | OBScore=" + DoubleToString(m_memory.OB.OBScore, 1) +
+           " | Freshness=" + IntegerToString(m_memory.OB.Freshness) +
            " | Mitigated=" + mitigatedText +
            " | Invalidated=" + invalidatedText);
 }

@@ -168,6 +168,7 @@ struct OBData
 
    ENUM_OB_STRENGTH Strength;
    double OBScore;
+   int Freshness;
    bool Mitigated;
    bool Invalidated;
 };
