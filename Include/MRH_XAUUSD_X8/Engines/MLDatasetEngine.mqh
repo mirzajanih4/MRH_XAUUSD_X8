@@ -8,12 +8,15 @@ class CMLDatasetEngine
 {
 private:
    CSharedMemory* m_memory;
-
+   string m_datasetFileName;
 public:
    CMLDatasetEngine()
-   {
-      m_memory = NULL;
-   }
+{
+   m_memory = NULL;
+
+   m_datasetFileName = "MRH_XAUUSD_X8_Dataset.csv";
+}
+
 
    bool Init(CSharedMemory* memory)
    {
@@ -104,11 +107,60 @@ void BuildTradeSnapshot()
    m_memory.LastSnapshot.ExitReason =
       m_memory.Trade.ExitReason;
 }
+
+
+void ExportSnapshotToCSV()
+{
+   if(m_memory == NULL)
+      return;
+
+   int fileHandle =
+      FileOpen(m_datasetFileName,
+               FILE_CSV | FILE_READ | FILE_WRITE | FILE_ANSI);
+
+   if(fileHandle == INVALID_HANDLE)
+   {
+      MRH_Log("ML_DATASET_ENGINE",
+              "CSV_ERROR",
+              "Failed to open dataset file");
+
+      return;
+   }
+
+   FileSeek(fileHandle, 0, SEEK_END);
+
+   FileWrite(fileHandle,
+             TimeToString(m_memory.LastSnapshot.SnapshotTime,
+                          TIME_DATE | TIME_SECONDS),
+
+             DoubleToString(m_memory.LastSnapshot.LiquidityScore, 1),
+             DoubleToString(m_memory.LastSnapshot.OBScore, 1),
+             DoubleToString(m_memory.LastSnapshot.PermissionScore, 1),
+             DoubleToString(m_memory.LastSnapshot.ConfluenceScore, 1),
+
+             m_memory.LastSnapshot.ExecutionGrade,
+             m_memory.LastSnapshot.ConfidenceLevel,
+
+             DoubleToString(m_memory.LastSnapshot.RecommendedRisk, 2),
+             m_memory.LastSnapshot.RiskProfile,
+
+             IntegerToString((int)m_memory.LastSnapshot.TradeState),
+
+             DoubleToString(m_memory.LastSnapshot.CurrentRR, 2),
+
+             m_memory.LastSnapshot.ExitReason);
+
+   FileClose(fileHandle);
+}
+
+
    void CaptureSnapshot()
    {
       if(m_memory == NULL)
          return;
    BuildTradeSnapshot();
+   ExportSnapshotToCSV();
+   
    MRH_Log("ML_DATASET_ENGINE",
         "SNAPSHOT_DEBUG",
         "LiquidityScore=" + DoubleToString(m_memory.LastSnapshot.LiquidityScore, 1) +
