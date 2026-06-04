@@ -220,7 +220,7 @@ struct TradeData
 
    bool PartialClosed;
    bool BreakEvenActivated;
-
+   bool TrailingStopActivated;
    double CurrentRR;
    double BreakEvenRR;
    double PartialCloseRR;

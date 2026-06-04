@@ -102,6 +102,7 @@ public:
       Trade.State              = TRADE_NONE;
       Trade.PartialClosed      = false;
       Trade.BreakEvenActivated = false;
+      Trade.TrailingStopActivated = false;
       Trade.CurrentRR          = 0.0;
       Trade.BreakEvenRR = 1.0;
       Trade.PartialCloseRR = 2.0;

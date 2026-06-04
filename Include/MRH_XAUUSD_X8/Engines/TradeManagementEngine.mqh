@@ -90,21 +90,24 @@ void DebugTradeState()
 
    string partialText = "false";
    string beText      = "false";
+   string trailingText = "false";
    string exitReasonText = m_memory.Trade.ExitReason;
    if(m_memory.Trade.PartialClosed)
       partialText = "true";
 
    if(m_memory.Trade.BreakEvenActivated)
       beText = "true";
-
+if(m_memory.Trade.TrailingStopActivated)
+   trailingText = "true";
   MRH_Log("TRADE_MANAGEMENT_ENGINE",
         "DEBUG",
         "State=" + stateText +
-" | RR=" + DoubleToString(m_memory.Trade.CurrentRR, 2) +
-" | BreakEvenRR=" + DoubleToString(m_memory.Trade.BreakEvenRR, 2) +
-" | PartialCloseRR=" + DoubleToString(m_memory.Trade.PartialCloseRR, 2) +
-" | Partial=" + partialText +
+        " | RR=" + DoubleToString(m_memory.Trade.CurrentRR, 2) +
+        " | BreakEvenRR=" + DoubleToString(m_memory.Trade.BreakEvenRR, 2) +
+        " | PartialCloseRR=" + DoubleToString(m_memory.Trade.PartialCloseRR, 2) +
+        " | Partial=" + partialText +
         " | BE=" + beText +
+        " | Trailing=" + trailingText +
         " | ExitReason=" + exitReasonText);
 }
    void Update()
@@ -135,6 +138,19 @@ void DebugTradeState()
       MRH_Log("TRADE_MANAGEMENT_ENGINE",
               "PARTIAL_CLOSE",
               "Partial close condition reached");
+   }
+}
+if(m_memory.Trade.State == TRADE_PARTIAL ||
+   m_memory.Trade.State == TRADE_BE)
+{
+   if(!m_memory.Trade.TrailingStopActivated &&
+      m_memory.Trade.CurrentRR >= m_memory.Trade.PartialCloseRR)
+   {
+      m_memory.Trade.TrailingStopActivated = true;
+
+      MRH_Log("TRADE_MANAGEMENT_ENGINE",
+              "TRAILING_STOP",
+              "Trailing Stop activated");
    }
 }
 }
