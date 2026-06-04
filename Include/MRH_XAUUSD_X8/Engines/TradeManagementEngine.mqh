@@ -102,6 +102,7 @@ void DebugTradeState()
         "State=" + stateText +
 " | RR=" + DoubleToString(m_memory.Trade.CurrentRR, 2) +
 " | BreakEvenRR=" + DoubleToString(m_memory.Trade.BreakEvenRR, 2) +
+" | PartialCloseRR=" + DoubleToString(m_memory.Trade.PartialCloseRR, 2) +
 " | Partial=" + partialText +
         " | BE=" + beText +
         " | ExitReason=" + exitReasonText);
@@ -122,6 +123,20 @@ void DebugTradeState()
               "BREAK_EVEN",
               "Break Even activated");
    }
+   if(m_memory.Trade.State == TRADE_BE ||
+   m_memory.Trade.State == TRADE_ACTIVE)
+{
+   if(!m_memory.Trade.PartialClosed &&
+      m_memory.Trade.CurrentRR >= m_memory.Trade.PartialCloseRR)
+   {
+      m_memory.Trade.PartialClosed = true;
+      m_memory.Trade.State = TRADE_PARTIAL;
+
+      MRH_Log("TRADE_MANAGEMENT_ENGINE",
+              "PARTIAL_CLOSE",
+              "Partial close condition reached");
+   }
+}
 }
    UpdateTradeStateMemory();
    CalculateCurrentRR();

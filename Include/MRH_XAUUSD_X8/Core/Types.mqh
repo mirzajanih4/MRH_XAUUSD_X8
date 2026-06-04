@@ -223,6 +223,7 @@ struct TradeData
 
    double CurrentRR;
    double BreakEvenRR;
+   double PartialCloseRR;
    string ExitReason;
 };
 //==================================================

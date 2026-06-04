@@ -104,6 +104,7 @@ public:
       Trade.BreakEvenActivated = false;
       Trade.CurrentRR          = 0.0;
       Trade.BreakEvenRR = 1.0;
+      Trade.PartialCloseRR = 2.0;
       Trade.ExitReason = "NONE";
       Safety.SymbolAllowed       = false;
       Safety.SpreadAllowed       = false;
