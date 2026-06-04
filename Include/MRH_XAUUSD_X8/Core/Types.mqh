@@ -232,6 +232,46 @@ struct TradeData
    #define EXIT_MANUAL     "MANUAL"
 };
 //==================================================
+// ML Dataset Row Model
+//==================================================
+struct MLDataRow
+{
+   string Scenario;
+   double LiquidityScore;
+   double OBScore;
+   double PermissionScore;
+   string ExecutionGrade;
+   string ConfidenceLevel;
+   double ConfluenceScore;
+   double RecommendedRisk;
+   string RiskProfile;
+   ENUM_TRADE_STATE TradeState;
+   string ExitReason;
+   double CurrentRR;
+};
+//==================================================
+// ML Trade Snapshot Model
+//==================================================
+struct MLTradeSnapshot
+{
+   datetime SnapshotTime;
+
+   double LiquidityScore;
+   double OBScore;
+   double PermissionScore;
+   double ConfluenceScore;
+
+   string ExecutionGrade;
+   string ConfidenceLevel;
+
+   double RecommendedRisk;
+   string RiskProfile;
+
+   ENUM_TRADE_STATE TradeState;
+   double CurrentRR;
+   string ExitReason;
+};
+//==================================================
 // Safety Shared Model
 //==================================================
 struct SafetyData

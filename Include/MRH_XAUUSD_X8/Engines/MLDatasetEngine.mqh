@@ -64,12 +64,62 @@ public:
 
       return row;
    }
+void BuildTradeSnapshot()
+{
+   if(m_memory == NULL)
+      return;
 
+   m_memory.LastSnapshot.SnapshotTime = TimeCurrent();
+
+   m_memory.LastSnapshot.LiquidityScore =
+      m_memory.Liquidity.LiquidityScore;
+
+   m_memory.LastSnapshot.OBScore =
+      m_memory.Execution.OBScore;
+
+   m_memory.LastSnapshot.PermissionScore =
+      m_memory.Execution.PermissionScore;
+
+   m_memory.LastSnapshot.ConfluenceScore =
+      m_memory.Execution.ConfluenceScore;
+
+   m_memory.LastSnapshot.ExecutionGrade =
+      m_memory.Execution.ExecutionGrade;
+
+   m_memory.LastSnapshot.ConfidenceLevel =
+      m_memory.Execution.ConfidenceLevel;
+
+   m_memory.LastSnapshot.RecommendedRisk =
+      m_memory.Execution.RecommendedRiskPercent;
+
+   m_memory.LastSnapshot.RiskProfile =
+      m_memory.Risk.RiskProfile;
+
+   m_memory.LastSnapshot.TradeState =
+      m_memory.Trade.State;
+
+   m_memory.LastSnapshot.CurrentRR =
+      m_memory.Trade.CurrentRR;
+
+   m_memory.LastSnapshot.ExitReason =
+      m_memory.Trade.ExitReason;
+}
    void CaptureSnapshot()
    {
       if(m_memory == NULL)
          return;
-
+   BuildTradeSnapshot();
+   MRH_Log("ML_DATASET_ENGINE",
+        "SNAPSHOT_DEBUG",
+        "LiquidityScore=" + DoubleToString(m_memory.LastSnapshot.LiquidityScore, 1) +
+        " | OBScore=" + DoubleToString(m_memory.LastSnapshot.OBScore, 1) +
+        " | PermissionScore=" + DoubleToString(m_memory.LastSnapshot.PermissionScore, 1) +
+        " | ConfluenceScore=" + DoubleToString(m_memory.LastSnapshot.ConfluenceScore, 1) +
+        " | Grade=" + m_memory.LastSnapshot.ExecutionGrade +
+        " | Confidence=" + m_memory.LastSnapshot.ConfidenceLevel +
+        " | RiskProfile=" + m_memory.LastSnapshot.RiskProfile +
+        " | RR=" + DoubleToString(m_memory.LastSnapshot.CurrentRR, 2) +
+        " | ExitReason=" + m_memory.LastSnapshot.ExitReason);
       string row = BuildDatasetRow();
 
       MRH_Log("ML_DATASET_ENGINE",
@@ -93,6 +143,8 @@ public:
       if(m_memory == NULL)
       {
          return;
+         
+         
       }
 
       CaptureSnapshot();

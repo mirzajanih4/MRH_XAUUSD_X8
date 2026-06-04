@@ -15,6 +15,11 @@ public:
    RiskData       Risk;
    TradeData      Trade;
    SafetyData Safety;
+   //==================================================
+// Last Trade Snapshot
+//==================================================
+MLTradeSnapshot LastSnapshot;
+
    bool           IsInitialized;
    long           UpdateCycle;
 
@@ -107,6 +112,23 @@ public:
       Trade.BreakEvenRR = 1.0;
       Trade.PartialCloseRR = 2.0;
       Trade.ExitReason = "NONE";
+      LastSnapshot.SnapshotTime = 0;
+
+      LastSnapshot.LiquidityScore = 0.0;
+      LastSnapshot.OBScore = 0.0;
+      LastSnapshot.PermissionScore = 0.0;
+      LastSnapshot.ConfluenceScore = 0.0;
+
+      LastSnapshot.ExecutionGrade = "";
+      LastSnapshot.ConfidenceLevel = "";
+
+      LastSnapshot.RecommendedRisk = 0.0;
+      LastSnapshot.RiskProfile = "";
+
+      LastSnapshot.TradeState = TRADE_NONE;
+      LastSnapshot.CurrentRR = 0.0;
+      LastSnapshot.ExitReason = "NONE";
+      
       Safety.SymbolAllowed       = false;
       Safety.SpreadAllowed       = false;
       Safety.StopDistanceAllowed = false;
