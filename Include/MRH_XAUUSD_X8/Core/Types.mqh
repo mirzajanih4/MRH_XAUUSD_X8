@@ -225,6 +225,11 @@ struct TradeData
    double BreakEvenRR;
    double PartialCloseRR;
    string ExitReason;
+   #define EXIT_NONE       "NONE"
+   #define EXIT_STOPLOSS   "STOPLOSS"
+   #define EXIT_TAKEPROFIT "TAKEPROFIT"
+   #define EXIT_TIME       "TIME"
+   #define EXIT_MANUAL     "MANUAL"
 };
 //==================================================
 // Safety Shared Model

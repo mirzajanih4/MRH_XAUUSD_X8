@@ -153,6 +153,20 @@ if(m_memory.Trade.State == TRADE_PARTIAL ||
               "Trailing Stop activated");
    }
 }
+if(m_memory.Trade.State == TRADE_PARTIAL ||
+   m_memory.Trade.State == TRADE_BE ||
+   m_memory.Trade.State == TRADE_ACTIVE)
+{
+   if(m_memory.Trade.CurrentRR <= -1.0)
+   {
+      m_memory.Trade.State = TRADE_CLOSED;
+      m_memory.Trade.ExitReason = EXIT_STOPLOSS;
+
+      MRH_Log("TRADE_MANAGEMENT_ENGINE",
+              "EXIT",
+              "Trade closed by Stop Loss");
+   }
+}
 }
    UpdateTradeStateMemory();
    CalculateCurrentRR();
