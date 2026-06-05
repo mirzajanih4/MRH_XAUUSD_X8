@@ -13,6 +13,9 @@ private:
    int m_validRows;
    int m_skippedRows;
    int m_closedTradesCaptured;
+   int m_winLabels;
+   int m_lossLabels;
+   int m_breakevenLabels;
    string TradeOutcomeToString(ENUM_TRADE_OUTCOME outcome)
    {
       switch(outcome)
@@ -41,6 +44,9 @@ public:
      m_validRows = 0;
      m_skippedRows = 0;
      m_closedTradesCaptured = 0;
+     m_winLabels = 0;
+     m_lossLabels = 0;
+     m_breakevenLabels = 0;
    }
 
    bool Init(CSharedMemory* memory)
