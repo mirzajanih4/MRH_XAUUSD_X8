@@ -257,6 +257,7 @@ struct TradeData
    double FinalRR;
    double ClosePrice;
    datetime CloseTime;
+   string TradeLabel;
 };
 
 //==================================================
@@ -282,6 +283,7 @@ struct MLDataRow
    double FinalRR;
    double ClosePrice;
    datetime CloseTime;
+   string TradeLabel;
 };
 
 //==================================================
@@ -311,6 +313,7 @@ struct MLTradeSnapshot
    double FinalRR;
    double ClosePrice;
    datetime CloseTime;
+   string TradeLabel;
 };
 
 //==================================================
