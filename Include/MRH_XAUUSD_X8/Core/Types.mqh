@@ -259,6 +259,7 @@ struct TradeData
    datetime CloseTime;
    string TradeLabel;
    string AdvancedLabel;
+   string LabelQuality;
 };
 
 //==================================================
@@ -286,6 +287,7 @@ struct MLDataRow
    datetime CloseTime;
    string TradeLabel;
    string AdvancedLabel;
+   string LabelQuality;
 };
 
 //==================================================
@@ -317,6 +319,7 @@ struct MLTradeSnapshot
    datetime CloseTime;
    string TradeLabel;
    string AdvancedLabel;
+   string LabelQuality;
 };
 
 //==================================================
