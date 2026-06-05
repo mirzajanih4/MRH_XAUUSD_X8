@@ -171,6 +171,16 @@ public:
       
       m_memory.LastSnapshot.DynamicQualityLabel =
       m_memory.Trade.DynamicQualityLabel;
+      
+      if(m_memory.Trade.TradeLabel == "WIN")
+   m_winLabels++;
+
+else if(m_memory.Trade.TradeLabel == "LOSS")
+   m_lossLabels++;
+
+else if(m_memory.Trade.TradeLabel == "BREAKEVEN")
+   m_breakevenLabels++;
+   
    }
 void ValidateOutcomeSnapshot()
 {
@@ -395,7 +405,10 @@ MRH_Log("ML_DATASET_ENGINE",
         "TotalRows=" + IntegerToString(m_totalRows) +
         " | ValidRows=" + IntegerToString(m_validRows) +
         " | SkippedRows=" + IntegerToString(m_skippedRows) +
-        " | ClosedTradesCaptured=" + IntegerToString(m_closedTradesCaptured));
+        " | ClosedTradesCaptured=" + IntegerToString(m_closedTradesCaptured) +
+        " | WinLabels=" + IntegerToString(m_winLabels) +
+        " | LossLabels=" + IntegerToString(m_lossLabels) +
+        " | BreakevenLabels=" + IntegerToString(m_breakevenLabels));
         LogDatasetSessionSummary();
       FileClose(fileHandle);
    }
