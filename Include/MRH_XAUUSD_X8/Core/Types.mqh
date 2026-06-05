@@ -64,6 +64,18 @@ enum ENUM_TRADE_STATE
    TRADE_PARTIAL = 3,
    TRADE_CLOSED = 4
 };
+
+//==================================================
+// Trade Outcome
+//==================================================
+enum ENUM_TRADE_OUTCOME
+{
+   TRADE_OUTCOME_UNKNOWN = 0,
+   TRADE_OUTCOME_WIN = 1,
+   TRADE_OUTCOME_LOSS = 2,
+   TRADE_OUTCOME_BREAKEVEN = 3
+};
+
 //==================================================
 // Swing Type
 //==================================================
@@ -73,6 +85,7 @@ enum ENUM_SWING_TYPE
    SWING_HIGH = 1,
    SWING_LOW = 2
 };
+
 //==================================================
 // Swing Classification
 //==================================================
@@ -84,6 +97,7 @@ enum ENUM_SWING_CLASS
    SWING_CLASS_LH   = 3,
    SWING_CLASS_LL   = 4
 };
+
 //==================================================
 // Structure Shared Model
 //==================================================
@@ -100,12 +114,13 @@ struct StructureData
 
    ENUM_STRUCTURE_STATE State;
 
-ENUM_SWING_TYPE  LastSwingType;
-datetime         LastSwingTime;
-datetime         LastProcessedSwingTime;
+   ENUM_SWING_TYPE  LastSwingType;
+   datetime         LastSwingTime;
+   datetime         LastProcessedSwingTime;
 
-ENUM_SWING_CLASS LastSwingClass;
+   ENUM_SWING_CLASS LastSwingClass;
 };
+
 //==================================================
 // Liquidity Sweep Type
 //==================================================
@@ -115,6 +130,7 @@ enum ENUM_SWEEP_TYPE
    SWEEP_BUY_SIDE = 1,
    SWEEP_SELL_SIDE = 2
 };
+
 //==================================================
 // Liquidity Pool Strength
 //==================================================
@@ -124,6 +140,7 @@ enum ENUM_LIQUIDITY_STRENGTH
    LIQUIDITY_MEDIUM = 1,
    LIQUIDITY_STRONG = 2
 };
+
 //==================================================
 // Liquidity Level Type
 //==================================================
@@ -132,6 +149,7 @@ enum ENUM_LIQUIDITY_LEVEL_TYPE
    INTERNAL_LIQUIDITY = 0,
    EXTERNAL_LIQUIDITY = 1
 };
+
 //==================================================
 // Liquidity Shared Model
 //==================================================
@@ -214,6 +232,12 @@ struct RiskData
 //==================================================
 // Trade Shared Model
 //==================================================
+#define EXIT_NONE       "NONE"
+#define EXIT_STOPLOSS   "STOPLOSS"
+#define EXIT_TAKEPROFIT "TAKEPROFIT"
+#define EXIT_TIME       "TIME"
+#define EXIT_MANUAL     "MANUAL"
+
 struct TradeData
 {
    ENUM_TRADE_STATE State;
@@ -221,16 +245,20 @@ struct TradeData
    bool PartialClosed;
    bool BreakEvenActivated;
    bool TrailingStopActivated;
+
    double CurrentRR;
    double BreakEvenRR;
    double PartialCloseRR;
+
    string ExitReason;
-   #define EXIT_NONE       "NONE"
-   #define EXIT_STOPLOSS   "STOPLOSS"
-   #define EXIT_TAKEPROFIT "TAKEPROFIT"
-   #define EXIT_TIME       "TIME"
-   #define EXIT_MANUAL     "MANUAL"
+
+   ENUM_TRADE_OUTCOME Outcome;
+   double FinalProfit;
+   double FinalRR;
+   double ClosePrice;
+   datetime CloseTime;
 };
+
 //==================================================
 // ML Dataset Row Model
 //==================================================
@@ -248,7 +276,14 @@ struct MLDataRow
    ENUM_TRADE_STATE TradeState;
    string ExitReason;
    double CurrentRR;
+
+   ENUM_TRADE_OUTCOME Outcome;
+   double FinalProfit;
+   double FinalRR;
+   double ClosePrice;
+   datetime CloseTime;
 };
+
 //==================================================
 // ML Trade Snapshot Model
 //==================================================
@@ -270,7 +305,14 @@ struct MLTradeSnapshot
    ENUM_TRADE_STATE TradeState;
    double CurrentRR;
    string ExitReason;
+
+   ENUM_TRADE_OUTCOME Outcome;
+   double FinalProfit;
+   double FinalRR;
+   double ClosePrice;
+   datetime CloseTime;
 };
+
 //==================================================
 // Safety Shared Model
 //==================================================
@@ -282,4 +324,5 @@ struct SafetyData
    bool KillSwitch;
    bool TradingAllowed;
 };
+
 #endif
