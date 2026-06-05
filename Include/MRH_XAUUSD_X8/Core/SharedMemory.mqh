@@ -118,6 +118,7 @@ public:
       Trade.ClosePrice  = 0.0;
       Trade.CloseTime   = 0;
       Trade.TradeLabel = "UNLABELED";
+      Trade.AdvancedLabel = "UNCLASSIFIED";
       LastSnapshot.SnapshotTime = 0;
 
       LastSnapshot.LiquidityScore = 0.0;
@@ -140,6 +141,7 @@ public:
       LastSnapshot.ClosePrice  = 0.0;
       LastSnapshot.CloseTime   = 0;
       LastSnapshot.TradeLabel = "UNLABELED";
+      LastSnapshot.AdvancedLabel = "UNCLASSIFIED";
       Safety.SymbolAllowed       = false;
       Safety.SpreadAllowed       = false;
       Safety.StopDistanceAllowed = false;
