@@ -201,6 +201,37 @@ void ValidateOutcomeConsistency()
    }
 }
 
+bool IsDatasetRowComplete()
+{
+   if(m_memory == NULL)
+      return false;
+
+   if(m_memory.LastSnapshot.SnapshotTime <= 0)
+      return false;
+
+   if(m_memory.LastSnapshot.ExecutionGrade == "")
+      return false;
+
+   if(m_memory.LastSnapshot.ConfidenceLevel == "")
+      return false;
+
+   if(m_memory.LastSnapshot.RiskProfile == "")
+      return false;
+
+   if(m_memory.LastSnapshot.TradeState == TRADE_CLOSED)
+   {
+      if(m_memory.LastSnapshot.Outcome == TRADE_OUTCOME_UNKNOWN)
+         return false;
+
+      if(m_memory.LastSnapshot.CloseTime <= 0)
+         return false;
+
+      if(m_memory.LastSnapshot.ClosePrice <= 0.0)
+         return false;
+   }
+
+   return true;
+}
 void WriteCSVHeaderIfNeeded(int fileHandle)
 {
    if(fileHandle == INVALID_HANDLE)
@@ -232,7 +263,14 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
    {
       if(m_memory == NULL)
          return;
+if(!IsDatasetRowComplete())
+{
+   MRH_Log("ML_DATASET_ENGINE",
+           "CSV_SKIP",
+           "Dataset row skipped because required fields are incomplete");
 
+   return;
+}
       int fileHandle =
          FileOpen(m_datasetFileName,
                   FILE_CSV | FILE_READ | FILE_WRITE | FILE_ANSI);
