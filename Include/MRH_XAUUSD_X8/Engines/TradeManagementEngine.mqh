@@ -179,7 +179,54 @@ public:
                  "Trade closed by Stop Loss");
       }
    }
+void PopulateTradeOutcomeOnClose()
+{
+   if(m_memory == NULL)
+      return;
 
+   if(m_memory.Trade.State != TRADE_CLOSED)
+      return;
+
+   if(m_memory.Trade.CloseTime > 0)
+      return;
+
+   double entry = m_memory.Execution.EntryPrice;
+   double sl    = m_memory.Execution.StopLoss;
+
+   if(entry <= 0.0 || sl <= 0.0)
+      return;
+
+   double closePrice = iClose(_Symbol, _Period, 1);
+   double riskDistance = MathAbs(entry - sl);
+
+   if(riskDistance <= 0.0)
+      return;
+
+   m_memory.Trade.ClosePrice = closePrice;
+   m_memory.Trade.CloseTime  = TimeCurrent();
+
+   if(m_memory.Structure.Bias == BIAS_BULLISH)
+      m_memory.Trade.FinalRR = (closePrice - entry) / riskDistance;
+   else if(m_memory.Structure.Bias == BIAS_BEARISH)
+      m_memory.Trade.FinalRR = (entry - closePrice) / riskDistance;
+   else
+      m_memory.Trade.FinalRR = 0.0;
+
+   m_memory.Trade.FinalProfit = m_memory.Trade.FinalRR;
+
+   if(m_memory.Trade.FinalRR > 0.0)
+      m_memory.Trade.Outcome = TRADE_OUTCOME_WIN;
+   else if(m_memory.Trade.FinalRR < 0.0)
+      m_memory.Trade.Outcome = TRADE_OUTCOME_LOSS;
+   else
+      m_memory.Trade.Outcome = TRADE_OUTCOME_BREAKEVEN;
+
+   MRH_Log("TRADE_MANAGEMENT_ENGINE",
+           "OUTCOME",
+           "Outcome populated"
+           " | FinalRR=" + DoubleToString(m_memory.Trade.FinalRR, 2) +
+           " | ClosePrice=" + DoubleToString(m_memory.Trade.ClosePrice, _Digits));
+}
    void DebugTradeState()
    {
       if(m_memory == NULL)
@@ -234,8 +281,9 @@ public:
       ManagePartialClose();
       ManageTrailingStop();
       ManageFinalExit();
+      PopulateTradeOutcomeOnClose();
 
-      DebugTradeState();
+DebugTradeState();;
 
       MRH_Log("TRADE_MANAGEMENT_ENGINE",
               "UPDATE",
