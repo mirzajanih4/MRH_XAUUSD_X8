@@ -255,6 +255,18 @@ void GenerateTradeLabel()
          m_memory.Trade.TradeLabel = "UNLABELED";
          break;
    }
+   
+      if(m_memory.Trade.TradeLabel == "WIN")
+      m_memory.Trade.AdvancedLabel = "GOOD_WIN";
+
+   else if(m_memory.Trade.TradeLabel == "LOSS")
+      m_memory.Trade.AdvancedLabel = "NORMAL_LOSS";
+
+   else if(m_memory.Trade.TradeLabel == "BREAKEVEN")
+      m_memory.Trade.AdvancedLabel = "BREAKEVEN";
+
+   else
+      m_memory.Trade.AdvancedLabel = "UNCLASSIFIED";
 }
    void DebugTradeState()
    {
