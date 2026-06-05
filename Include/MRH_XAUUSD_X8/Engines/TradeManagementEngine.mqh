@@ -279,6 +279,17 @@ else if(m_memory.Trade.AdvancedLabel == "BREAKEVEN")
 
 else
    m_memory.Trade.LabelQuality = "UNKNOWN";
+   if(m_memory.Trade.LabelQuality == "HIGH_QUALITY")
+   m_memory.Trade.DynamicQualityLabel = "STRONG_SETUP";
+
+else if(m_memory.Trade.LabelQuality == "MEDIUM_QUALITY")
+   m_memory.Trade.DynamicQualityLabel = "AVERAGE_SETUP";
+
+else if(m_memory.Trade.LabelQuality == "LOW_QUALITY")
+   m_memory.Trade.DynamicQualityLabel = "WEAK_SETUP";
+
+else
+   m_memory.Trade.DynamicQualityLabel = "UNRATED";
 }
    void DebugTradeState()
    {
