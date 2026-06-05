@@ -421,6 +421,18 @@ if(m_totalRows > 0 &&
            "No labels captured yet");
 }
 
+if(m_totalRows > 0)
+{
+   m_winRate =
+      (100.0 * m_winLabels) / m_totalRows;
+
+   m_lossRate =
+      (100.0 * m_lossLabels) / m_totalRows;
+
+   m_breakevenRate =
+      (100.0 * m_breakevenLabels) / m_totalRows;
+}
+
 MRH_Log("ML_DATASET_ENGINE",
         "DATASET_STATS",
         "TotalRows=" + IntegerToString(m_totalRows) +
