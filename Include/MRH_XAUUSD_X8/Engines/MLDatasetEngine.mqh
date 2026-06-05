@@ -441,7 +441,10 @@ MRH_Log("ML_DATASET_ENGINE",
         " | ClosedTradesCaptured=" + IntegerToString(m_closedTradesCaptured) +
         " | WinLabels=" + IntegerToString(m_winLabels) +
         " | LossLabels=" + IntegerToString(m_lossLabels) +
-        " | BreakevenLabels=" + IntegerToString(m_breakevenLabels));
+        " | BreakevenLabels=" + IntegerToString(m_breakevenLabels) +
+        " | WinRate=" + DoubleToString(m_winRate, 2) +
+        " | LossRate=" + DoubleToString(m_lossRate, 2) +
+        " | BreakevenRate=" + DoubleToString(m_breakevenRate, 2));
         LogDatasetSessionSummary();
       FileClose(fileHandle);
    }
