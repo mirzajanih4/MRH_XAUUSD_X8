@@ -162,6 +162,33 @@ void ValidateOutcomeSnapshot()
            " | ClosePrice=" + DoubleToString(m_memory.LastSnapshot.ClosePrice, _Digits) +
            " | CloseTime=" + TimeToString(m_memory.LastSnapshot.CloseTime, TIME_DATE | TIME_SECONDS));
 }
+void WriteCSVHeaderIfNeeded(int fileHandle)
+{
+   if(fileHandle == INVALID_HANDLE)
+      return;
+
+   if(FileSize(fileHandle) > 0)
+      return;
+
+   FileWrite(fileHandle,
+             "SnapshotTime",
+             "LiquidityScore",
+             "OBScore",
+             "PermissionScore",
+             "ConfluenceScore",
+             "ExecutionGrade",
+             "ConfidenceLevel",
+             "RecommendedRisk",
+             "RiskProfile",
+             "TradeState",
+             "CurrentRR",
+             "ExitReason",
+             "Outcome",
+             "FinalProfit",
+             "FinalRR",
+             "ClosePrice",
+             "CloseTime");
+}
    void ExportSnapshotToCSV()
    {
       if(m_memory == NULL)
@@ -180,9 +207,12 @@ void ValidateOutcomeSnapshot()
          return;
       }
 
+      WriteCSVHeaderIfNeeded(fileHandle);
+
       FileSeek(fileHandle, 0, SEEK_END);
 
       FileWrite(fileHandle,
+      
                 TimeToString(m_memory.LastSnapshot.SnapshotTime,
                              TIME_DATE | TIME_SECONDS),
 
