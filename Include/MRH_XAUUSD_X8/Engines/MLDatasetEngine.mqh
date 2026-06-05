@@ -16,6 +16,9 @@ private:
    int m_winLabels;
    int m_lossLabels;
    int m_breakevenLabels;
+   double m_winRate;
+   double m_lossRate;
+   double m_breakevenRate;
    string TradeOutcomeToString(ENUM_TRADE_OUTCOME outcome)
    {
       switch(outcome)
@@ -47,6 +50,9 @@ public:
      m_winLabels = 0;
      m_lossLabels = 0;
      m_breakevenLabels = 0;
+     m_winRate = 0.0;
+     m_lossRate = 0.0;
+     m_breakevenRate = 0.0;
    }
 
    bool Init(CSharedMemory* memory)
