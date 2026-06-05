@@ -146,7 +146,22 @@ public:
       m_memory.LastSnapshot.CloseTime =
          m_memory.Trade.CloseTime;
    }
+void ValidateOutcomeSnapshot()
+{
+   if(m_memory == NULL)
+      return;
 
+   if(m_memory.LastSnapshot.TradeState != TRADE_CLOSED)
+      return;
+
+   MRH_Log("ML_DATASET_ENGINE",
+           "OUTCOME_VALIDATION",
+           "Outcome=" + TradeOutcomeToString(m_memory.LastSnapshot.Outcome) +
+           " | FinalProfit=" + DoubleToString(m_memory.LastSnapshot.FinalProfit, 2) +
+           " | FinalRR=" + DoubleToString(m_memory.LastSnapshot.FinalRR, 2) +
+           " | ClosePrice=" + DoubleToString(m_memory.LastSnapshot.ClosePrice, _Digits) +
+           " | CloseTime=" + TimeToString(m_memory.LastSnapshot.CloseTime, TIME_DATE | TIME_SECONDS));
+}
    void ExportSnapshotToCSV()
    {
       if(m_memory == NULL)
@@ -202,8 +217,9 @@ public:
       if(m_memory == NULL)
          return;
 
-      BuildTradeSnapshot();
-      ExportSnapshotToCSV();
+    BuildTradeSnapshot();
+    ValidateOutcomeSnapshot();
+    ExportSnapshotToCSV();
 
       MRH_Log("ML_DATASET_ENGINE",
               "SNAPSHOT_DEBUG",
