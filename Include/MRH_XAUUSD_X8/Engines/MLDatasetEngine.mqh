@@ -240,6 +240,21 @@ bool IsDatasetRowComplete()
 
    return true;
 }
+void LogDatasetSessionSummary()
+{
+   if(m_totalRows <= 0)
+      return;
+
+   if(m_totalRows % 10 != 0)
+      return;
+
+   MRH_Log("ML_DATASET_ENGINE",
+           "DATASET_SESSION_SUMMARY",
+           "TotalRows=" + IntegerToString(m_totalRows) +
+           " | ValidRows=" + IntegerToString(m_validRows) +
+           " | SkippedRows=" + IntegerToString(m_skippedRows) +
+           " | ClosedTradesCaptured=" + IntegerToString(m_closedTradesCaptured));
+}
 void WriteCSVHeaderIfNeeded(int fileHandle)
 {
    if(fileHandle == INVALID_HANDLE)
@@ -338,6 +353,7 @@ MRH_Log("ML_DATASET_ENGINE",
         " | ValidRows=" + IntegerToString(m_validRows) +
         " | SkippedRows=" + IntegerToString(m_skippedRows) +
         " | ClosedTradesCaptured=" + IntegerToString(m_closedTradesCaptured));
+        LogDatasetSessionSummary();
       FileClose(fileHandle);
    }
 
