@@ -260,6 +260,7 @@ struct TradeData
    string TradeLabel;
    string AdvancedLabel;
    string LabelQuality;
+   string DynamicQualityLabel;
 };
 
 //==================================================
@@ -288,6 +289,7 @@ struct MLDataRow
    string TradeLabel;
    string AdvancedLabel;
    string LabelQuality;
+   string DynamicQualityLabel;
 };
 
 //==================================================
@@ -320,6 +322,7 @@ struct MLTradeSnapshot
    string TradeLabel;
    string AdvancedLabel;
    string LabelQuality;
+   string DynamicQualityLabel;
 };
 
 //==================================================
