@@ -227,6 +227,32 @@ void PopulateTradeOutcomeOnClose()
            "Outcome populated"
            " | FinalRR=" + DoubleToString(m_memory.Trade.FinalRR, 2) +
            " | ClosePrice=" + DoubleToString(m_memory.Trade.ClosePrice, _Digits));
+           GenerateTradeLabel();
+}
+
+void GenerateTradeLabel()
+{
+   if(m_memory == NULL)
+      return;
+
+   switch(m_memory.Trade.Outcome)
+   {
+      case TRADE_OUTCOME_WIN:
+         m_memory.Trade.TradeLabel = "WIN";
+         break;
+
+      case TRADE_OUTCOME_LOSS:
+         m_memory.Trade.TradeLabel = "LOSS";
+         break;
+
+      case TRADE_OUTCOME_BREAKEVEN:
+         m_memory.Trade.TradeLabel = "BREAKEVEN";
+         break;
+
+      default:
+         m_memory.Trade.TradeLabel = "UNLABELED";
+         break;
+   }
 }
    void DebugTradeState()
    {
