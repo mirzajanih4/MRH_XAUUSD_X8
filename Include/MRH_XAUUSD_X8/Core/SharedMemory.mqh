@@ -120,6 +120,7 @@ public:
       Trade.TradeLabel = "UNLABELED";
       Trade.AdvancedLabel = "UNCLASSIFIED";
       Trade.LabelQuality = "UNKNOWN";
+      Trade.DynamicQualityLabel = "UNRATED";
       
       LastSnapshot.SnapshotTime = 0;
       LastSnapshot.LiquidityScore = 0.0;
@@ -144,6 +145,7 @@ public:
       LastSnapshot.TradeLabel = "UNLABELED";
       LastSnapshot.AdvancedLabel = "UNCLASSIFIED";
       LastSnapshot.LabelQuality = "UNKNOWN";
+      LastSnapshot.DynamicQualityLabel = "UNRATED";
       
       Safety.SymbolAllowed       = false;
       Safety.SpreadAllowed       = false;
