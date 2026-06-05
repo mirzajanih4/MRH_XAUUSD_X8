@@ -399,6 +399,21 @@ m_validRows++;
 
 if(m_memory.LastSnapshot.TradeState == TRADE_CLOSED)
    m_closedTradesCaptured++;
+   
+   if((m_winLabels + m_lossLabels + m_breakevenLabels) > m_totalRows)
+{
+   MRH_Log("ML_DATASET_ENGINE",
+           "VALIDATION_WARNING",
+           "Label count exceeds total rows");
+}
+
+if(m_totalRows > 0 &&
+   (m_winLabels + m_lossLabels + m_breakevenLabels) == 0)
+{
+   MRH_Log("ML_DATASET_ENGINE",
+           "VALIDATION_WARNING",
+           "No labels captured yet");
+}
 
 MRH_Log("ML_DATASET_ENGINE",
         "DATASET_STATS",
