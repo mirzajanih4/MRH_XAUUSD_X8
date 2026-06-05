@@ -95,7 +95,7 @@ public:
       row += "," + DoubleToString(m_memory.Trade.FinalRR, 2);
       row += "," + DoubleToString(m_memory.Trade.ClosePrice, _Digits);
       row += "," + TimeToString(m_memory.Trade.CloseTime, TIME_DATE | TIME_SECONDS);
-
+      row += "," + m_memory.Trade.TradeLabel;
       return row;
    }
 
@@ -153,6 +153,8 @@ public:
 
       m_memory.LastSnapshot.CloseTime =
          m_memory.Trade.CloseTime;
+         m_memory.LastSnapshot.TradeLabel =
+   m_memory.Trade.TradeLabel;
    }
 void ValidateOutcomeSnapshot()
 {
@@ -280,7 +282,8 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
              "FinalProfit",
              "FinalRR",
              "ClosePrice",
-             "CloseTime");
+             "CloseTime",
+             "TradeLabel");
 }
    void ExportSnapshotToCSV()
    {
@@ -340,7 +343,8 @@ if(!IsDatasetRowComplete())
                 DoubleToString(m_memory.LastSnapshot.FinalProfit, 2),
                 DoubleToString(m_memory.LastSnapshot.FinalRR, 2),
                 DoubleToString(m_memory.LastSnapshot.ClosePrice, _Digits),
-                TimeToString(m_memory.LastSnapshot.CloseTime, TIME_DATE | TIME_SECONDS));
+                TimeToString(m_memory.LastSnapshot.CloseTime, TIME_DATE | TIME_SECONDS),
+                m_memory.LastSnapshot.TradeLabel);
 m_totalRows++;
 m_validRows++;
 
