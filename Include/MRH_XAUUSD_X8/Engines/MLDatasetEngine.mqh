@@ -9,7 +9,10 @@ class CMLDatasetEngine
 private:
    CSharedMemory* m_memory;
    string m_datasetFileName;
-
+   int m_totalRows;
+   int m_validRows;
+   int m_skippedRows;
+   int m_closedTradesCaptured;
    string TradeOutcomeToString(ENUM_TRADE_OUTCOME outcome)
    {
       switch(outcome)
@@ -33,6 +36,11 @@ public:
    {
       m_memory = NULL;
       m_datasetFileName = "MRH_XAUUSD_X8_Dataset.csv";
+      
+     m_totalRows = 0;
+     m_validRows = 0;
+     m_skippedRows = 0;
+     m_closedTradesCaptured = 0;
    }
 
    bool Init(CSharedMemory* memory)
@@ -265,9 +273,12 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
          return;
 if(!IsDatasetRowComplete())
 {
+   m_skippedRows++;
+
    MRH_Log("ML_DATASET_ENGINE",
            "CSV_SKIP",
-           "Dataset row skipped because required fields are incomplete");
+           "Dataset row skipped because required fields are incomplete"
+           " | SkippedRows=" + IntegerToString(m_skippedRows));
 
    return;
 }
@@ -315,7 +326,18 @@ if(!IsDatasetRowComplete())
                 DoubleToString(m_memory.LastSnapshot.FinalRR, 2),
                 DoubleToString(m_memory.LastSnapshot.ClosePrice, _Digits),
                 TimeToString(m_memory.LastSnapshot.CloseTime, TIME_DATE | TIME_SECONDS));
+m_totalRows++;
+m_validRows++;
 
+if(m_memory.LastSnapshot.TradeState == TRADE_CLOSED)
+   m_closedTradesCaptured++;
+
+MRH_Log("ML_DATASET_ENGINE",
+        "DATASET_STATS",
+        "TotalRows=" + IntegerToString(m_totalRows) +
+        " | ValidRows=" + IntegerToString(m_validRows) +
+        " | SkippedRows=" + IntegerToString(m_skippedRows) +
+        " | ClosedTradesCaptured=" + IntegerToString(m_closedTradesCaptured));
       FileClose(fileHandle);
    }
 
