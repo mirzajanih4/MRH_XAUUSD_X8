@@ -112,6 +112,11 @@ public:
       Trade.BreakEvenRR = 1.0;
       Trade.PartialCloseRR = 2.0;
       Trade.ExitReason = "NONE";
+      Trade.Outcome    = TRADE_OUTCOME_UNKNOWN;
+      Trade.FinalProfit = 0.0;
+      Trade.FinalRR     = 0.0;
+      Trade.ClosePrice  = 0.0;
+      Trade.CloseTime   = 0;
       LastSnapshot.SnapshotTime = 0;
 
       LastSnapshot.LiquidityScore = 0.0;
@@ -128,7 +133,11 @@ public:
       LastSnapshot.TradeState = TRADE_NONE;
       LastSnapshot.CurrentRR = 0.0;
       LastSnapshot.ExitReason = "NONE";
-      
+      LastSnapshot.Outcome     = TRADE_OUTCOME_UNKNOWN;
+      LastSnapshot.FinalProfit = 0.0;
+      LastSnapshot.FinalRR     = 0.0;
+      LastSnapshot.ClosePrice  = 0.0;
+      LastSnapshot.CloseTime   = 0;
       Safety.SymbolAllowed       = false;
       Safety.SpreadAllowed       = false;
       Safety.StopDistanceAllowed = false;
