@@ -212,7 +212,8 @@ void PopulateTradeOutcomeOnClose()
    else
       m_memory.Trade.FinalRR = 0.0;
 
-   m_memory.Trade.FinalProfit = m_memory.Trade.FinalRR;
+   m_memory.Trade.FinalProfit =
+   closePrice - entry;
 
    if(m_memory.Trade.FinalRR > 0.0)
       m_memory.Trade.Outcome = TRADE_OUTCOME_WIN;
