@@ -98,6 +98,7 @@ public:
       row += "," + m_memory.Trade.TradeLabel;
       row += "," + m_memory.Trade.AdvancedLabel;
       row += "," + m_memory.Trade.LabelQuality;
+      row += "," + m_memory.Trade.DynamicQualityLabel;
       return row;
    }
 
@@ -161,6 +162,9 @@ public:
       m_memory.Trade.AdvancedLabel;
       m_memory.LastSnapshot.LabelQuality =
       m_memory.Trade.LabelQuality;
+      
+      m_memory.LastSnapshot.DynamicQualityLabel =
+      m_memory.Trade.DynamicQualityLabel;
    }
 void ValidateOutcomeSnapshot()
 {
@@ -307,7 +311,8 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
              "CloseTime",
              "TradeLabel",
              "AdvancedLabel",
-             "LabelQuality");
+             "LabelQuality",
+             "DynamicQualityLabel");
              
 }
    void ExportSnapshotToCSV()
@@ -371,7 +376,8 @@ if(!IsDatasetRowComplete())
                 TimeToString(m_memory.LastSnapshot.CloseTime, TIME_DATE | TIME_SECONDS),
                 m_memory.LastSnapshot.TradeLabel,
                 m_memory.LastSnapshot.AdvancedLabel,
-                m_memory.LastSnapshot.LabelQuality);
+                m_memory.LastSnapshot.LabelQuality,
+                m_memory.LastSnapshot.DynamicQualityLabel);
 m_totalRows++;
 m_validRows++;
 
