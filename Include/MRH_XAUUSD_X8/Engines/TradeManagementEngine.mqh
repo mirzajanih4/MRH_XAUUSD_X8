@@ -222,12 +222,14 @@ void PopulateTradeOutcomeOnClose()
    else
       m_memory.Trade.Outcome = TRADE_OUTCOME_BREAKEVEN;
 
+      GenerateTradeLabel();
+
    MRH_Log("TRADE_MANAGEMENT_ENGINE",
            "OUTCOME",
            "Outcome populated"
            " | FinalRR=" + DoubleToString(m_memory.Trade.FinalRR, 2) +
-           " | ClosePrice=" + DoubleToString(m_memory.Trade.ClosePrice, _Digits));
-           GenerateTradeLabel();
+           " | ClosePrice=" + DoubleToString(m_memory.Trade.ClosePrice, _Digits) +
+           " | TradeLabel=" + m_memory.Trade.TradeLabel);
 }
 
 void GenerateTradeLabel()
@@ -310,7 +312,7 @@ void GenerateTradeLabel()
       ManageFinalExit();
       PopulateTradeOutcomeOnClose();
 
-DebugTradeState();;
+      DebugTradeState();
 
       MRH_Log("TRADE_MANAGEMENT_ENGINE",
               "UPDATE",
