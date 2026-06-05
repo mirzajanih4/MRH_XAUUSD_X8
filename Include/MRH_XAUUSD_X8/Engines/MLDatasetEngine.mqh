@@ -4,36 +4,23 @@
 #include <MRH_XAUUSD_X8/Core/SharedMemory.mqh>
 #include <MRH_XAUUSD_X8/Core/Logger.mqh>
 
-enum ENUM_MRH_TRADE_OUTCOME
-{
-   MRH_OUTCOME_UNKNOWN = 0,
-   MRH_OUTCOME_WIN,
-   MRH_OUTCOME_LOSS,
-   MRH_OUTCOME_BREAKEVEN
-};
-
 class CMLDatasetEngine
 {
 private:
    CSharedMemory* m_memory;
    string m_datasetFileName;
 
-   ENUM_MRH_TRADE_OUTCOME m_lastTradeOutcome;
-   double m_lastFinalProfit;
-   double m_lastFinalRR;
-   datetime m_lastCloseTime;
-
-   string OutcomeToString(ENUM_MRH_TRADE_OUTCOME outcome)
+   string TradeOutcomeToString(ENUM_TRADE_OUTCOME outcome)
    {
       switch(outcome)
       {
-         case MRH_OUTCOME_WIN:
+         case TRADE_OUTCOME_WIN:
             return "WIN";
 
-         case MRH_OUTCOME_LOSS:
+         case TRADE_OUTCOME_LOSS:
             return "LOSS";
 
-         case MRH_OUTCOME_BREAKEVEN:
+         case TRADE_OUTCOME_BREAKEVEN:
             return "BREAKEVEN";
 
          default:
@@ -45,13 +32,7 @@ public:
    CMLDatasetEngine()
    {
       m_memory = NULL;
-
       m_datasetFileName = "MRH_XAUUSD_X8_Dataset.csv";
-
-      m_lastTradeOutcome = MRH_OUTCOME_UNKNOWN;
-      m_lastFinalProfit  = 0.0;
-      m_lastFinalRR      = 0.0;
-      m_lastCloseTime    = 0;
    }
 
    bool Init(CSharedMemory* memory)
@@ -101,10 +82,11 @@ public:
       row += "," + IntegerToString((int)m_memory.Trade.State);
       row += "," + DoubleToString(m_memory.Trade.CurrentRR, 2);
 
-      row += "," + OutcomeToString(m_lastTradeOutcome);
-      row += "," + DoubleToString(m_lastFinalProfit, 2);
-      row += "," + DoubleToString(m_lastFinalRR, 2);
-      row += "," + TimeToString(m_lastCloseTime, TIME_DATE | TIME_SECONDS);
+      row += "," + TradeOutcomeToString(m_memory.Trade.Outcome);
+      row += "," + DoubleToString(m_memory.Trade.FinalProfit, 2);
+      row += "," + DoubleToString(m_memory.Trade.FinalRR, 2);
+      row += "," + DoubleToString(m_memory.Trade.ClosePrice, _Digits);
+      row += "," + TimeToString(m_memory.Trade.CloseTime, TIME_DATE | TIME_SECONDS);
 
       return row;
    }
@@ -148,43 +130,21 @@ public:
 
       m_memory.LastSnapshot.ExitReason =
          m_memory.Trade.ExitReason;
-   }
 
-   void TrackTradeOutcome(double entryPrice,
-                          double stopLoss,
-                          double closePrice,
-                          double profit,
-                          bool isBuy)
-   {
-      m_lastFinalProfit = profit;
-      m_lastCloseTime   = TimeCurrent();
+      m_memory.LastSnapshot.Outcome =
+         m_memory.Trade.Outcome;
 
-      double riskDistance = MathAbs(entryPrice - stopLoss);
-      double rewardMove   = MathAbs(closePrice - entryPrice);
+      m_memory.LastSnapshot.FinalProfit =
+         m_memory.Trade.FinalProfit;
 
-      if(riskDistance > 0.0)
-         m_lastFinalRR = rewardMove / riskDistance;
-      else
-         m_lastFinalRR = 0.0;
+      m_memory.LastSnapshot.FinalRR =
+         m_memory.Trade.FinalRR;
 
-      if(profit > 0.0)
-         m_lastTradeOutcome = MRH_OUTCOME_WIN;
-      else if(profit < 0.0)
-         m_lastTradeOutcome = MRH_OUTCOME_LOSS;
-      else
-         m_lastTradeOutcome = MRH_OUTCOME_BREAKEVEN;
+      m_memory.LastSnapshot.ClosePrice =
+         m_memory.Trade.ClosePrice;
 
-      string direction = "SELL";
-
-      if(isBuy)
-         direction = "BUY";
-
-      MRH_Log("ML_DATASET_ENGINE",
-              "OUTCOME_TRACKED",
-              "Direction=" + direction +
-              " | Outcome=" + OutcomeToString(m_lastTradeOutcome) +
-              " | Profit=" + DoubleToString(m_lastFinalProfit, 2) +
-              " | FinalRR=" + DoubleToString(m_lastFinalRR, 2));
+      m_memory.LastSnapshot.CloseTime =
+         m_memory.Trade.CloseTime;
    }
 
    void ExportSnapshotToCSV()
@@ -228,10 +188,11 @@ public:
 
                 m_memory.LastSnapshot.ExitReason,
 
-                OutcomeToString(m_lastTradeOutcome),
-                DoubleToString(m_lastFinalProfit, 2),
-                DoubleToString(m_lastFinalRR, 2),
-                TimeToString(m_lastCloseTime, TIME_DATE | TIME_SECONDS));
+                TradeOutcomeToString(m_memory.LastSnapshot.Outcome),
+                DoubleToString(m_memory.LastSnapshot.FinalProfit, 2),
+                DoubleToString(m_memory.LastSnapshot.FinalRR, 2),
+                DoubleToString(m_memory.LastSnapshot.ClosePrice, _Digits),
+                TimeToString(m_memory.LastSnapshot.CloseTime, TIME_DATE | TIME_SECONDS));
 
       FileClose(fileHandle);
    }
@@ -255,7 +216,9 @@ public:
               " | RiskProfile=" + m_memory.LastSnapshot.RiskProfile +
               " | RR=" + DoubleToString(m_memory.LastSnapshot.CurrentRR, 2) +
               " | ExitReason=" + m_memory.LastSnapshot.ExitReason +
-              " | Outcome=" + OutcomeToString(m_lastTradeOutcome));
+              " | Outcome=" + TradeOutcomeToString(m_memory.LastSnapshot.Outcome) +
+              " | FinalRR=" + DoubleToString(m_memory.LastSnapshot.FinalRR, 2) +
+              " | ClosePrice=" + DoubleToString(m_memory.LastSnapshot.ClosePrice, _Digits));
 
       string row = BuildDatasetRow();
 
@@ -271,7 +234,7 @@ public:
               " | RiskApproved=" + IntegerToString((int)m_memory.Risk.RiskApproved) +
               " | TradeState=" + IntegerToString((int)m_memory.Trade.State) +
               " | RR=" + DoubleToString(m_memory.Trade.CurrentRR, 2) +
-              " | Outcome=" + OutcomeToString(m_lastTradeOutcome));
+              " | Outcome=" + TradeOutcomeToString(m_memory.LastSnapshot.Outcome));
 
       MRH_Log("ML_DATASET_ENGINE", "DATASET_ROW", row);
    }
@@ -279,9 +242,7 @@ public:
    void Update()
    {
       if(m_memory == NULL)
-      {
          return;
-      }
 
       CaptureSnapshot();
 
