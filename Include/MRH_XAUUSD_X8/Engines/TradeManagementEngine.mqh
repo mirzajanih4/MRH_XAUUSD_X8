@@ -267,6 +267,18 @@ void GenerateTradeLabel()
 
    else
       m_memory.Trade.AdvancedLabel = "UNCLASSIFIED";
+      
+      if(m_memory.Trade.AdvancedLabel == "GOOD_WIN")
+   m_memory.Trade.LabelQuality = "HIGH_QUALITY";
+
+else if(m_memory.Trade.AdvancedLabel == "NORMAL_LOSS")
+   m_memory.Trade.LabelQuality = "MEDIUM_QUALITY";
+
+else if(m_memory.Trade.AdvancedLabel == "BREAKEVEN")
+   m_memory.Trade.LabelQuality = "LOW_QUALITY";
+
+else
+   m_memory.Trade.LabelQuality = "UNKNOWN";
 }
    void DebugTradeState()
    {
