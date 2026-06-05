@@ -162,6 +162,45 @@ void ValidateOutcomeSnapshot()
            " | ClosePrice=" + DoubleToString(m_memory.LastSnapshot.ClosePrice, _Digits) +
            " | CloseTime=" + TimeToString(m_memory.LastSnapshot.CloseTime, TIME_DATE | TIME_SECONDS));
 }
+
+void ValidateOutcomeConsistency()
+{
+   if(m_memory == NULL)
+      return;
+
+   if(m_memory.LastSnapshot.TradeState != TRADE_CLOSED)
+      return;
+
+   if(m_memory.LastSnapshot.Outcome == TRADE_OUTCOME_UNKNOWN)
+   {
+      MRH_Log("ML_DATASET_ENGINE",
+              "OUTCOME_WARNING",
+              "Trade is CLOSED but Outcome is UNKNOWN");
+   }
+
+   if(m_memory.LastSnapshot.CloseTime <= 0)
+   {
+      MRH_Log("ML_DATASET_ENGINE",
+              "OUTCOME_WARNING",
+              "Trade is CLOSED but CloseTime is missing");
+   }
+
+   if(m_memory.LastSnapshot.ClosePrice <= 0.0)
+   {
+      MRH_Log("ML_DATASET_ENGINE",
+              "OUTCOME_WARNING",
+              "Trade is CLOSED but ClosePrice is missing");
+   }
+
+   if(m_memory.LastSnapshot.FinalRR == 0.0 &&
+      m_memory.LastSnapshot.Outcome != TRADE_OUTCOME_BREAKEVEN)
+   {
+      MRH_Log("ML_DATASET_ENGINE",
+              "OUTCOME_WARNING",
+              "FinalRR is zero but Outcome is not BREAKEVEN");
+   }
+}
+
 void WriteCSVHeaderIfNeeded(int fileHandle)
 {
    if(fileHandle == INVALID_HANDLE)
@@ -249,6 +288,7 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
 
     BuildTradeSnapshot();
     ValidateOutcomeSnapshot();
+    ValidateOutcomeConsistency();
     ExportSnapshotToCSV();
 
       MRH_Log("ML_DATASET_ENGINE",
