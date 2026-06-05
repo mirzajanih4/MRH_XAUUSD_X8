@@ -209,6 +209,22 @@ void ValidateOutcomeConsistency()
               "OUTCOME_WARNING",
               "FinalRR is zero but Outcome is not BREAKEVEN");
    }
+   
+   if(m_memory.LastSnapshot.TradeLabel == "UNLABELED" &&
+   m_memory.LastSnapshot.Outcome != TRADE_OUTCOME_UNKNOWN)
+{
+   MRH_Log("ML_DATASET_ENGINE",
+           "LABEL_WARNING",
+           "Outcome exists but TradeLabel is UNLABELED");
+}
+
+if(m_memory.LastSnapshot.TradeLabel == "")
+{
+   MRH_Log("ML_DATASET_ENGINE",
+           "LABEL_WARNING",
+           "TradeLabel is empty");
+}
+
 }
 
 bool IsDatasetRowComplete()
