@@ -19,6 +19,11 @@ private:
    double m_winRate;
    double m_lossRate;
    double m_breakevenRate;
+   int m_goodWinLabels;
+   int m_normalLossLabels;
+   int m_strongSetupLabels;
+   int m_averageSetupLabels;
+   int m_weakSetupLabels;
    string TradeOutcomeToString(ENUM_TRADE_OUTCOME outcome)
    {
       switch(outcome)
@@ -53,6 +58,11 @@ public:
      m_winRate = 0.0;
      m_lossRate = 0.0;
      m_breakevenRate = 0.0;
+     m_goodWinLabels = 0;
+     m_normalLossLabels = 0;
+     m_strongSetupLabels = 0;
+     m_averageSetupLabels = 0;
+     m_weakSetupLabels = 0;
    }
 
    bool Init(CSharedMemory* memory)
