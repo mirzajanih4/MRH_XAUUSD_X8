@@ -226,6 +226,15 @@ if(m_memory.Trade.DynamicQualityLabel == "AVERAGE_SETUP")
 
 if(m_memory.Trade.DynamicQualityLabel == "WEAK_SETUP")
    m_weakSetupLabels++;
+   
+   if(m_memory.Trade.ProbabilityClass == "HIGH_PROBABILITY")
+   m_highProbabilityCount++;
+
+else if(m_memory.Trade.ProbabilityClass == "MEDIUM_PROBABILITY")
+   m_mediumProbabilityCount++;
+
+else if(m_memory.Trade.ProbabilityClass == "LOW_PROBABILITY")
+   m_lowProbabilityCount++;
    }
 void ValidateOutcomeSnapshot()
 {
