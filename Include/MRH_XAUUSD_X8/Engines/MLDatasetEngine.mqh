@@ -19,6 +19,9 @@ private:
    double m_winRate;
    double m_lossRate;
    double m_breakevenRate;
+   double m_probabilityScore;
+   double m_winProbability;
+   double m_lossProbability;
    int m_goodWinLabels;
    int m_normalLossLabels;
    int m_strongSetupLabels;
@@ -58,6 +61,9 @@ public:
      m_winRate = 0.0;
      m_lossRate = 0.0;
      m_breakevenRate = 0.0;
+     m_probabilityScore = 0.0;
+     m_winProbability = 0.0;
+     m_lossProbability = 0.0;
      m_goodWinLabels = 0;
      m_normalLossLabels = 0;
      m_strongSetupLabels = 0;
