@@ -127,6 +127,7 @@ public:
       row += "," + m_memory.Trade.AdvancedLabel;
       row += "," + m_memory.Trade.LabelQuality;
       row += "," + m_memory.Trade.DynamicQualityLabel;
+      row += "," + m_memory.Trade.ProbabilityClass;
       return row;
    }
 
@@ -193,6 +194,8 @@ public:
       
       m_memory.LastSnapshot.DynamicQualityLabel =
       m_memory.Trade.DynamicQualityLabel;
+      m_memory.LastSnapshot.ProbabilityClass =
+      m_memory.Trade.ProbabilityClass;
       
       if(m_memory.Trade.TradeLabel == "WIN")
    m_winLabels++;
@@ -364,7 +367,9 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
              "TradeLabel",
              "AdvancedLabel",
              "LabelQuality",
-             "DynamicQualityLabel");
+             "DynamicQualityLabel",
+             "ProbabilityClass");
+             
              
 }
    void ExportSnapshotToCSV()
@@ -429,7 +434,8 @@ if(!IsDatasetRowComplete())
                 m_memory.LastSnapshot.TradeLabel,
                 m_memory.LastSnapshot.AdvancedLabel,
                 m_memory.LastSnapshot.LabelQuality,
-                m_memory.LastSnapshot.DynamicQualityLabel);
+                m_memory.LastSnapshot.DynamicQualityLabel,
+                m_memory.LastSnapshot.ProbabilityClass);
 m_totalRows++;
 m_validRows++;
 
