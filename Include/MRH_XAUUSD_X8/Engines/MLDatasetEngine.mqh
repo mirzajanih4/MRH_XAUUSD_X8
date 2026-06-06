@@ -197,6 +197,20 @@ else if(m_memory.Trade.TradeLabel == "LOSS")
 else if(m_memory.Trade.TradeLabel == "BREAKEVEN")
    m_breakevenLabels++;
    
+   if(m_memory.Trade.AdvancedLabel == "GOOD_WIN")
+   m_goodWinLabels++;
+
+if(m_memory.Trade.AdvancedLabel == "NORMAL_LOSS")
+   m_normalLossLabels++;
+
+if(m_memory.Trade.DynamicQualityLabel == "STRONG_SETUP")
+   m_strongSetupLabels++;
+
+if(m_memory.Trade.DynamicQualityLabel == "AVERAGE_SETUP")
+   m_averageSetupLabels++;
+
+if(m_memory.Trade.DynamicQualityLabel == "WEAK_SETUP")
+   m_weakSetupLabels++;
    }
 void ValidateOutcomeSnapshot()
 {
