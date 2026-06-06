@@ -545,7 +545,9 @@ MRH_Log("ML_DATASET_ENGINE",
         " | ProbabilityScore=" + DoubleToString(m_probabilityScore, 2) +
         " | HighProbability=" + IntegerToString(m_highProbabilityCount) +
         " | MediumProbability=" + IntegerToString(m_mediumProbabilityCount) +
-        " | LowProbability=" + IntegerToString(m_lowProbabilityCount));
+        " | LowProbability=" + IntegerToString(m_lowProbabilityCount) +
+        " | DatasetReadiness=" +
+        DoubleToString(m_datasetReadinessScore, 2));
         LogDatasetSessionSummary();
       FileClose(fileHandle);
    }
