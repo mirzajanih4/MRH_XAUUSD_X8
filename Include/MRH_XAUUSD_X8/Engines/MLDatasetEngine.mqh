@@ -472,6 +472,14 @@ if(m_totalRows > 0)
    m_probabilityScore =
       m_winProbability - m_lossProbability;
 }
+if(m_probabilityScore > 20.0)
+   m_memory.Trade.ProbabilityClass = "HIGH_PROBABILITY";
+
+else if(m_probabilityScore > 0.0)
+   m_memory.Trade.ProbabilityClass = "MEDIUM_PROBABILITY";
+
+else
+   m_memory.Trade.ProbabilityClass = "LOW_PROBABILITY";
 
 MRH_Log("ML_DATASET_ENGINE",
         "DATASET_STATS",
