@@ -489,7 +489,10 @@ MRH_Log("ML_DATASET_ENGINE",
         " | NormalLoss=" + IntegerToString(m_normalLossLabels) +
         " | StrongSetup=" + IntegerToString(m_strongSetupLabels) +
         " | AverageSetup=" + IntegerToString(m_averageSetupLabels) +
-        " | WeakSetup=" + IntegerToString(m_weakSetupLabels));
+        " | WeakSetup=" + IntegerToString(m_weakSetupLabels) +
+        " | WinProbability=" + DoubleToString(m_winProbability, 2) +
+        " | LossProbability=" + DoubleToString(m_lossProbability, 2) +
+        " | ProbabilityScore=" + DoubleToString(m_probabilityScore, 2));
         LogDatasetSessionSummary();
       FileClose(fileHandle);
    }
