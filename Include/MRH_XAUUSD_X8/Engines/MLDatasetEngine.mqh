@@ -68,7 +68,7 @@ public:
      m_probabilityScore = 0.0;
      m_winProbability = 0.0;
      m_lossProbability = 0.0;
-     m_datasetReadinessScore = 0.0;
+     
      m_goodWinLabels = 0;
      m_normalLossLabels = 0;
      m_strongSetupLabels = 0;
@@ -503,6 +503,25 @@ else if(m_probabilityScore > 0.0)
 
 else
    m_memory.Trade.ProbabilityClass = "LOW_PROBABILITY";
+
+if(m_totalRows > 0)
+{
+   m_datasetReadinessScore = 0.0;
+
+   m_datasetReadinessScore += MathMin(m_validRows * 2.0, 30.0);
+   m_datasetReadinessScore += MathMin(m_closedTradesCaptured * 5.0, 25.0);
+   m_datasetReadinessScore += MathMin((m_winLabels + m_lossLabels) * 3.0, 25.0);
+
+   if(m_highProbabilityCount > 0 ||
+      m_mediumProbabilityCount > 0 ||
+      m_lowProbabilityCount > 0)
+   {
+      m_datasetReadinessScore += 20.0;
+   }
+
+   if(m_datasetReadinessScore > 100.0)
+      m_datasetReadinessScore = 100.0;
+}
 
 MRH_Log("ML_DATASET_ENGINE",
         "DATASET_STATS",
