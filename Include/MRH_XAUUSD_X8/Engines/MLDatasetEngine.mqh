@@ -463,6 +463,16 @@ if(m_totalRows > 0)
       (100.0 * m_breakevenLabels) / m_totalRows;
 }
 
+if(m_totalRows > 0)
+{
+   m_winProbability = m_winRate;
+
+   m_lossProbability = m_lossRate;
+
+   m_probabilityScore =
+      m_winProbability - m_lossProbability;
+}
+
 MRH_Log("ML_DATASET_ENGINE",
         "DATASET_STATS",
         "TotalRows=" + IntegerToString(m_totalRows) +
