@@ -22,6 +22,7 @@ private:
    double m_probabilityScore;
    double m_winProbability;
    double m_lossProbability;
+   double m_datasetReadinessScore;
    int m_goodWinLabels;
    int m_normalLossLabels;
    int m_strongSetupLabels;
@@ -67,6 +68,7 @@ public:
      m_probabilityScore = 0.0;
      m_winProbability = 0.0;
      m_lossProbability = 0.0;
+     m_datasetReadinessScore = 0.0;
      m_goodWinLabels = 0;
      m_normalLossLabels = 0;
      m_strongSetupLabels = 0;
