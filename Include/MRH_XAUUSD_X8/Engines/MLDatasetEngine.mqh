@@ -27,6 +27,9 @@ private:
    int m_strongSetupLabels;
    int m_averageSetupLabels;
    int m_weakSetupLabels;
+   int m_highProbabilityCount;
+   int m_mediumProbabilityCount;
+   int m_lowProbabilityCount;
    string TradeOutcomeToString(ENUM_TRADE_OUTCOME outcome)
    {
       switch(outcome)
@@ -69,6 +72,9 @@ public:
      m_strongSetupLabels = 0;
      m_averageSetupLabels = 0;
      m_weakSetupLabels = 0;
+     m_highProbabilityCount = 0;
+     m_mediumProbabilityCount = 0;
+     m_lowProbabilityCount = 0;
    }
 
    bool Init(CSharedMemory* memory)
