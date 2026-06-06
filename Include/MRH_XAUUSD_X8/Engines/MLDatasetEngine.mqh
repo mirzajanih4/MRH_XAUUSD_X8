@@ -468,7 +468,12 @@ MRH_Log("ML_DATASET_ENGINE",
         " | BreakevenLabels=" + IntegerToString(m_breakevenLabels) +
         " | WinRate=" + DoubleToString(m_winRate, 2) +
         " | LossRate=" + DoubleToString(m_lossRate, 2) +
-        " | BreakevenRate=" + DoubleToString(m_breakevenRate, 2));
+        " | BreakevenRate=" + DoubleToString(m_breakevenRate, 2) +
+        " | GoodWin=" + IntegerToString(m_goodWinLabels) +
+        " | NormalLoss=" + IntegerToString(m_normalLossLabels) +
+        " | StrongSetup=" + IntegerToString(m_strongSetupLabels) +
+        " | AverageSetup=" + IntegerToString(m_averageSetupLabels) +
+        " | WeakSetup=" + IntegerToString(m_weakSetupLabels));
         LogDatasetSessionSummary();
       FileClose(fileHandle);
    }
