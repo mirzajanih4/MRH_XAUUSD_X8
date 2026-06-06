@@ -121,6 +121,7 @@ public:
       Trade.AdvancedLabel = "UNCLASSIFIED";
       Trade.LabelQuality = "UNKNOWN";
       Trade.DynamicQualityLabel = "UNRATED";
+      Trade.ProbabilityClass = "UNCLASSIFIED";
       
       LastSnapshot.SnapshotTime = 0;
       LastSnapshot.LiquidityScore = 0.0;
@@ -146,6 +147,7 @@ public:
       LastSnapshot.AdvancedLabel = "UNCLASSIFIED";
       LastSnapshot.LabelQuality = "UNKNOWN";
       LastSnapshot.DynamicQualityLabel = "UNRATED";
+      LastSnapshot.ProbabilityClass = "UNCLASSIFIED";
       
       Safety.SymbolAllowed       = false;
       Safety.SpreadAllowed       = false;
