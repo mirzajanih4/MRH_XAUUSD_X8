@@ -161,11 +161,17 @@ public:
       row += "," + DoubleToString(m_memory.Trade.ClosePrice, _Digits);
       row += "," + TimeToString(m_memory.Trade.CloseTime, TIME_DATE | TIME_SECONDS);
       row += "," + m_memory.Trade.TradeLabel;
-      row += "," + m_memory.Trade.AdvancedLabel;
-      row += "," + m_memory.Trade.LabelQuality;
-      row += "," + m_memory.Trade.DynamicQualityLabel;
-      row += "," + m_memory.Trade.ProbabilityClass;
-      return row;
+row += "," + m_memory.Trade.AdvancedLabel;
+row += "," + m_memory.Trade.LabelQuality;
+row += "," + m_memory.Trade.DynamicQualityLabel;
+row += "," + m_memory.Trade.ProbabilityClass;
+
+//--- STEP45.1 Dataset-Audit Integration
+row += "," + DoubleToString(m_memory.LastSnapshot.ArchitectureAuditScore, 2);
+row += "," + m_memory.LastSnapshot.ArchitectureAuditClass;
+row += "," + IntegerToString((int)m_memory.LastSnapshot.ArchitectureApproved);
+
+return row;
    }
 
    void BuildTradeSnapshot()
@@ -336,6 +342,23 @@ if(m_memory.LastSnapshot.TradeLabel == "")
            "TradeLabel is empty");
 }
 
+// STEP45.3 - Architecture Audit Warning Log
+
+if(m_memory.LastSnapshot.ArchitectureAuditClass == "")
+{
+   MRH_Log("ML_DATASET_ENGINE",
+           "ARCHITECTURE_AUDIT_WARNING",
+           "Architecture audit class is empty");
+}
+
+if(m_memory.LastSnapshot.ArchitectureAuditClass == "NOT_READY")
+{
+   MRH_Log("ML_DATASET_ENGINE",
+           "ARCHITECTURE_AUDIT_WARNING",
+           "Architecture audit is NOT_READY"
+           " | AuditScore=" + DoubleToString(m_memory.LastSnapshot.ArchitectureAuditScore, 2));
+}
+
 }
 
 bool IsDatasetRowComplete()
@@ -355,6 +378,14 @@ bool IsDatasetRowComplete()
    if(m_memory.LastSnapshot.RiskProfile == "")
       return false;
 
+// STEP45.2 - Architecture Audit Validation
+
+if(m_memory.LastSnapshot.ArchitectureAuditClass == "")
+   return false;
+
+if(m_memory.LastSnapshot.ArchitectureAuditScore < 0.0)
+   return false;
+   
    if(m_memory.LastSnapshot.TradeState == TRADE_CLOSED)
    {
       if(m_memory.LastSnapshot.Outcome == TRADE_OUTCOME_UNKNOWN)
