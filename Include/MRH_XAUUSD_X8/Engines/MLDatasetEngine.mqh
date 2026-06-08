@@ -27,6 +27,7 @@ private:
    double m_datasetQualityScore;
    string m_datasetQualityClass;
    bool m_mlReadyFlag;
+   int m_mlFeatureCount;
    int m_goodWinLabels;
    int m_normalLossLabels;
    int m_strongSetupLabels;
@@ -515,6 +516,7 @@ if(m_totalRows > 0)
    m_datasetQualityScore = 0.0;
    m_datasetQualityClass = "POOR_DATASET";
    m_mlReadyFlag = false;
+   m_mlFeatureCount = 0;
    m_datasetReadinessScore += MathMin(m_validRows * 2.0, 30.0);
    m_datasetReadinessScore += MathMin(m_closedTradesCaptured * 5.0, 25.0);
    m_datasetReadinessScore += MathMin((m_winLabels + m_lossLabels) * 3.0, 25.0);
