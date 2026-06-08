@@ -29,6 +29,7 @@ private:
    bool m_mlReadyFlag;
    int m_mlFeatureCount;
    double m_datasetMaturityScore;
+   string m_datasetMaturityClass;
    int m_goodWinLabels;
    int m_normalLossLabels;
    int m_strongSetupLabels;
@@ -84,6 +85,7 @@ public:
      m_mlFeatureCount = 0;
 
      m_datasetMaturityScore = 0.0;
+     m_datasetMaturityClass = "EARLY_DATASET";
      m_goodWinLabels = 0;
      m_normalLossLabels = 0;
      m_strongSetupLabels = 0;
@@ -611,13 +613,14 @@ m_datasetMaturityScore +=
 if(m_datasetMaturityScore > 100.0)
    m_datasetMaturityScore = 100.0;
    
-   string datasetMaturityClass = "EARLY_DATASET";
+   m_datasetMaturityClass = "EARLY_DATASET";
+   
 
 if(m_datasetMaturityScore >= 80.0)
-   datasetMaturityClass = "MATURE_DATASET";
+   m_datasetMaturityClass = "MATURE_DATASET";
 
 else if(m_datasetMaturityScore >= 40.0)
-   datasetMaturityClass = "GROWING_DATASET";
+   m_datasetMaturityClass = "GROWING_DATASET";
    
 if(m_datasetReadinessClass == "" ||
    m_datasetQualityClass == "" ||
