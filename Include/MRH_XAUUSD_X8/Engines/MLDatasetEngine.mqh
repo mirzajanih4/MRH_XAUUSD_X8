@@ -558,6 +558,15 @@ else if(m_datasetQualityScore >= 50.0)
 else
    m_datasetQualityClass = "POOR_DATASET";
    
+   m_mlReadyFlag = false;
+
+if(m_datasetReadinessClass == "ML_READY" &&
+   m_datasetQualityClass == "HIGH_QUALITY_DATASET" &&
+   m_closedTradesCaptured >= 50)
+{
+   m_mlReadyFlag = true;
+}
+
    if(m_datasetReadinessScore > 100.0)
       m_datasetReadinessScore = 100.0;
 }
