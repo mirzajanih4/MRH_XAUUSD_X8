@@ -586,6 +586,15 @@ m_mlFeatureCount += 5; // Outcome, RR, Profit, Labels, Probability
 
 m_mlFeatureCount += 3; // Readiness, Quality, MLReady
 
+if(m_datasetReadinessClass == "" ||
+   m_datasetQualityClass == "" ||
+   m_mlFeatureCount <= 0)
+{
+   MRH_Log("ML_DATASET_ENGINE",
+           "ML_PROFILE_WARNING",
+           "ML profile fields are incomplete");
+}
+
    if(m_datasetReadinessScore > 100.0)
       m_datasetReadinessScore = 100.0;
 }
