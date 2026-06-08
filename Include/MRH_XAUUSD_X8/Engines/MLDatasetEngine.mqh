@@ -406,7 +406,9 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
              "DatasetReadinessClass",
              "DatasetQualityClass",
              "MLReadyFlag",
-             "MLFeatureCount");
+             "MLFeatureCount",
+             "DatasetMaturityScore",
+             "DatasetMaturityClass");
              
              
 }
@@ -477,7 +479,9 @@ if(!IsDatasetRowComplete())
                 m_datasetReadinessClass,
                 m_datasetQualityClass,
                 (m_mlReadyFlag ? "TRUE" : "FALSE"),
-                IntegerToString(m_mlFeatureCount));
+                IntegerToString(m_mlFeatureCount),
+                DoubleToString(m_datasetMaturityScore, 2),
+                m_datasetMaturityClass);
 m_totalRows++;
 m_validRows++;
 
