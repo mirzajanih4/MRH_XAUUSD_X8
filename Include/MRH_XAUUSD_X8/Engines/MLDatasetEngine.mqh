@@ -669,7 +669,11 @@ MRH_Log("ML_DATASET_ENGINE",
         " | MLReady=" +
         (m_mlReadyFlag ? "TRUE" : "FALSE") +
         " | MLFeatures=" +
-        IntegerToString(m_mlFeatureCount));
+        IntegerToString(m_mlFeatureCount) +
+        " | DatasetMaturity=" +
+        DoubleToString(m_datasetMaturityScore, 2) +
+        " | MaturityClass=" +
+        m_datasetMaturityClass);
         
         LogDatasetSessionSummary();
       FileClose(fileHandle);
