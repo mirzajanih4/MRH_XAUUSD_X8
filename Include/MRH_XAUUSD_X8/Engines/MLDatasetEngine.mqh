@@ -557,7 +557,9 @@ MRH_Log("ML_DATASET_ENGINE",
         " | MediumProbability=" + IntegerToString(m_mediumProbabilityCount) +
         " | LowProbability=" + IntegerToString(m_lowProbabilityCount) +
         " | DatasetReadiness=" +
-        DoubleToString(m_datasetReadinessScore, 2));
+        DoubleToString(m_datasetReadinessScore, 2) +
+        " | ReadinessClass=" +
+        m_datasetReadinessClass);
         LogDatasetSessionSummary();
       FileClose(fileHandle);
    }
