@@ -530,7 +530,20 @@ else if(m_datasetReadinessScore >= 40.0)
 
 else
    m_datasetReadinessClass = "NOT_READY";
-   
+   m_datasetQualityScore = 0.0;
+
+m_datasetQualityScore += m_datasetReadinessScore * 0.50;
+
+m_datasetQualityScore +=
+   MathMin(m_closedTradesCaptured * 2.0, 25.0);
+
+m_datasetQualityScore +=
+   MathMin((m_highProbabilityCount +
+            m_mediumProbabilityCount +
+            m_lowProbabilityCount), 25.0);
+
+if(m_datasetQualityScore > 100.0)
+   m_datasetQualityScore = 100.0;
    if(m_datasetReadinessScore > 100.0)
       m_datasetReadinessScore = 100.0;
 }
