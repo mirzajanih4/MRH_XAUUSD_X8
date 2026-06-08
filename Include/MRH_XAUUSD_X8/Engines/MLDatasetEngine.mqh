@@ -23,6 +23,7 @@ private:
    double m_winProbability;
    double m_lossProbability;
    double m_datasetReadinessScore;
+   string m_datasetReadinessClass;
    int m_goodWinLabels;
    int m_normalLossLabels;
    int m_strongSetupLabels;
@@ -507,7 +508,7 @@ else
 if(m_totalRows > 0)
 {
    m_datasetReadinessScore = 0.0;
-
+   m_datasetReadinessClass = "NOT_READY";
    m_datasetReadinessScore += MathMin(m_validRows * 2.0, 30.0);
    m_datasetReadinessScore += MathMin(m_closedTradesCaptured * 5.0, 25.0);
    m_datasetReadinessScore += MathMin((m_winLabels + m_lossLabels) * 3.0, 25.0);
