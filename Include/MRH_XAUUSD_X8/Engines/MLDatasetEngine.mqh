@@ -520,6 +520,15 @@ if(m_totalRows > 0)
       m_datasetReadinessScore += 20.0;
    }
 
+if(m_datasetReadinessScore >= 80.0)
+   m_datasetReadinessClass = "ML_READY";
+
+else if(m_datasetReadinessScore >= 40.0)
+   m_datasetReadinessClass = "PARTIALLY_READY";
+
+else
+   m_datasetReadinessClass = "NOT_READY";
+   
    if(m_datasetReadinessScore > 100.0)
       m_datasetReadinessScore = 100.0;
 }
