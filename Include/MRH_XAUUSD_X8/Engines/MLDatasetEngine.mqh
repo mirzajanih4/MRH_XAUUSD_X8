@@ -597,6 +597,20 @@ m_mlFeatureCount += 5; // Outcome, RR, Profit, Labels, Probability
 
 m_mlFeatureCount += 3; // Readiness, Quality, MLReady
 
+m_datasetMaturityScore = 0.0;
+
+m_datasetMaturityScore +=
+   MathMin(m_totalRows * 1.0, 40.0);
+
+m_datasetMaturityScore +=
+   MathMin(m_closedTradesCaptured * 2.0, 40.0);
+
+m_datasetMaturityScore +=
+   MathMin((m_winLabels + m_lossLabels) * 1.0, 20.0);
+
+if(m_datasetMaturityScore > 100.0)
+   m_datasetMaturityScore = 100.0;
+   
 if(m_datasetReadinessClass == "" ||
    m_datasetQualityClass == "" ||
    m_mlFeatureCount <= 0)
