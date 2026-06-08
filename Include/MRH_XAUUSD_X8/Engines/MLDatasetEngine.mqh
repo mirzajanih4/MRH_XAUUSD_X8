@@ -611,6 +611,14 @@ m_datasetMaturityScore +=
 if(m_datasetMaturityScore > 100.0)
    m_datasetMaturityScore = 100.0;
    
+   string datasetMaturityClass = "EARLY_DATASET";
+
+if(m_datasetMaturityScore >= 80.0)
+   datasetMaturityClass = "MATURE_DATASET";
+
+else if(m_datasetMaturityScore >= 40.0)
+   datasetMaturityClass = "GROWING_DATASET";
+   
 if(m_datasetReadinessClass == "" ||
    m_datasetQualityClass == "" ||
    m_mlFeatureCount <= 0)
