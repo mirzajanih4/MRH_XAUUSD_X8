@@ -425,9 +425,11 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
              "DatasetBalanceClass",
              "WinLossBalance",
              "ProbabilityBalance",
-             "LabelBalance");
-             
-             
+             "LabelBalance",
+             "ArchitectureAuditScore",
+             "ArchitectureAuditClass",
+             "ArchitectureApproved");
+                       
 }
    void ExportSnapshotToCSV()
    {
@@ -503,7 +505,11 @@ if(!IsDatasetRowComplete())
                 m_datasetBalanceClass,
                 DoubleToString(m_winLossBalance, 2),
                 DoubleToString(m_probabilityBalance, 2),
-                DoubleToString(m_labelBalance, 2));
+                DoubleToString(m_labelBalance, 2),
+
+DoubleToString(m_memory.LastSnapshot.ArchitectureAuditScore, 2),
+m_memory.LastSnapshot.ArchitectureAuditClass,
+(m_memory.LastSnapshot.ArchitectureApproved ? "TRUE" : "FALSE"));
 m_totalRows++;
 m_validRows++;
 

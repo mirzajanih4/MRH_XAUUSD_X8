@@ -21,7 +21,7 @@
 #include <MRH_XAUUSD_X8/Engines/SafetyManager.mqh>
 #include <MRH_XAUUSD_X8/Engines/TradeManagementEngine.mqh>
 #include <MRH_XAUUSD_X8/Engines/MLDatasetEngine.mqh>
-
+#include <MRH_XAUUSD_X8/Engines/ArchitectureAuditEngine.mqh>
 //--- Inputs
 input bool EnableLiveTrading = false;
 input int ExecutionCooldownSeconds = 300;
@@ -39,6 +39,7 @@ CRiskManager            RiskManager;
 CSafetyManager          SafetyManager;
 CTradeManagementEngine  TradeManagementEngine;
 CMLDatasetEngine        MLDatasetEngine;
+CArchitectureAuditEngine ArchitectureAuditEngine;
 datetime LastExecutionTime = 0;
 //+------------------------------------------------------------------+
 //| Final execution gate                                             |
@@ -347,7 +348,7 @@ int OnInit()
    SafetyManager.Init(&SharedMemory);
    TradeManagementEngine.Init(&SharedMemory);
    MLDatasetEngine.Init(&SharedMemory);
-
+   ArchitectureAuditEngine.Init(&SharedMemory);
    /*
 if(!SharedMemory.Ready())
 {
@@ -397,7 +398,7 @@ RiskManager.Update();
 SafetyManager.Update();
 TradeManagementEngine.Update();
 MLDatasetEngine.Update();
-
+ArchitectureAuditEngine.Update();
 //MRH_DryExecutionCheck();
 //MRH_ExecuteTrade();
    }

@@ -292,6 +292,11 @@ struct MLDataRow
    string LabelQuality;
    string DynamicQualityLabel;
    string ProbabilityClass;
+   
+   //--- STEP44.1 Architecture Audit Layer
+   double ArchitectureAuditScore;
+   string ArchitectureAuditClass;
+   bool   ArchitectureApproved;
 };
 
 //==================================================
@@ -326,6 +331,11 @@ struct MLTradeSnapshot
    string LabelQuality;
    string DynamicQualityLabel;
    string ProbabilityClass;
+   
+   //--- STEP44.2 Architecture Audit Layer
+   double ArchitectureAuditScore;
+   string ArchitectureAuditClass;
+   bool   ArchitectureApproved;
 };
 
 //==================================================
