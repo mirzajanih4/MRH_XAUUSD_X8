@@ -390,7 +390,11 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
              "AdvancedLabel",
              "LabelQuality",
              "DynamicQualityLabel",
-             "ProbabilityClass");
+             "ProbabilityClass",
+             "DatasetReadinessClass",
+             "DatasetQualityClass",
+             "MLReadyFlag",
+             "MLFeatureCount");
              
              
 }
@@ -457,7 +461,11 @@ if(!IsDatasetRowComplete())
                 m_memory.LastSnapshot.AdvancedLabel,
                 m_memory.LastSnapshot.LabelQuality,
                 m_memory.LastSnapshot.DynamicQualityLabel,
-                m_memory.LastSnapshot.ProbabilityClass);
+                m_memory.LastSnapshot.ProbabilityClass,
+                m_datasetReadinessClass,
+                m_datasetQualityClass,
+                (m_mlReadyFlag ? "TRUE" : "FALSE"),
+                IntegerToString(m_mlFeatureCount));
 m_totalRows++;
 m_validRows++;
 
