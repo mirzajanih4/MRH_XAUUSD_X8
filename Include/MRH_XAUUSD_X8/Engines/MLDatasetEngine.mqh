@@ -546,6 +546,16 @@ m_datasetQualityScore +=
 
 if(m_datasetQualityScore > 100.0)
    m_datasetQualityScore = 100.0;
+   
+   if(m_datasetQualityScore >= 80.0)
+   m_datasetQualityClass = "HIGH_QUALITY_DATASET";
+
+else if(m_datasetQualityScore >= 50.0)
+   m_datasetQualityClass = "ACCEPTABLE_DATASET";
+
+else
+   m_datasetQualityClass = "POOR_DATASET";
+   
    if(m_datasetReadinessScore > 100.0)
       m_datasetReadinessScore = 100.0;
 }
