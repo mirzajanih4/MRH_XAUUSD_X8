@@ -568,6 +568,15 @@ if(m_datasetReadinessClass == "ML_READY" &&
 {
    m_mlReadyFlag = true;
 }
+m_mlFeatureCount = 0;
+
+m_mlFeatureCount += 4; // Liquidity, OB, Permission, Confluence
+
+m_mlFeatureCount += 3; // Grade, Confidence, RiskProfile
+
+m_mlFeatureCount += 5; // Outcome, RR, Profit, Labels, Probability
+
+m_mlFeatureCount += 3; // Readiness, Quality, MLReady
 
    if(m_datasetReadinessScore > 100.0)
       m_datasetReadinessScore = 100.0;
