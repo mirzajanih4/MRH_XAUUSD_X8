@@ -30,6 +30,12 @@ private:
    int m_mlFeatureCount;
    double m_datasetMaturityScore;
    string m_datasetMaturityClass;
+   double m_datasetBalanceScore;
+   string m_datasetBalanceClass;
+
+   double m_winLossBalance;
+   double m_probabilityBalance;
+   double m_labelBalance;
    int m_goodWinLabels;
    int m_normalLossLabels;
    int m_strongSetupLabels;
@@ -86,6 +92,12 @@ public:
 
      m_datasetMaturityScore = 0.0;
      m_datasetMaturityClass = "EARLY_DATASET";
+     m_datasetBalanceScore = 0.0;
+     m_datasetBalanceClass = "UNBALANCED";
+
+     m_winLossBalance = 0.0;
+     m_probabilityBalance = 0.0;
+     m_labelBalance = 0.0;
      m_goodWinLabels = 0;
      m_normalLossLabels = 0;
      m_strongSetupLabels = 0;
@@ -408,7 +420,12 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
              "MLReadyFlag",
              "MLFeatureCount",
              "DatasetMaturityScore",
-             "DatasetMaturityClass");
+             "DatasetMaturityClass",
+             "DatasetBalanceScore",
+             "DatasetBalanceClass",
+             "WinLossBalance",
+             "ProbabilityBalance",
+             "LabelBalance");
              
              
 }
@@ -481,7 +498,12 @@ if(!IsDatasetRowComplete())
                 (m_mlReadyFlag ? "TRUE" : "FALSE"),
                 IntegerToString(m_mlFeatureCount),
                 DoubleToString(m_datasetMaturityScore, 2),
-                m_datasetMaturityClass);
+                m_datasetMaturityClass,
+                DoubleToString(m_datasetBalanceScore, 2),
+                m_datasetBalanceClass,
+                DoubleToString(m_winLossBalance, 2),
+                DoubleToString(m_probabilityBalance, 2),
+                DoubleToString(m_labelBalance, 2));
 m_totalRows++;
 m_validRows++;
 
@@ -626,6 +648,95 @@ if(m_datasetMaturityScore >= 80.0)
 else if(m_datasetMaturityScore >= 40.0)
    m_datasetMaturityClass = "GROWING_DATASET";
    
+   // STEP43.2 - Dataset Balance Score Calculation Foundation
+m_winLossBalance = 0.0;
+m_probabilityBalance = 0.0;
+m_labelBalance = 0.0;
+m_datasetBalanceScore = 0.0;
+m_datasetBalanceClass = "UNBALANCED";
+
+if((m_winLabels + m_lossLabels) > 0)
+{
+   double totalWinLossLabels = (double)(m_winLabels + m_lossLabels);
+   double winRatio = (double)m_winLabels / totalWinLossLabels;
+   double lossRatio = (double)m_lossLabels / totalWinLossLabels;
+
+   m_winLossBalance = 100.0 - MathAbs(winRatio - lossRatio) * 100.0;
+}
+
+if((m_highProbabilityCount +
+    m_mediumProbabilityCount +
+    m_lowProbabilityCount) > 0)
+{
+   int totalProbabilityLabels =
+      m_highProbabilityCount +
+      m_mediumProbabilityCount +
+      m_lowProbabilityCount;
+
+   double highRatio =
+      (double)m_highProbabilityCount / totalProbabilityLabels;
+
+   double mediumRatio =
+      (double)m_mediumProbabilityCount / totalProbabilityLabels;
+
+   double lowRatio =
+      (double)m_lowProbabilityCount / totalProbabilityLabels;
+
+   double maxProbabilityRatio =
+      MathMax(highRatio, MathMax(mediumRatio, lowRatio));
+
+   m_probabilityBalance =
+      100.0 - ((maxProbabilityRatio - (1.0 / 3.0)) * 150.0);
+}
+
+if((m_strongSetupLabels +
+    m_averageSetupLabels +
+    m_weakSetupLabels) > 0)
+{
+   int totalSetupLabels =
+      m_strongSetupLabels +
+      m_averageSetupLabels +
+      m_weakSetupLabels;
+
+   double strongRatio =
+      (double)m_strongSetupLabels / totalSetupLabels;
+
+   double averageRatio =
+      (double)m_averageSetupLabels / totalSetupLabels;
+
+   double weakRatio =
+      (double)m_weakSetupLabels / totalSetupLabels;
+
+   double maxSetupRatio =
+      MathMax(strongRatio, MathMax(averageRatio, weakRatio));
+
+   m_labelBalance =
+      100.0 - ((maxSetupRatio - (1.0 / 3.0)) * 150.0);
+}
+
+if(m_winLossBalance < 0.0)
+   m_winLossBalance = 0.0;
+
+if(m_probabilityBalance < 0.0)
+   m_probabilityBalance = 0.0;
+
+if(m_labelBalance < 0.0)
+   m_labelBalance = 0.0;
+
+m_datasetBalanceScore =
+   (m_winLossBalance * 0.40) +
+   (m_probabilityBalance * 0.30) +
+   (m_labelBalance * 0.30);
+
+if(m_datasetBalanceScore >= 75.0)
+   m_datasetBalanceClass = "BALANCED_DATASET";
+
+else if(m_datasetBalanceScore >= 45.0)
+   m_datasetBalanceClass = "PARTIALLY_BALANCED";
+
+else
+   m_datasetBalanceClass = "UNBALANCED";
+   
 if(m_datasetReadinessClass == "" ||
    m_datasetQualityClass == "" ||
    m_mlFeatureCount <= 0)
@@ -633,6 +744,58 @@ if(m_datasetReadinessClass == "" ||
    MRH_Log("ML_DATASET_ENGINE",
            "ML_PROFILE_WARNING",
            "ML profile fields are incomplete");
+}
+
+// STEP43.5 - Dataset Balance Validation Layer
+if(m_datasetBalanceClass == "UNBALANCED" &&
+   m_totalRows >= 20)
+{
+   MRH_Log("ML_DATASET_ENGINE",
+           "BALANCE_WARNING",
+           "Dataset is unbalanced"
+           " | BalanceScore=" + DoubleToString(m_datasetBalanceScore, 2) +
+           " | WinLossBalance=" + DoubleToString(m_winLossBalance, 2) +
+           " | ProbabilityBalance=" + DoubleToString(m_probabilityBalance, 2) +
+           " | LabelBalance=" + DoubleToString(m_labelBalance, 2));
+}
+
+if(m_winLossBalance < 30.0 &&
+   (m_winLabels + m_lossLabels) >= 10)
+{
+   MRH_Log("ML_DATASET_ENGINE",
+           "WIN_LOSS_BALANCE_WARNING",
+           "Win/Loss labels are highly imbalanced"
+           " | Wins=" + IntegerToString(m_winLabels) +
+           " | Losses=" + IntegerToString(m_lossLabels) +
+           " | WinLossBalance=" + DoubleToString(m_winLossBalance, 2));
+}
+
+if(m_probabilityBalance < 30.0 &&
+   (m_highProbabilityCount +
+    m_mediumProbabilityCount +
+    m_lowProbabilityCount) >= 10)
+{
+   MRH_Log("ML_DATASET_ENGINE",
+           "PROBABILITY_BALANCE_WARNING",
+           "Probability classes are highly imbalanced"
+           " | High=" + IntegerToString(m_highProbabilityCount) +
+           " | Medium=" + IntegerToString(m_mediumProbabilityCount) +
+           " | Low=" + IntegerToString(m_lowProbabilityCount) +
+           " | ProbabilityBalance=" + DoubleToString(m_probabilityBalance, 2));
+}
+
+if(m_labelBalance < 30.0 &&
+   (m_strongSetupLabels +
+    m_averageSetupLabels +
+    m_weakSetupLabels) >= 10)
+{
+   MRH_Log("ML_DATASET_ENGINE",
+           "LABEL_BALANCE_WARNING",
+           "Setup quality labels are highly imbalanced"
+           " | Strong=" + IntegerToString(m_strongSetupLabels) +
+           " | Average=" + IntegerToString(m_averageSetupLabels) +
+           " | Weak=" + IntegerToString(m_weakSetupLabels) +
+           " | LabelBalance=" + DoubleToString(m_labelBalance, 2));
 }
 
    if(m_datasetReadinessScore > 100.0)
@@ -677,7 +840,17 @@ MRH_Log("ML_DATASET_ENGINE",
         " | DatasetMaturity=" +
         DoubleToString(m_datasetMaturityScore, 2) +
         " | MaturityClass=" +
-        m_datasetMaturityClass);
+        m_datasetMaturityClass +
+        " | DatasetBalance=" +
+        DoubleToString(m_datasetBalanceScore, 2) +
+        " | BalanceClass=" +
+        m_datasetBalanceClass +
+        " | WinLossBalance=" +
+        DoubleToString(m_winLossBalance, 2) +
+        " | ProbabilityBalance=" +
+        DoubleToString(m_probabilityBalance, 2) +
+        " | LabelBalance=" +
+        DoubleToString(m_labelBalance, 2));
         
         LogDatasetSessionSummary();
       FileClose(fileHandle);
