@@ -28,6 +28,7 @@ private:
    string m_datasetQualityClass;
    bool m_mlReadyFlag;
    int m_mlFeatureCount;
+   double m_datasetMaturityScore;
    int m_goodWinLabels;
    int m_normalLossLabels;
    int m_strongSetupLabels;
@@ -73,7 +74,16 @@ public:
      m_probabilityScore = 0.0;
      m_winProbability = 0.0;
      m_lossProbability = 0.0;
-     
+     m_datasetReadinessScore = 0.0;
+     m_datasetReadinessClass = "NOT_READY";
+
+     m_datasetQualityScore = 0.0;
+     m_datasetQualityClass = "POOR_DATASET";
+
+     m_mlReadyFlag = false;
+     m_mlFeatureCount = 0;
+
+     m_datasetMaturityScore = 0.0;
      m_goodWinLabels = 0;
      m_normalLossLabels = 0;
      m_strongSetupLabels = 0;
@@ -525,6 +535,7 @@ if(m_totalRows > 0)
    m_datasetQualityClass = "POOR_DATASET";
    m_mlReadyFlag = false;
    m_mlFeatureCount = 0;
+   
    m_datasetReadinessScore += MathMin(m_validRows * 2.0, 30.0);
    m_datasetReadinessScore += MathMin(m_closedTradesCaptured * 5.0, 25.0);
    m_datasetReadinessScore += MathMin((m_winLabels + m_lossLabels) * 3.0, 25.0);
