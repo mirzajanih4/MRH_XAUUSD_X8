@@ -588,7 +588,9 @@ MRH_Log("ML_DATASET_ENGINE",
         " | ReadinessClass=" +
         m_datasetReadinessClass +
         " | DatasetQuality=" +
-        DoubleToString(m_datasetQualityScore, 2));
+        DoubleToString(m_datasetQualityScore, 2) +
+        " | QualityClass=" +
+        m_datasetQualityClass);
         LogDatasetSessionSummary();
       FileClose(fileHandle);
    }
