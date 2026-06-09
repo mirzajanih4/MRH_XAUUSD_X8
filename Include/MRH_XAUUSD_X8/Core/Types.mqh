@@ -336,6 +336,11 @@ struct MLTradeSnapshot
    double ArchitectureAuditScore;
    string ArchitectureAuditClass;
    bool   ArchitectureApproved;
+   
+   //--- STEP46.1 Dataset Integrity Layer
+   double DatasetIntegrityScore;
+   string DatasetIntegrityClass;
+   bool   DatasetIntegrityApproved;
 };
 
 //==================================================

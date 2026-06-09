@@ -32,7 +32,9 @@ private:
    string m_datasetMaturityClass;
    double m_datasetBalanceScore;
    string m_datasetBalanceClass;
-
+   double m_datasetIntegrityScore;
+   string m_datasetIntegrityClass;
+   bool   m_datasetIntegrityApproved;
    double m_winLossBalance;
    double m_probabilityBalance;
    double m_labelBalance;
@@ -94,7 +96,9 @@ public:
      m_datasetMaturityClass = "EARLY_DATASET";
      m_datasetBalanceScore = 0.0;
      m_datasetBalanceClass = "UNBALANCED";
-
+     m_datasetIntegrityScore = 0.0;
+     m_datasetIntegrityClass = "NOT_CHECKED";
+     m_datasetIntegrityApproved = false;
      m_winLossBalance = 0.0;
      m_probabilityBalance = 0.0;
      m_labelBalance = 0.0;
@@ -161,17 +165,17 @@ public:
       row += "," + DoubleToString(m_memory.Trade.ClosePrice, _Digits);
       row += "," + TimeToString(m_memory.Trade.CloseTime, TIME_DATE | TIME_SECONDS);
       row += "," + m_memory.Trade.TradeLabel;
-row += "," + m_memory.Trade.AdvancedLabel;
-row += "," + m_memory.Trade.LabelQuality;
-row += "," + m_memory.Trade.DynamicQualityLabel;
-row += "," + m_memory.Trade.ProbabilityClass;
+      row += "," + m_memory.Trade.AdvancedLabel;
+      row += "," + m_memory.Trade.LabelQuality;
+      row += "," + m_memory.Trade.DynamicQualityLabel;
+      row += "," + m_memory.Trade.ProbabilityClass;
 
-//--- STEP45.1 Dataset-Audit Integration
-row += "," + DoubleToString(m_memory.LastSnapshot.ArchitectureAuditScore, 2);
-row += "," + m_memory.LastSnapshot.ArchitectureAuditClass;
-row += "," + IntegerToString((int)m_memory.LastSnapshot.ArchitectureApproved);
+      //--- STEP45.1 Dataset-Audit Integration
+      row += "," + DoubleToString(m_memory.LastSnapshot.ArchitectureAuditScore, 2);
+      row += "," + m_memory.LastSnapshot.ArchitectureAuditClass;
+      row += "," + IntegerToString((int)m_memory.LastSnapshot.ArchitectureApproved);
 
-return row;
+      return row;
    }
 
    void BuildTradeSnapshot()
@@ -239,6 +243,17 @@ return row;
       m_memory.Trade.DynamicQualityLabel;
       m_memory.LastSnapshot.ProbabilityClass =
       m_memory.Trade.ProbabilityClass;
+      
+      // STEP46.6 - Dataset Integrity Snapshot
+
+      m_memory.LastSnapshot.DatasetIntegrityScore =
+         m_datasetIntegrityScore;
+
+      m_memory.LastSnapshot.DatasetIntegrityClass =
+         m_datasetIntegrityClass;
+
+      m_memory.LastSnapshot.DatasetIntegrityApproved =
+         m_datasetIntegrityApproved;
       
       if(m_memory.Trade.TradeLabel == "WIN")
    m_winLabels++;
@@ -459,7 +474,10 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
              "LabelBalance",
              "ArchitectureAuditScore",
              "ArchitectureAuditClass",
-             "ArchitectureApproved");
+             "ArchitectureApproved",
+             "DatasetIntegrityScore",
+             "DatasetIntegrityClass",
+             "DatasetIntegrityApproved");
                        
 }
    void ExportSnapshotToCSV()
@@ -538,11 +556,15 @@ if(!IsDatasetRowComplete())
                 DoubleToString(m_probabilityBalance, 2),
                 DoubleToString(m_labelBalance, 2),
 
-DoubleToString(m_memory.LastSnapshot.ArchitectureAuditScore, 2),
-m_memory.LastSnapshot.ArchitectureAuditClass,
-(m_memory.LastSnapshot.ArchitectureApproved ? "TRUE" : "FALSE"));
-m_totalRows++;
-m_validRows++;
+                DoubleToString(m_memory.LastSnapshot.ArchitectureAuditScore, 2),
+                m_memory.LastSnapshot.ArchitectureAuditClass,
+                (m_memory.LastSnapshot.ArchitectureApproved ? "TRUE" : "FALSE"),
+
+                DoubleToString(m_memory.LastSnapshot.DatasetIntegrityScore, 2),
+                m_memory.LastSnapshot.DatasetIntegrityClass,
+                (m_memory.LastSnapshot.DatasetIntegrityApproved ? "TRUE" : "FALSE"));
+                m_totalRows++;
+                m_validRows++;
 
 if(m_memory.LastSnapshot.TradeState == TRADE_CLOSED)
    m_closedTradesCaptured++;
@@ -773,6 +795,35 @@ else if(m_datasetBalanceScore >= 45.0)
 
 else
    m_datasetBalanceClass = "UNBALANCED";
+   
+   // STEP46.5 - Dataset Integrity Score
+
+m_datasetIntegrityScore = 0.0;
+
+if(IsDatasetRowComplete())
+   m_datasetIntegrityScore += 50.0;
+
+if(m_memory.LastSnapshot.ArchitectureAuditClass != "")
+   m_datasetIntegrityScore += 25.0;
+
+if(m_memory.LastSnapshot.ArchitectureAuditScore >= 0.0)
+   m_datasetIntegrityScore += 25.0;
+
+if(m_datasetIntegrityScore >= 90.0)
+{
+   m_datasetIntegrityClass = "INTEGRITY_OK";
+   m_datasetIntegrityApproved = true;
+}
+else if(m_datasetIntegrityScore >= 50.0)
+{
+   m_datasetIntegrityClass = "INTEGRITY_REVIEW";
+   m_datasetIntegrityApproved = false;
+}
+else
+{
+   m_datasetIntegrityClass = "INTEGRITY_FAILED";
+   m_datasetIntegrityApproved = false;
+}
    
 if(m_datasetReadinessClass == "" ||
    m_datasetQualityClass == "" ||

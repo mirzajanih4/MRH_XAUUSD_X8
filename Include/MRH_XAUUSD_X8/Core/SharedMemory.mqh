@@ -149,6 +149,16 @@ public:
       LastSnapshot.DynamicQualityLabel = "UNRATED";
       LastSnapshot.ProbabilityClass = "UNCLASSIFIED";
       
+      // STEP44 - Architecture Audit Reset
+      LastSnapshot.ArchitectureAuditScore = 0.0;
+      LastSnapshot.ArchitectureAuditClass = "NOT_READY";
+      LastSnapshot.ArchitectureApproved = false;
+
+      // STEP46 - Dataset Integrity Reset
+      LastSnapshot.DatasetIntegrityScore = 0.0;
+      LastSnapshot.DatasetIntegrityClass = "NOT_CHECKED";
+      LastSnapshot.DatasetIntegrityApproved = false;
+      
       Safety.SymbolAllowed       = false;
       Safety.SpreadAllowed       = false;
       Safety.StopDistanceAllowed = false;
