@@ -138,6 +138,19 @@ else if(m_memory.Execution.ConfluenceScore >= 40.0)
          return;
 
       CalculatePermissionScore();
+      
+            // STEP49 - Execution Strictness Layer
+      // No valid OB = no execution permission, no A_SETUP, no risk
+      if(!m_memory.OB.Valid || m_memory.OB.Invalidated)
+      {
+         m_memory.Execution.ScoreApproved = false;
+         m_memory.Execution.PermissionScore = 0.0;
+         m_memory.Execution.ConfluenceScore = 0.0;
+         m_memory.Execution.ExecutionGrade = "BLOCKED";
+         m_memory.Execution.ConfidenceLevel = "LOW";
+         m_memory.Execution.RecommendedRiskPercent = 0.0;
+         m_memory.Execution.EntrySignal = false;
+      }
 
       if(HasExecutionPermission())
       {
