@@ -35,6 +35,9 @@ private:
    double m_datasetIntegrityScore;
    string m_datasetIntegrityClass;
    bool   m_datasetIntegrityApproved;
+   double m_testReadinessScore;
+   string m_testReadinessClass;
+   bool   m_testReady;
    double m_winLossBalance;
    double m_probabilityBalance;
    double m_labelBalance;
@@ -99,6 +102,9 @@ public:
      m_datasetIntegrityScore = 0.0;
      m_datasetIntegrityClass = "NOT_CHECKED";
      m_datasetIntegrityApproved = false;
+     m_testReadinessScore = 0.0;
+     m_testReadinessClass = "NOT_READY";
+     m_testReady = false;
      m_winLossBalance = 0.0;
      m_probabilityBalance = 0.0;
      m_labelBalance = 0.0;
@@ -254,6 +260,17 @@ public:
 
       m_memory.LastSnapshot.DatasetIntegrityApproved =
          m_datasetIntegrityApproved;
+      
+      // STEP48.6 - Test Readiness Snapshot
+
+      m_memory.LastSnapshot.TestReadinessScore =
+         m_testReadinessScore;
+
+      m_memory.LastSnapshot.TestReadinessClass =
+         m_testReadinessClass;
+
+      m_memory.LastSnapshot.TestReady =
+         m_testReady;
       
       if(m_memory.Trade.TradeLabel == "WIN")
    m_winLabels++;
@@ -470,14 +487,17 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
              "DatasetBalanceScore",
              "DatasetBalanceClass",
              "WinLossBalance",
-             "ProbabilityBalance",
-             "LabelBalance",
-             "ArchitectureAuditScore",
-             "ArchitectureAuditClass",
-             "ArchitectureApproved",
-             "DatasetIntegrityScore",
-             "DatasetIntegrityClass",
-             "DatasetIntegrityApproved");
+              "ProbabilityBalance",
+              "LabelBalance",
+              "ArchitectureAuditScore",
+              "ArchitectureAuditClass",
+              "ArchitectureApproved",
+              "DatasetIntegrityScore",
+              "DatasetIntegrityClass",
+              "DatasetIntegrityApproved",
+              "TestReadinessScore",
+              "TestReadinessClass",
+              "TestReady");
                        
 }
    void ExportSnapshotToCSV()
@@ -560,9 +580,13 @@ if(!IsDatasetRowComplete())
                 m_memory.LastSnapshot.ArchitectureAuditClass,
                 (m_memory.LastSnapshot.ArchitectureApproved ? "TRUE" : "FALSE"),
 
-                DoubleToString(m_memory.LastSnapshot.DatasetIntegrityScore, 2),
-                m_memory.LastSnapshot.DatasetIntegrityClass,
-                (m_memory.LastSnapshot.DatasetIntegrityApproved ? "TRUE" : "FALSE"));
+               DoubleToString(m_memory.LastSnapshot.DatasetIntegrityScore, 2),
+m_memory.LastSnapshot.DatasetIntegrityClass,
+(m_memory.LastSnapshot.DatasetIntegrityApproved ? "TRUE" : "FALSE"),
+
+DoubleToString(m_memory.LastSnapshot.TestReadinessScore, 2),
+m_memory.LastSnapshot.TestReadinessClass,
+(m_memory.LastSnapshot.TestReady ? "TRUE" : "FALSE"));
                 m_totalRows++;
                 m_validRows++;
 
@@ -819,10 +843,43 @@ else if(m_datasetIntegrityScore >= 50.0)
    m_datasetIntegrityClass = "INTEGRITY_REVIEW";
    m_datasetIntegrityApproved = false;
 }
+
 else
 {
    m_datasetIntegrityClass = "INTEGRITY_FAILED";
    m_datasetIntegrityApproved = false;
+}
+  
+  // STEP48.5 - Test Readiness Score
+
+m_testReadinessScore = 0.0;
+
+if(m_datasetReadinessClass == "ML_READY")
+   m_testReadinessScore += 25.0;
+
+if(m_datasetQualityClass == "HIGH_QUALITY_DATASET")
+   m_testReadinessScore += 25.0;
+
+if(m_datasetIntegrityApproved)
+   m_testReadinessScore += 25.0;
+
+if(m_memory.LastSnapshot.ArchitectureApproved)
+   m_testReadinessScore += 25.0;
+
+if(m_testReadinessScore >= 90.0)
+{
+   m_testReadinessClass = "TEST_READY";
+   m_testReady = true;
+}
+else if(m_testReadinessScore >= 50.0)
+{
+   m_testReadinessClass = "TEST_REVIEW";
+   m_testReady = false;
+}
+else
+{
+   m_testReadinessClass = "NOT_READY";
+   m_testReady = false;
 }
    
 if(m_datasetReadinessClass == "" ||

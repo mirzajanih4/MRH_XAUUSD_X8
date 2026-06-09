@@ -159,6 +159,11 @@ public:
       LastSnapshot.DatasetIntegrityClass = "NOT_CHECKED";
       LastSnapshot.DatasetIntegrityApproved = false;
       
+      // STEP48 - Test Readiness Reset
+      LastSnapshot.TestReadinessScore = 0.0;
+      LastSnapshot.TestReadinessClass = "NOT_READY";
+      LastSnapshot.TestReady = false;
+      
       Safety.SymbolAllowed       = false;
       Safety.SpreadAllowed       = false;
       Safety.StopDistanceAllowed = false;

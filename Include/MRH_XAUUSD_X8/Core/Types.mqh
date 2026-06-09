@@ -341,6 +341,11 @@ struct MLTradeSnapshot
    double DatasetIntegrityScore;
    string DatasetIntegrityClass;
    bool   DatasetIntegrityApproved;
+   
+   //--- STEP48 Test Readiness Layer
+   double TestReadinessScore;
+   string TestReadinessClass;
+   bool   TestReady;
 };
 
 //==================================================

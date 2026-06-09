@@ -349,6 +349,11 @@ int OnInit()
    TradeManagementEngine.Init(&SharedMemory);
    MLDatasetEngine.Init(&SharedMemory);
    ArchitectureAuditEngine.Init(&SharedMemory);
+   
+   MRH_Log("SYSTEM",
+        "INIT_AUDIT",
+        "All engines initialized successfully"
+        " | SharedMemoryReady=" + IntegerToString((int)SharedMemory.Ready()));
    /*
 if(!SharedMemory.Ready())
 {
@@ -370,6 +375,7 @@ if(!SharedMemory.Ready())
 //+------------------------------------------------------------------+
 //| Expert deinitialization                                          |
 //+------------------------------------------------------------------+
+
 void OnDeinit(const int reason)
 {
    MRH_Log("SYSTEM", "DEINIT", "MRH_XAUUSD_X8 stopped");
@@ -390,16 +396,28 @@ void OnTick()
    {
       SharedMemory.BeginUpdateCycle();
       
+    MRH_Log("SYSTEM",
+        "RUNTIME_CYCLE",
+        "UpdateCycle=" + IntegerToString((int)SharedMemory.UpdateCycle));  
+      
       StructureEngine.Update();
-LiquidityEngine.Update();
-OBEngine.Update();
-ExecutionEngine.Update();
-RiskManager.Update();
-SafetyManager.Update();
-TradeManagementEngine.Update();
-MLDatasetEngine.Update();
-ArchitectureAuditEngine.Update();
-//MRH_DryExecutionCheck();
-//MRH_ExecuteTrade();
+      LiquidityEngine.Update();
+      OBEngine.Update();
+      ExecutionEngine.Update();
+      RiskManager.Update();
+      SafetyManager.Update();
+      TradeManagementEngine.Update();
+      ArchitectureAuditEngine.Update();
+      MLDatasetEngine.Update();
+      
+      if(SharedMemory.LastSnapshot.ArchitectureAuditClass == "NOT_READY")
+{
+   MRH_Log("SYSTEM",
+           "RUNTIME_AUDIT_WARNING",
+           "Architecture audit is NOT_READY during runtime"
+           " | Score=" + DoubleToString(SharedMemory.LastSnapshot.ArchitectureAuditScore, 2));
+}
+      //MRH_DryExecutionCheck();
+     //MRH_ExecuteTrade();
    }
 }
