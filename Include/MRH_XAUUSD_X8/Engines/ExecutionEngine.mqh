@@ -113,23 +113,42 @@ else if(m_memory.Execution.ConfluenceScore >= 40.0)
       return false;
 
    if(m_memory.Structure.Bias == BIAS_NEUTRAL)
+   {
+      MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=NO_STRUCTURE_BIAS");
       return false;
+   }
 
    if(m_memory.Structure.State == STRUCTURE_RANGE)
+   {
+      MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=STRUCTURE_RANGE");
       return false;
+   }
 
    if(!m_memory.OB.Valid)
+   {
+      MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=NO_VALID_OB");
       return false;
+   }
 
    if(m_memory.OB.Invalidated)
+   {
+      MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=OB_INVALIDATED");
       return false;
+   }
 
    if(m_memory.Liquidity.TargetLiquidity <= 0.0)
+   {
+      MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=NO_TARGET_LIQUIDITY");
       return false;
+   }
 
    if(!m_memory.Execution.ScoreApproved)
+   {
+      MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=LOW_PERMISSION_SCORE");
       return false;
+   }
 
+   MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=EXECUTION_ALLOWED");
    return true;
 }
    void Update()
