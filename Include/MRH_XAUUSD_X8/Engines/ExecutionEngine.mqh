@@ -107,50 +107,61 @@ else if(m_memory.Execution.ConfluenceScore >= 60.0)
 else if(m_memory.Execution.ConfluenceScore >= 40.0)
    m_memory.Execution.RecommendedRiskPercent = 0.50;
 }
-   bool HasExecutionPermission()
+
+
+  bool HasExecutionPermission()
 {
    if(m_memory == NULL)
       return false;
 
    if(m_memory.Structure.Bias == BIAS_NEUTRAL)
    {
+      m_memory.Execution.AuditReason = "NO_STRUCTURE_BIAS";
       MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=NO_STRUCTURE_BIAS");
       return false;
    }
 
    if(m_memory.Structure.State == STRUCTURE_RANGE)
    {
+      m_memory.Execution.AuditReason = "STRUCTURE_RANGE";
       MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=STRUCTURE_RANGE");
       return false;
    }
 
    if(!m_memory.OB.Valid)
    {
+      m_memory.Execution.AuditReason = "NO_VALID_OB";
       MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=NO_VALID_OB");
       return false;
    }
 
    if(m_memory.OB.Invalidated)
    {
+      m_memory.Execution.AuditReason = "OB_INVALIDATED";
       MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=OB_INVALIDATED");
       return false;
    }
 
    if(m_memory.Liquidity.TargetLiquidity <= 0.0)
    {
+      m_memory.Execution.AuditReason = "NO_TARGET_LIQUIDITY";
       MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=NO_TARGET_LIQUIDITY");
       return false;
    }
 
    if(!m_memory.Execution.ScoreApproved)
    {
+      m_memory.Execution.AuditReason = "LOW_PERMISSION_SCORE";
       MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=LOW_PERMISSION_SCORE");
       return false;
    }
 
+   m_memory.Execution.AuditReason = "EXECUTION_ALLOWED";
    MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=EXECUTION_ALLOWED");
+
    return true;
 }
+
    void Update()
    {
       if(m_memory == NULL)

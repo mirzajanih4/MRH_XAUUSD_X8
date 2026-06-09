@@ -157,7 +157,7 @@ public:
       row += "," + IntegerToString((int)m_memory.Execution.State);
       row += "," + IntegerToString((int)m_memory.Execution.EntrySignal);
       row += "," + DoubleToString(m_memory.Execution.Confidence, 2);
-
+      row += "," + m_memory.Execution.AuditReason;
       row += "," + IntegerToString((int)m_memory.Risk.RiskApproved);
       row += "," + DoubleToString(m_memory.Risk.RiskPercent, 2);
       row += "," + DoubleToString(m_memory.Risk.LotSize, 2);
@@ -463,6 +463,7 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
              "ConfluenceScore",
              "ExecutionGrade",
              "ConfidenceLevel",
+             "AuditReason",
              "RecommendedRisk",
              "RiskProfile",
              "TradeState",

@@ -212,6 +212,8 @@ struct ExecutionData
    string ConfidenceLevel;
    double ConfluenceScore;
    double RecommendedRiskPercent;
+   string AuditReason;
+   
 };
 
 //==================================================
