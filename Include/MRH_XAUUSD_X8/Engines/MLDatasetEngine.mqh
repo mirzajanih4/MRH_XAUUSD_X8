@@ -175,7 +175,7 @@ public:
       row += "," + m_memory.Trade.LabelQuality;
       row += "," + m_memory.Trade.DynamicQualityLabel;
       row += "," + m_memory.Trade.ProbabilityClass;
-
+      row += "," + m_memory.LastSnapshot.OutcomeReadinessClass;
       //--- STEP45.1 Dataset-Audit Integration
       row += "," + DoubleToString(m_memory.LastSnapshot.ArchitectureAuditScore, 2);
       row += "," + m_memory.LastSnapshot.ArchitectureAuditClass;
@@ -249,6 +249,26 @@ public:
       m_memory.Trade.DynamicQualityLabel;
       m_memory.LastSnapshot.ProbabilityClass =
       m_memory.Trade.ProbabilityClass;
+     // STEP52 - Outcome Readiness Layer
+if(m_memory.Trade.State == TRADE_NONE)
+{
+   m_memory.LastSnapshot.OutcomeReadinessClass = "NO_TRADE_CREATED";
+}
+else if(m_memory.Trade.State == TRADE_ACTIVE ||
+        m_memory.Trade.State == TRADE_BE ||
+        m_memory.Trade.State == TRADE_PARTIAL)
+{
+   m_memory.LastSnapshot.OutcomeReadinessClass = "WAITING_FOR_CLOSE";
+}
+else if(m_memory.Trade.State == TRADE_CLOSED &&
+        m_memory.Trade.Outcome != TRADE_OUTCOME_UNKNOWN)
+{
+   m_memory.LastSnapshot.OutcomeReadinessClass = "READY_FOR_LABELING";
+}
+else
+{
+   m_memory.LastSnapshot.OutcomeReadinessClass = "INSUFFICIENT_DATA";
+}
       
       // STEP46.6 - Dataset Integrity Snapshot
 
@@ -479,6 +499,7 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
              "LabelQuality",
              "DynamicQualityLabel",
              "ProbabilityClass",
+             "OutcomeReadinessClass",
              "DatasetReadinessClass",
              "DatasetQualityClass",
              "MLReadyFlag",
@@ -545,6 +566,7 @@ if(!IsDatasetRowComplete())
 
                 m_memory.LastSnapshot.ExecutionGrade,
                 m_memory.LastSnapshot.ConfidenceLevel,
+                m_memory.Execution.AuditReason,
 
                 DoubleToString(m_memory.LastSnapshot.RecommendedRisk, 2),
                 m_memory.LastSnapshot.RiskProfile,
@@ -565,6 +587,7 @@ if(!IsDatasetRowComplete())
                 m_memory.LastSnapshot.LabelQuality,
                 m_memory.LastSnapshot.DynamicQualityLabel,
                 m_memory.LastSnapshot.ProbabilityClass,
+                m_memory.LastSnapshot.OutcomeReadinessClass,
                 m_datasetReadinessClass,
                 m_datasetQualityClass,
                 (m_mlReadyFlag ? "TRUE" : "FALSE"),
@@ -581,18 +604,18 @@ if(!IsDatasetRowComplete())
                 m_memory.LastSnapshot.ArchitectureAuditClass,
                 (m_memory.LastSnapshot.ArchitectureApproved ? "TRUE" : "FALSE"),
 
-               DoubleToString(m_memory.LastSnapshot.DatasetIntegrityScore, 2),
-m_memory.LastSnapshot.DatasetIntegrityClass,
-(m_memory.LastSnapshot.DatasetIntegrityApproved ? "TRUE" : "FALSE"),
+                DoubleToString(m_memory.LastSnapshot.DatasetIntegrityScore, 2),
+                m_memory.LastSnapshot.DatasetIntegrityClass,
+                (m_memory.LastSnapshot.DatasetIntegrityApproved ? "TRUE" : "FALSE"),
 
-DoubleToString(m_memory.LastSnapshot.TestReadinessScore, 2),
-m_memory.LastSnapshot.TestReadinessClass,
-(m_memory.LastSnapshot.TestReady ? "TRUE" : "FALSE"));
+                DoubleToString(m_memory.LastSnapshot.TestReadinessScore, 2),
+                m_memory.LastSnapshot.TestReadinessClass,
+                (m_memory.LastSnapshot.TestReady ? "TRUE" : "FALSE"));
                 m_totalRows++;
                 m_validRows++;
 
-if(m_memory.LastSnapshot.TradeState == TRADE_CLOSED)
-   m_closedTradesCaptured++;
+   if(m_memory.LastSnapshot.TradeState == TRADE_CLOSED)
+       m_closedTradesCaptured++;
    
    if((m_winLabels + m_lossLabels + m_breakevenLabels) > m_totalRows)
 {
