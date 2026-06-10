@@ -174,9 +174,11 @@ public:
       row += "," + m_memory.Trade.AdvancedLabel;
       row += "," + m_memory.Trade.LabelQuality;
       row += "," + m_memory.Trade.DynamicQualityLabel;
-      row += "," + m_memory.Trade.ProbabilityClass;
-      row += "," + m_memory.LastSnapshot.OutcomeReadinessClass;
-      row += "," + m_memory.LastSnapshot.LabelReadinessClass;
+row += "," + m_memory.Trade.ProbabilityClass;
+row += "," + m_memory.LastSnapshot.OutcomeReadinessClass;
+row += "," + m_memory.LastSnapshot.LabelReadinessClass;
+row += "," + m_memory.LastSnapshot.OutcomeTrackingClass;
+
       //--- STEP45.1 Dataset-Audit Integration
       row += "," + DoubleToString(m_memory.LastSnapshot.ArchitectureAuditScore, 2);
       row += "," + m_memory.LastSnapshot.ArchitectureAuditClass;
@@ -291,6 +293,32 @@ else
 {
    m_memory.LastSnapshot.LabelReadinessClass = "LABEL_INCONSISTENT";
 }  
+      
+      // STEP56 - Outcome Tracking Foundation
+if(m_memory.Trade.State == TRADE_NONE)
+{
+   m_memory.LastSnapshot.OutcomeTrackingClass = "NO_TRADE_TO_TRACK";
+}
+else if(m_memory.Trade.State == TRADE_ACTIVE ||
+        m_memory.Trade.State == TRADE_BE ||
+        m_memory.Trade.State == TRADE_PARTIAL)
+{
+   m_memory.LastSnapshot.OutcomeTrackingClass = "TRADE_IN_PROGRESS";
+}
+else if(m_memory.Trade.State == TRADE_CLOSED &&
+        m_memory.Trade.Outcome != TRADE_OUTCOME_UNKNOWN)
+{
+   m_memory.LastSnapshot.OutcomeTrackingClass = "OUTCOME_FINALIZED";
+}
+else if(m_memory.Trade.State == TRADE_CLOSED &&
+        m_memory.Trade.Outcome == TRADE_OUTCOME_UNKNOWN)
+{
+   m_memory.LastSnapshot.OutcomeTrackingClass = "CLOSED_OUTCOME_MISSING";
+}
+else
+{
+   m_memory.LastSnapshot.OutcomeTrackingClass = "TRACKING_REVIEW";
+}
       
       // STEP46.6 - Dataset Integrity Snapshot
 
@@ -523,6 +551,7 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
              "ProbabilityClass",
 "OutcomeReadinessClass",
 "LabelReadinessClass",
+"OutcomeTrackingClass",
 "DatasetReadinessClass",
              "DatasetQualityClass",
              "MLReadyFlag",
@@ -609,9 +638,10 @@ if(!IsDatasetRowComplete())
                 m_memory.LastSnapshot.AdvancedLabel,
                 m_memory.LastSnapshot.LabelQuality,
                 m_memory.LastSnapshot.DynamicQualityLabel,
-                m_memory.LastSnapshot.ProbabilityClass,
+               m_memory.LastSnapshot.ProbabilityClass,
 m_memory.LastSnapshot.OutcomeReadinessClass,
 m_memory.LastSnapshot.LabelReadinessClass,
+m_memory.LastSnapshot.OutcomeTrackingClass,
 m_datasetReadinessClass,
                 m_datasetQualityClass,
                 (m_mlReadyFlag ? "TRUE" : "FALSE"),
