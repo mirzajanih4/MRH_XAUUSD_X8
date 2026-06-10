@@ -187,8 +187,8 @@ void PopulateTradeOutcomeOnClose()
    if(m_memory.Trade.State != TRADE_CLOSED)
       return;
 
-   if(m_memory.Trade.CloseTime > 0)
-      return;
+   // if(m_memory.Trade.CloseTime > 0)
+//    return;
 
    double entry = m_memory.Execution.EntryPrice;
    double sl    = m_memory.Execution.StopLoss;
@@ -212,8 +212,12 @@ void PopulateTradeOutcomeOnClose()
    else
       m_memory.Trade.FinalRR = 0.0;
 
-   m_memory.Trade.FinalProfit =
-   closePrice - entry;
+   if(m_memory.Structure.Bias == BIAS_BULLISH)
+   m_memory.Trade.FinalProfit = closePrice - entry;
+else if(m_memory.Structure.Bias == BIAS_BEARISH)
+   m_memory.Trade.FinalProfit = entry - closePrice;
+else
+   m_memory.Trade.FinalProfit = 0.0;
 
    if(m_memory.Trade.FinalRR > 0.0)
       m_memory.Trade.Outcome = TRADE_OUTCOME_WIN;
