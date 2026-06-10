@@ -166,6 +166,7 @@ public:
       row += "," + DoubleToString(m_memory.Trade.CurrentRR, 2);
 
       row += "," + TradeOutcomeToString(m_memory.Trade.Outcome);
+      row += "," + IntegerToString((int)m_memory.Trade.LossCause);
       row += "," + DoubleToString(m_memory.Trade.FinalProfit, 2);
       row += "," + DoubleToString(m_memory.Trade.FinalRR, 2);
       row += "," + DoubleToString(m_memory.Trade.ClosePrice, _Digits);
@@ -230,6 +231,9 @@ row += "," + m_memory.LastSnapshot.TradeLifecycleClass;
 
       m_memory.LastSnapshot.Outcome =
          m_memory.Trade.Outcome;
+
+      m_memory.LastSnapshot.LossCause =
+         m_memory.Trade.LossCause;
 
       m_memory.LastSnapshot.FinalProfit =
          m_memory.Trade.FinalProfit;

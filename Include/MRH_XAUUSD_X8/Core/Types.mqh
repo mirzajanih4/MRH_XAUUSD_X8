@@ -76,6 +76,17 @@ enum ENUM_TRADE_OUTCOME
    TRADE_OUTCOME_BREAKEVEN = 3
 };
 
+enum ENUM_MRH_LOSS_CAUSE
+{
+   MRH_LOSS_CAUSE_NONE = 0,
+   MRH_LOSS_CAUSE_STOPLOSS,
+   MRH_LOSS_CAUSE_STRUCTURE_FLIP,
+   MRH_LOSS_CAUSE_OB_INVALIDATION,
+   MRH_LOSS_CAUSE_LIQUIDITY_FAILURE,
+   MRH_LOSS_CAUSE_WEAK_EXECUTION,
+   MRH_LOSS_CAUSE_SPREAD_OR_COST,
+   MRH_LOSS_CAUSE_UNKNOWN
+};
 //==================================================
 // Swing Type
 //==================================================
@@ -255,6 +266,9 @@ struct TradeData
    string ExitReason;
 
    ENUM_TRADE_OUTCOME Outcome;
+   
+   ENUM_MRH_LOSS_CAUSE LossCause;
+   
    double FinalProfit;
    double FinalRR;
    double ClosePrice;
@@ -285,6 +299,9 @@ struct MLDataRow
    double CurrentRR;
 
    ENUM_TRADE_OUTCOME Outcome;
+   
+   ENUM_MRH_LOSS_CAUSE LossCause;
+   
    double FinalProfit;
    double FinalRR;
    double ClosePrice;
@@ -324,6 +341,9 @@ struct MLTradeSnapshot
    string ExitReason;
 
    ENUM_TRADE_OUTCOME Outcome;
+ 
+   ENUM_MRH_LOSS_CAUSE LossCause;
+   
    double FinalProfit;
    double FinalRR;
    double ClosePrice;

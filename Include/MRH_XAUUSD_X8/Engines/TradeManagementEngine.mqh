@@ -225,6 +225,24 @@ else
       m_memory.Trade.Outcome = TRADE_OUTCOME_LOSS;
    else
       m_memory.Trade.Outcome = TRADE_OUTCOME_BREAKEVEN;
+      
+      m_memory.Trade.LossCause = MRH_LOSS_CAUSE_NONE;
+
+if(m_memory.Trade.Outcome == TRADE_OUTCOME_LOSS)
+{
+   if(m_memory.Trade.ExitReason == EXIT_STOPLOSS)
+      m_memory.Trade.LossCause = MRH_LOSS_CAUSE_STOPLOSS;
+   else if(m_memory.OB.Invalidated)
+      m_memory.Trade.LossCause = MRH_LOSS_CAUSE_OB_INVALIDATION;
+   else if(m_memory.Structure.State == STRUCTURE_TRANSITION)
+      m_memory.Trade.LossCause = MRH_LOSS_CAUSE_STRUCTURE_FLIP;
+   else if(!m_memory.Liquidity.SweepDetected)
+      m_memory.Trade.LossCause = MRH_LOSS_CAUSE_LIQUIDITY_FAILURE;
+   else if(m_memory.Execution.Confidence < 50.0)
+      m_memory.Trade.LossCause = MRH_LOSS_CAUSE_WEAK_EXECUTION;
+   else
+      m_memory.Trade.LossCause = MRH_LOSS_CAUSE_UNKNOWN;
+}
 
       GenerateTradeLabel();
 
@@ -233,7 +251,9 @@ else
            "Outcome populated"
            " | FinalRR=" + DoubleToString(m_memory.Trade.FinalRR, 2) +
            " | ClosePrice=" + DoubleToString(m_memory.Trade.ClosePrice, _Digits) +
-           " | TradeLabel=" + m_memory.Trade.TradeLabel);
+           " | TradeLabel=" + m_memory.Trade.TradeLabel +
+           " | LossCause=" + IntegerToString((int)m_memory.Trade.LossCause));
+           
 }
 
 void GenerateTradeLabel()
