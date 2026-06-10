@@ -162,6 +162,57 @@ else if(m_memory.Execution.ConfluenceScore >= 40.0)
    return true;
 }
 
+void BuildExecutionSetup()
+{
+   if(m_memory == NULL)
+      return;
+
+   if(!HasExecutionPermission())
+      return;
+
+   double riskDistance = 0.0;
+
+   // SELL
+   if(m_memory.Structure.Bias == BIAS_BEARISH)
+   {
+      m_memory.Execution.EntryPrice = m_memory.OB.Low;
+      m_memory.Execution.StopLoss   = m_memory.OB.High;
+
+      riskDistance =
+         m_memory.Execution.StopLoss -
+         m_memory.Execution.EntryPrice;
+
+      m_memory.Execution.TakeProfit =
+         m_memory.Execution.EntryPrice -
+         (riskDistance * 2.0);
+   }
+
+   // BUY
+   else if(m_memory.Structure.Bias == BIAS_BULLISH)
+   {
+      m_memory.Execution.EntryPrice = m_memory.OB.High;
+      m_memory.Execution.StopLoss   = m_memory.OB.Low;
+
+      riskDistance =
+         m_memory.Execution.EntryPrice -
+         m_memory.Execution.StopLoss;
+
+      m_memory.Execution.TakeProfit =
+         m_memory.Execution.EntryPrice +
+         (riskDistance * 2.0);
+   }
+
+   if(riskDistance <= 0.0)
+      return;
+
+   m_memory.Execution.EntrySignal = true;
+   m_memory.Execution.State = EXECUTION_READY;
+
+   MRH_Log("EXECUTION_ENGINE",
+           "READY",
+           "Execution setup created");
+}
+
    void Update()
    {
       if(m_memory == NULL)
@@ -186,6 +237,7 @@ else if(m_memory.Execution.ConfluenceScore >= 40.0)
       {
          m_memory.Execution.State = EXECUTION_WAITING;
          MRH_Log("EXECUTION_ENGINE", "PERMISSION", "Execution permission granted by score");
+         BuildExecutionSetup();
       }
       else
       {
