@@ -336,6 +336,7 @@ struct MLTradeSnapshot
 string OutcomeReadinessClass;
 string LabelReadinessClass;
 string OutcomeTrackingClass;
+string TradeLifecycleClass;
 
    //--- STEP44.2 Architecture Audit Layer
    double ArchitectureAuditScore;

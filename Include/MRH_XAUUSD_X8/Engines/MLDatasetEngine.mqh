@@ -178,7 +178,7 @@ row += "," + m_memory.Trade.ProbabilityClass;
 row += "," + m_memory.LastSnapshot.OutcomeReadinessClass;
 row += "," + m_memory.LastSnapshot.LabelReadinessClass;
 row += "," + m_memory.LastSnapshot.OutcomeTrackingClass;
-
+row += "," + m_memory.LastSnapshot.TradeLifecycleClass;
       //--- STEP45.1 Dataset-Audit Integration
       row += "," + DoubleToString(m_memory.LastSnapshot.ArchitectureAuditScore, 2);
       row += "," + m_memory.LastSnapshot.ArchitectureAuditClass;
@@ -319,6 +319,34 @@ else
 {
    m_memory.LastSnapshot.OutcomeTrackingClass = "TRACKING_REVIEW";
 }
+      
+ // STEP57 - Trade Lifecycle Audit Layer
+switch(m_memory.Trade.State)
+{
+   case TRADE_NONE:
+      m_memory.LastSnapshot.TradeLifecycleClass = "NO_TRADE";
+      break;
+
+   case TRADE_ACTIVE:
+      m_memory.LastSnapshot.TradeLifecycleClass = "TRADE_ACTIVE";
+      break;
+
+   case TRADE_BE:
+      m_memory.LastSnapshot.TradeLifecycleClass = "TRADE_BE";
+      break;
+
+   case TRADE_PARTIAL:
+      m_memory.LastSnapshot.TradeLifecycleClass = "TRADE_PARTIAL";
+      break;
+
+   case TRADE_CLOSED:
+      m_memory.LastSnapshot.TradeLifecycleClass = "TRADE_CLOSED";
+      break;
+
+   default:
+      m_memory.LastSnapshot.TradeLifecycleClass = "LIFECYCLE_UNKNOWN";
+      break;
+}     
       
       // STEP46.6 - Dataset Integrity Snapshot
 
@@ -552,6 +580,7 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
 "OutcomeReadinessClass",
 "LabelReadinessClass",
 "OutcomeTrackingClass",
+"TradeLifecycleClass",
 "DatasetReadinessClass",
              "DatasetQualityClass",
              "MLReadyFlag",
@@ -642,6 +671,7 @@ if(!IsDatasetRowComplete())
 m_memory.LastSnapshot.OutcomeReadinessClass,
 m_memory.LastSnapshot.LabelReadinessClass,
 m_memory.LastSnapshot.OutcomeTrackingClass,
+m_memory.LastSnapshot.TradeLifecycleClass,
 m_datasetReadinessClass,
                 m_datasetQualityClass,
                 (m_mlReadyFlag ? "TRUE" : "FALSE"),
