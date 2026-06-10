@@ -178,6 +178,7 @@ row += "," + m_memory.Trade.ProbabilityClass;
 row += "," + m_memory.LastSnapshot.OutcomeReadinessClass;
 row += "," + m_memory.LastSnapshot.LabelReadinessClass;
 row += "," + m_memory.LastSnapshot.OutcomeTrackingClass;
+row += "," + m_memory.LastSnapshot.TradeQualityAuditClass;
 row += "," + m_memory.LastSnapshot.TradeLifecycleClass;
       //--- STEP45.1 Dataset-Audit Integration
       row += "," + DoubleToString(m_memory.LastSnapshot.ArchitectureAuditScore, 2);
@@ -347,6 +348,41 @@ switch(m_memory.Trade.State)
       m_memory.LastSnapshot.TradeLifecycleClass = "LIFECYCLE_UNKNOWN";
       break;
 }     
+  
+  // STEP62 - Trade Quality Audit Layer
+if(m_memory.Trade.State != TRADE_CLOSED)
+{
+   m_memory.LastSnapshot.TradeQualityAuditClass =
+      "TRADE_NOT_FINISHED";
+}
+else if(m_memory.Trade.Outcome == TRADE_OUTCOME_WIN)
+{
+   m_memory.LastSnapshot.TradeQualityAuditClass =
+      "QUALITY_WIN";
+}
+else if(m_memory.Trade.Outcome == TRADE_OUTCOME_LOSS)
+{
+   if(m_memory.Trade.ExitReason == EXIT_STOPLOSS)
+   {
+      m_memory.LastSnapshot.TradeQualityAuditClass =
+         "LOSS_BY_STOPLOSS";
+   }
+   else
+   {
+      m_memory.LastSnapshot.TradeQualityAuditClass =
+         "LOSS_OTHER_REASON";
+   }
+}
+else if(m_memory.Trade.Outcome == TRADE_OUTCOME_BREAKEVEN)
+{
+   m_memory.LastSnapshot.TradeQualityAuditClass =
+      "BREAKEVEN_TRADE";
+}
+else
+{
+   m_memory.LastSnapshot.TradeQualityAuditClass =
+      "QUALITY_REVIEW";
+}
       
       // STEP46.6 - Dataset Integrity Snapshot
 
@@ -580,6 +616,7 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
 "OutcomeReadinessClass",
 "LabelReadinessClass",
 "OutcomeTrackingClass",
+"TradeQualityAuditClass",
 "TradeLifecycleClass",
 "DatasetReadinessClass",
              "DatasetQualityClass",
@@ -671,6 +708,7 @@ if(!IsDatasetRowComplete())
 m_memory.LastSnapshot.OutcomeReadinessClass,
 m_memory.LastSnapshot.LabelReadinessClass,
 m_memory.LastSnapshot.OutcomeTrackingClass,
+m_memory.LastSnapshot.TradeQualityAuditClass,
 m_memory.LastSnapshot.TradeLifecycleClass,
 m_datasetReadinessClass,
                 m_datasetQualityClass,
