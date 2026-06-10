@@ -290,7 +290,18 @@ else if(m_memory.Trade.LabelQuality == "LOW_QUALITY")
 
 else
    m_memory.Trade.DynamicQualityLabel = "UNRATED";
+   
+      // STEP54 - Outcome Labeling Audit Layer
+   MRH_Log("TRADE_MANAGEMENT_ENGINE",
+           "LABEL_AUDIT",
+           "Outcome=" + IntegerToString((int)m_memory.Trade.Outcome) +
+           " | TradeLabel=" + m_memory.Trade.TradeLabel +
+           " | AdvancedLabel=" + m_memory.Trade.AdvancedLabel +
+           " | LabelQuality=" + m_memory.Trade.LabelQuality +
+           " | DynamicQualityLabel=" + m_memory.Trade.DynamicQualityLabel);
 }
+
+
    void DebugTradeState()
    {
       if(m_memory == NULL)
