@@ -45,12 +45,14 @@ public:
 
    return 0.0;
 }
-void DetectBasicOB()
+
+bool DetectBasicOB()
 {
    if(m_memory == NULL)
-      return;
+      return false;
 
    m_memory.OB.Valid = false;
+   bool detected = false;
 
    if(m_memory.Structure.Bias == BIAS_BULLISH)
    {
@@ -60,9 +62,13 @@ void DetectBasicOB()
          m_memory.OB.High = iHigh(_Symbol, _Period, 2);
          m_memory.OB.Low  = iLow(_Symbol, _Period, 2);
          m_memory.OB.Valid = true;
+         m_memory.OB.Mitigated = false;
+         m_memory.OB.Invalidated = false;
          m_memory.OB.Strength = OB_MEDIUM;
          m_memory.OB.OBScore = GetOBStrengthScore();
          m_memory.OB.Freshness = 1;
+         detected = true;
+
          MRH_Log("OB_ENGINE", "VALID", "Basic bullish OB detected");
       }
    }
@@ -74,13 +80,20 @@ void DetectBasicOB()
          m_memory.OB.High = iHigh(_Symbol, _Period, 2);
          m_memory.OB.Low  = iLow(_Symbol, _Period, 2);
          m_memory.OB.Valid = true;
+         m_memory.OB.Mitigated = false;
+         m_memory.OB.Invalidated = false;
          m_memory.OB.Strength = OB_MEDIUM;
          m_memory.OB.OBScore = GetOBStrengthScore();
          m_memory.OB.Freshness = 1;
+         detected = true;
+
          MRH_Log("OB_ENGINE", "VALID", "Basic bearish OB detected");
       }
    }
+
+   return detected;
 }
+
 void CheckOBLifecycle()
 {
    if(m_memory == NULL)
@@ -171,11 +184,21 @@ else if(m_memory.OB.Strength == OB_INSTITUTIONAL)
       return;
    }
 
-   DetectBasicOB();
-   CheckOBLifecycle();
+   bool newOBDetected = DetectBasicOB();
+
+   if(newOBDetected)
+   {
+      MRH_Log("OB_ENGINE",
+              "LIFECYCLE_SKIP",
+              "New OB detected; lifecycle check skipped for this cycle");
+   }
+   else
+   {
+      CheckOBLifecycle();
+   }
+
    DebugOBState();
    MRH_Log("OB_ENGINE", "UPDATE", "New bar update");
 }
 };
-
 #endif
