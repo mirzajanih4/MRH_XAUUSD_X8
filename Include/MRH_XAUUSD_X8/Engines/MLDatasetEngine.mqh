@@ -176,6 +176,7 @@ public:
       row += "," + m_memory.Trade.DynamicQualityLabel;
       row += "," + m_memory.Trade.ProbabilityClass;
       row += "," + m_memory.LastSnapshot.OutcomeReadinessClass;
+      row += "," + m_memory.LastSnapshot.LabelReadinessClass;
       //--- STEP45.1 Dataset-Audit Integration
       row += "," + DoubleToString(m_memory.LastSnapshot.ArchitectureAuditScore, 2);
       row += "," + m_memory.LastSnapshot.ArchitectureAuditClass;
@@ -269,6 +270,27 @@ else
 {
    m_memory.LastSnapshot.OutcomeReadinessClass = "INSUFFICIENT_DATA";
 }
+    
+  // STEP55 - Label Readiness Layer
+if(m_memory.Trade.State == TRADE_NONE)
+{
+   m_memory.LastSnapshot.LabelReadinessClass = "NO_LABEL_AVAILABLE";
+}
+else if(m_memory.Trade.State == TRADE_ACTIVE ||
+        m_memory.Trade.State == TRADE_BE ||
+        m_memory.Trade.State == TRADE_PARTIAL)
+{
+   m_memory.LastSnapshot.LabelReadinessClass = "WAITING_FOR_TRADE_CLOSE";
+}
+else if(m_memory.Trade.State == TRADE_CLOSED &&
+        m_memory.Trade.TradeLabel != "UNLABELED")
+{
+   m_memory.LastSnapshot.LabelReadinessClass = "LABEL_READY";
+}
+else
+{
+   m_memory.LastSnapshot.LabelReadinessClass = "LABEL_INCONSISTENT";
+}  
       
       // STEP46.6 - Dataset Integrity Snapshot
 
@@ -499,8 +521,9 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
              "LabelQuality",
              "DynamicQualityLabel",
              "ProbabilityClass",
-             "OutcomeReadinessClass",
-             "DatasetReadinessClass",
+"OutcomeReadinessClass",
+"LabelReadinessClass",
+"DatasetReadinessClass",
              "DatasetQualityClass",
              "MLReadyFlag",
              "MLFeatureCount",
@@ -587,8 +610,9 @@ if(!IsDatasetRowComplete())
                 m_memory.LastSnapshot.LabelQuality,
                 m_memory.LastSnapshot.DynamicQualityLabel,
                 m_memory.LastSnapshot.ProbabilityClass,
-                m_memory.LastSnapshot.OutcomeReadinessClass,
-                m_datasetReadinessClass,
+m_memory.LastSnapshot.OutcomeReadinessClass,
+m_memory.LastSnapshot.LabelReadinessClass,
+m_datasetReadinessClass,
                 m_datasetQualityClass,
                 (m_mlReadyFlag ? "TRUE" : "FALSE"),
                 IntegerToString(m_mlFeatureCount),

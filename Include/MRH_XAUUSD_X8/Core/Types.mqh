@@ -334,6 +334,7 @@ struct MLTradeSnapshot
    string DynamicQualityLabel;
    string ProbabilityClass;
    string OutcomeReadinessClass;
+   string LabelReadinessClass;
    //--- STEP44.2 Architecture Audit Layer
    double ArchitectureAuditScore;
    string ArchitectureAuditClass;
