@@ -41,6 +41,11 @@ private:
    double m_datasetCompletenessScore;
 string m_datasetCompletenessClass;
 bool   m_datasetComplete;
+
+double m_datasetReliabilityScore;
+string m_datasetReliabilityClass;
+bool   m_datasetReliable;
+
    double m_winLossBalance;
    double m_probabilityBalance;
    double m_labelBalance;
@@ -431,6 +436,19 @@ m_memory.LastSnapshot.DatasetCompletenessClass =
 m_memory.LastSnapshot.DatasetComplete =
    m_datasetComplete;
       
+      CalculateDatasetReliability();
+
+// STEP67.1 - Dataset Reliability Snapshot
+
+m_memory.LastSnapshot.DatasetReliabilityScore =
+   m_datasetReliabilityScore;
+
+m_memory.LastSnapshot.DatasetReliabilityClass =
+   m_datasetReliabilityClass;
+
+m_memory.LastSnapshot.DatasetReliable =
+   m_datasetReliable;
+      
       if(m_memory.Trade.TradeLabel == "WIN")
    m_winLabels++;
 
@@ -652,6 +670,51 @@ void CalculateDatasetCompleteness()
    }
 }
 
+void CalculateDatasetReliability()
+{
+   if(m_memory == NULL)
+      return;
+
+   double score = 0.0;
+   int totalChecks = 5;
+   int passedChecks = 0;
+
+   if(m_memory.LastSnapshot.DatasetIntegrityApproved)
+      passedChecks++;
+
+   if(m_memory.LastSnapshot.TestReady)
+      passedChecks++;
+
+   if(m_memory.LastSnapshot.DatasetComplete)
+      passedChecks++;
+
+   if(m_memory.LastSnapshot.ArchitectureApproved)
+      passedChecks++;
+
+   if(m_memory.LastSnapshot.Outcome != TRADE_OUTCOME_UNKNOWN)
+      passedChecks++;
+
+   score = ((double)passedChecks / (double)totalChecks) * 100.0;
+
+   m_datasetReliabilityScore = score;
+
+   if(score >= 80.0)
+   {
+      m_datasetReliabilityClass = "RELIABLE";
+      m_datasetReliable = true;
+   }
+   else if(score >= 60.0)
+   {
+      m_datasetReliabilityClass = "MODERATE";
+      m_datasetReliable = false;
+   }
+   else
+   {
+      m_datasetReliabilityClass = "UNRELIABLE";
+      m_datasetReliable = false;
+   }
+}
+
 void LogDatasetSessionSummary()
 {
    if(m_totalRows <= 0)
@@ -726,9 +789,12 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
               "TestReadinessScore",
               "TestReadinessClass",
               "TestReady",
-              "DatasetCompletenessScore",
+             "DatasetCompletenessScore",
 "DatasetCompletenessClass",
-"DatasetComplete");
+"DatasetComplete",
+"DatasetReliabilityScore",
+"DatasetReliabilityClass",
+"DatasetReliable");
                        
 }
    void ExportSnapshotToCSV()
@@ -831,8 +897,11 @@ m_datasetReadinessClass,
                 
 DoubleToString(m_memory.LastSnapshot.DatasetCompletenessScore, 2),
 m_memory.LastSnapshot.DatasetCompletenessClass,
-(m_memory.LastSnapshot.DatasetComplete ? "TRUE" : "FALSE"));
-                
+(m_memory.LastSnapshot.DatasetComplete ? "TRUE" : "FALSE"),
+
+DoubleToString(m_memory.LastSnapshot.DatasetReliabilityScore, 2),
+m_memory.LastSnapshot.DatasetReliabilityClass,
+(m_memory.LastSnapshot.DatasetReliable ? "TRUE" : "FALSE"));
                 m_totalRows++;
                 m_validRows++;
 

@@ -395,6 +395,12 @@ string TradeLifecycleClass;
    double DatasetCompletenessScore;
    string DatasetCompletenessClass;
    bool   DatasetComplete;
+   
+   //--- STEP67 Dataset Reliability Layer
+double DatasetReliabilityScore;
+string DatasetReliabilityClass;
+bool   DatasetReliable;
+
 };
 
 //==================================================
