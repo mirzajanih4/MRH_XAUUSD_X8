@@ -406,6 +406,11 @@ double DatasetStabilityScore;
 string DatasetStabilityClass;
 bool   DatasetStable;
 
+//--- STEP69 Dataset Health Layer
+double DatasetHealthScore;
+string DatasetHealthClass;
+bool   DatasetHealthy;
+
 };
 
 //==================================================

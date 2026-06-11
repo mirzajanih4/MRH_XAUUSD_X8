@@ -50,6 +50,10 @@ double m_datasetStabilityScore;
 string m_datasetStabilityClass;
 bool   m_datasetStable;
 
+double m_datasetHealthScore;
+string m_datasetHealthClass;
+bool   m_datasetHealthy;
+
    double m_winLossBalance;
    double m_probabilityBalance;
    double m_labelBalance;
@@ -466,6 +470,20 @@ m_memory.LastSnapshot.DatasetStabilityClass =
 m_memory.LastSnapshot.DatasetStable =
    m_datasetStable; 
       
+   CalculateDatasetHealth();
+
+// STEP69.1 - Dataset Health Snapshot
+
+m_memory.LastSnapshot.DatasetHealthScore =
+   m_datasetHealthScore;
+
+m_memory.LastSnapshot.DatasetHealthClass =
+   m_datasetHealthClass;
+
+m_memory.LastSnapshot.DatasetHealthy =
+   m_datasetHealthy;
+      
+      
       if(m_memory.Trade.TradeLabel == "WIN")
    m_winLabels++;
 
@@ -777,6 +795,34 @@ void CalculateDatasetStability()
    }
 }
 
+void CalculateDatasetHealth()
+{
+   if(m_memory == NULL)
+      return;
+
+   m_datasetHealthScore =
+      (m_datasetIntegrityScore +
+       m_datasetCompletenessScore +
+       m_datasetReliabilityScore +
+       m_datasetStabilityScore) / 4.0;
+
+   if(m_datasetHealthScore >= 80.0)
+   {
+      m_datasetHealthClass = "HEALTHY";
+      m_datasetHealthy = true;
+   }
+   else if(m_datasetHealthScore >= 60.0)
+   {
+      m_datasetHealthClass = "WARNING";
+      m_datasetHealthy = false;
+   }
+   else
+   {
+      m_datasetHealthClass = "CRITICAL";
+      m_datasetHealthy = false;
+   }
+}
+
 void LogDatasetSessionSummary()
 {
    if(m_totalRows <= 0)
@@ -859,7 +905,10 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
 "DatasetReliable",
 "DatasetStabilityScore",
 "DatasetStabilityClass",
-"DatasetStable");
+"DatasetStable",
+"DatasetHealthScore",
+"DatasetHealthClass",
+"DatasetHealthy");
                        
 }
    void ExportSnapshotToCSV()
@@ -970,7 +1019,11 @@ m_memory.LastSnapshot.DatasetReliabilityClass,
 
 DoubleToString(m_memory.LastSnapshot.DatasetStabilityScore, 2),
 m_memory.LastSnapshot.DatasetStabilityClass,
-(m_memory.LastSnapshot.DatasetStable ? "TRUE" : "FALSE"));
+(m_memory.LastSnapshot.DatasetStable ? "TRUE" : "FALSE"),
+
+DoubleToString(m_memory.LastSnapshot.DatasetHealthScore, 2),
+m_memory.LastSnapshot.DatasetHealthClass,
+(m_memory.LastSnapshot.DatasetHealthy ? "TRUE" : "FALSE"));
 
                 m_totalRows++;
                 m_validRows++;
