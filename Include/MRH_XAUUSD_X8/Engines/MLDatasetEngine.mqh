@@ -613,6 +613,8 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
              "CurrentRR",
              "ExitReason",
              "Outcome",
+             "LossCause",
+             "WinCause",
              "FinalProfit",
              "FinalRR",
              "ClosePrice",
