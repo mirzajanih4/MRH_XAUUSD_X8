@@ -456,6 +456,12 @@ double ValidationPerformanceScore;
 string ValidationPerformanceClass;
 bool   ValidationPerformanceReady;
 
+// STEP77 - Validation Certification Layer
+double ValidationCertificationScore;
+string ValidationCertificationClass;
+bool   ValidationCertified;
+string ValidationCertificationReason;
+
 };
 
 //==================================================
