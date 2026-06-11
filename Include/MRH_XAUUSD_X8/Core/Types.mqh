@@ -416,6 +416,11 @@ double DatasetConfidenceScore;
 string DatasetConfidenceClass;
 bool   DatasetConfidenceApproved;
 
+//--- STEP71 Dataset Approval Layer
+double DatasetApprovalScore;
+string DatasetApprovalClass;
+bool   DatasetApproved;
+
 };
 
 //==================================================
