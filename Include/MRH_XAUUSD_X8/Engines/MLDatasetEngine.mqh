@@ -54,6 +54,10 @@ double m_datasetHealthScore;
 string m_datasetHealthClass;
 bool   m_datasetHealthy;
 
+double m_datasetConfidenceScore;
+string m_datasetConfidenceClass;
+bool   m_datasetConfidenceApproved;
+
    double m_winLossBalance;
    double m_probabilityBalance;
    double m_labelBalance;
@@ -483,6 +487,18 @@ m_memory.LastSnapshot.DatasetHealthClass =
 m_memory.LastSnapshot.DatasetHealthy =
    m_datasetHealthy;
       
+      CalculateDatasetConfidence();
+
+// STEP70.1 - Dataset Confidence Snapshot
+
+m_memory.LastSnapshot.DatasetConfidenceScore =
+   m_datasetConfidenceScore;
+
+m_memory.LastSnapshot.DatasetConfidenceClass =
+   m_datasetConfidenceClass;
+
+m_memory.LastSnapshot.DatasetConfidenceApproved =
+   m_datasetConfidenceApproved;
       
       if(m_memory.Trade.TradeLabel == "WIN")
    m_winLabels++;
@@ -823,6 +839,34 @@ void CalculateDatasetHealth()
    }
 }
 
+void CalculateDatasetConfidence()
+{
+   if(m_memory == NULL)
+      return;
+
+   m_datasetConfidenceScore =
+      (m_datasetCompletenessScore +
+       m_datasetReliabilityScore +
+       m_datasetStabilityScore +
+       m_datasetHealthScore) / 4.0;
+
+   if(m_datasetConfidenceScore >= 80.0)
+   {
+      m_datasetConfidenceClass = "HIGH_CONFIDENCE";
+      m_datasetConfidenceApproved = true;
+   }
+   else if(m_datasetConfidenceScore >= 60.0)
+   {
+      m_datasetConfidenceClass = "MEDIUM_CONFIDENCE";
+      m_datasetConfidenceApproved = false;
+   }
+   else
+   {
+      m_datasetConfidenceClass = "LOW_CONFIDENCE";
+      m_datasetConfidenceApproved = false;
+   }
+}
+
 void LogDatasetSessionSummary()
 {
    if(m_totalRows <= 0)
@@ -838,6 +882,7 @@ void LogDatasetSessionSummary()
            " | SkippedRows=" + IntegerToString(m_skippedRows) +
            " | ClosedTradesCaptured=" + IntegerToString(m_closedTradesCaptured));
 }
+
 void WriteCSVHeaderIfNeeded(int fileHandle)
 {
    if(fileHandle == INVALID_HANDLE)
@@ -846,71 +891,13 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
    if(FileSize(fileHandle) > 0)
       return;
 
-   FileWrite(fileHandle,
-             "SnapshotTime",
-             "LiquidityScore",
-             "OBScore",
-             "PermissionScore",
-             "ConfluenceScore",
-             "ExecutionGrade",
-             "ConfidenceLevel",
-             "AuditReason",
-             "RecommendedRisk",
-             "RiskProfile",
-             "TradeState",
-             "CurrentRR",
-             "ExitReason",
-             "Outcome",
-             "LossCause",
-             "WinCause",
-             "FinalProfit",
-             "FinalRR",
-             "ClosePrice",
-             "CloseTime",
-             "TradeLabel",
-             "AdvancedLabel",
-             "LabelQuality",
-             "DynamicQualityLabel",
-             "ProbabilityClass",
-"OutcomeReadinessClass",
-"LabelReadinessClass",
-"OutcomeTrackingClass",
-"TradeQualityAuditClass",
-"TradeLifecycleClass",
-"DatasetReadinessClass",
-             "DatasetQualityClass",
-             "MLReadyFlag",
-             "MLFeatureCount",
-             "DatasetMaturityScore",
-             "DatasetMaturityClass",
-             "DatasetBalanceScore",
-             "DatasetBalanceClass",
-             "WinLossBalance",
-              "ProbabilityBalance",
-              "LabelBalance",
-              "ArchitectureAuditScore",
-              "ArchitectureAuditClass",
-              "ArchitectureApproved",
-              "DatasetIntegrityScore",
-              "DatasetIntegrityClass",
-              "DatasetIntegrityApproved",
-              "TestReadinessScore",
-              "TestReadinessClass",
-              "TestReady",
-             "DatasetCompletenessScore",
-"DatasetCompletenessClass",
-"DatasetComplete",
-"DatasetReliabilityScore",
-"DatasetReliabilityClass",
-"DatasetReliable",
-"DatasetStabilityScore",
-"DatasetStabilityClass",
-"DatasetStable",
-"DatasetHealthScore",
-"DatasetHealthClass",
-"DatasetHealthy");
-                       
+   string header =
+      "SnapshotTime\tLiquidityScore\tOBScore\tPermissionScore\tConfluenceScore\tExecutionGrade\tConfidenceLevel\tAuditReason\tRecommendedRisk\tRiskProfile\tTradeState\tCurrentRR\tExitReason\tOutcome\tLossCause\tWinCause\tFinalProfit\tFinalRR\tClosePrice\tCloseTime\tTradeLabel\tAdvancedLabel\tLabelQuality\tDynamicQualityLabel\tProbabilityClass\tOutcomeReadinessClass\tLabelReadinessClass\tOutcomeTrackingClass\tTradeQualityAuditClass\tTradeLifecycleClass\tDatasetReadinessClass\tDatasetQualityClass\tMLReadyFlag\tMLFeatureCount\tDatasetMaturityScore\tDatasetMaturityClass\tDatasetBalanceScore\tDatasetBalanceClass\tWinLossBalance\tProbabilityBalance\tLabelBalance\tArchitectureAuditScore\tArchitectureAuditClass\tArchitectureApproved\tDatasetIntegrityScore\tDatasetIntegrityClass\tDatasetIntegrityApproved\tTestReadinessScore\tTestReadinessClass\tTestReady\tDatasetCompletenessScore\tDatasetCompletenessClass\tDatasetComplete\tDatasetReliabilityScore\tDatasetReliabilityClass\tDatasetReliable\tDatasetStabilityScore\tDatasetStabilityClass\tDatasetStable\tDatasetHealthScore\tDatasetHealthClass\tDatasetHealthy\tDatasetConfidenceScore\tDatasetConfidenceClass\tDatasetConfidenceApproved";
+
+   FileWriteString(fileHandle, header + "\r\n");
 }
+
+
    void ExportSnapshotToCSV()
    {
       if(m_memory == NULL)
@@ -943,87 +930,75 @@ if(!IsDatasetRowComplete())
 
       FileSeek(fileHandle, 0, SEEK_END);
 
-      FileWrite(fileHandle,
-      
-                TimeToString(m_memory.LastSnapshot.SnapshotTime,
-                             TIME_DATE | TIME_SECONDS),
+     string row =
+   TimeToString(m_memory.LastSnapshot.SnapshotTime, TIME_DATE | TIME_SECONDS) + "\t" +
+   DoubleToString(m_memory.LastSnapshot.LiquidityScore, 1) + "\t" +
+   DoubleToString(m_memory.LastSnapshot.OBScore, 1) + "\t" +
+   DoubleToString(m_memory.LastSnapshot.PermissionScore, 1) + "\t" +
+   DoubleToString(m_memory.LastSnapshot.ConfluenceScore, 1) + "\t" +
+   m_memory.LastSnapshot.ExecutionGrade + "\t" +
+   m_memory.LastSnapshot.ConfidenceLevel + "\t" +
+   m_memory.Execution.AuditReason + "\t" +
+   DoubleToString(m_memory.LastSnapshot.RecommendedRisk, 2) + "\t" +
+   m_memory.LastSnapshot.RiskProfile + "\t" +
+   IntegerToString((int)m_memory.LastSnapshot.TradeState) + "\t" +
+   DoubleToString(m_memory.LastSnapshot.CurrentRR, 2) + "\t" +
+   m_memory.LastSnapshot.ExitReason + "\t" +
+   TradeOutcomeToString(m_memory.LastSnapshot.Outcome) + "\t" +
+   IntegerToString((int)m_memory.LastSnapshot.LossCause) + "\t" +
+   IntegerToString((int)m_memory.LastSnapshot.WinCause) + "\t" +
+   DoubleToString(m_memory.LastSnapshot.FinalProfit, 2) + "\t" +
+   DoubleToString(m_memory.LastSnapshot.FinalRR, 2) + "\t" +
+   DoubleToString(m_memory.LastSnapshot.ClosePrice, _Digits) + "\t" +
+   TimeToString(m_memory.LastSnapshot.CloseTime, TIME_DATE | TIME_SECONDS) + "\t" +
+   m_memory.LastSnapshot.TradeLabel + "\t" +
+   m_memory.LastSnapshot.AdvancedLabel + "\t" +
+   m_memory.LastSnapshot.LabelQuality + "\t" +
+   m_memory.LastSnapshot.DynamicQualityLabel + "\t" +
+   m_memory.LastSnapshot.ProbabilityClass + "\t" +
+   m_memory.LastSnapshot.OutcomeReadinessClass + "\t" +
+   m_memory.LastSnapshot.LabelReadinessClass + "\t" +
+   m_memory.LastSnapshot.OutcomeTrackingClass + "\t" +
+   m_memory.LastSnapshot.TradeQualityAuditClass + "\t" +
+   m_memory.LastSnapshot.TradeLifecycleClass + "\t" +
+   m_datasetReadinessClass + "\t" +
+   m_datasetQualityClass + "\t" +
+   (m_mlReadyFlag ? "TRUE" : "FALSE") + "\t" +
+   IntegerToString(m_mlFeatureCount) + "\t" +
+   DoubleToString(m_datasetMaturityScore, 2) + "\t" +
+   m_datasetMaturityClass + "\t" +
+   DoubleToString(m_datasetBalanceScore, 2) + "\t" +
+   m_datasetBalanceClass + "\t" +
+   DoubleToString(m_winLossBalance, 2) + "\t" +
+   DoubleToString(m_probabilityBalance, 2) + "\t" +
+   DoubleToString(m_labelBalance, 2) + "\t" +
+   DoubleToString(m_memory.LastSnapshot.ArchitectureAuditScore, 2) + "\t" +
+   m_memory.LastSnapshot.ArchitectureAuditClass + "\t" +
+   (m_memory.LastSnapshot.ArchitectureApproved ? "TRUE" : "FALSE") + "\t" +
+   DoubleToString(m_memory.LastSnapshot.DatasetIntegrityScore, 2) + "\t" +
+   m_memory.LastSnapshot.DatasetIntegrityClass + "\t" +
+   (m_memory.LastSnapshot.DatasetIntegrityApproved ? "TRUE" : "FALSE") + "\t" +
+   DoubleToString(m_memory.LastSnapshot.TestReadinessScore, 2) + "\t" +
+   m_memory.LastSnapshot.TestReadinessClass + "\t" +
+   (m_memory.LastSnapshot.TestReady ? "TRUE" : "FALSE") + "\t" +
+   DoubleToString(m_memory.LastSnapshot.DatasetCompletenessScore, 2) + "\t" +
+   m_memory.LastSnapshot.DatasetCompletenessClass + "\t" +
+   (m_memory.LastSnapshot.DatasetComplete ? "TRUE" : "FALSE") + "\t" +
+   DoubleToString(m_memory.LastSnapshot.DatasetReliabilityScore, 2) + "\t" +
+   m_memory.LastSnapshot.DatasetReliabilityClass + "\t" +
+   (m_memory.LastSnapshot.DatasetReliable ? "TRUE" : "FALSE") + "\t" +
+   DoubleToString(m_memory.LastSnapshot.DatasetStabilityScore, 2) + "\t" +
+   m_memory.LastSnapshot.DatasetStabilityClass + "\t" +
+   (m_memory.LastSnapshot.DatasetStable ? "TRUE" : "FALSE") + "\t" +
+   DoubleToString(m_memory.LastSnapshot.DatasetHealthScore, 2) + "\t" +
+   m_memory.LastSnapshot.DatasetHealthClass + "\t" +
+   (m_memory.LastSnapshot.DatasetHealthy ? "TRUE" : "FALSE") + "\t" +
+   DoubleToString(m_memory.LastSnapshot.DatasetConfidenceScore, 2) + "\t" +
+   m_memory.LastSnapshot.DatasetConfidenceClass + "\t" +
+   (m_memory.LastSnapshot.DatasetConfidenceApproved ? "TRUE" : "FALSE");
 
-                DoubleToString(m_memory.LastSnapshot.LiquidityScore, 1),
-                DoubleToString(m_memory.LastSnapshot.OBScore, 1),
-                DoubleToString(m_memory.LastSnapshot.PermissionScore, 1),
-                DoubleToString(m_memory.LastSnapshot.ConfluenceScore, 1),
+FileWriteString(fileHandle, row + "\r\n");
 
-                m_memory.LastSnapshot.ExecutionGrade,
-                m_memory.LastSnapshot.ConfidenceLevel,
-                m_memory.Execution.AuditReason,
-
-                DoubleToString(m_memory.LastSnapshot.RecommendedRisk, 2),
-                m_memory.LastSnapshot.RiskProfile,
-
-                IntegerToString((int)m_memory.LastSnapshot.TradeState),
-
-                DoubleToString(m_memory.LastSnapshot.CurrentRR, 2),
-
-                m_memory.LastSnapshot.ExitReason,
-
-                TradeOutcomeToString(m_memory.LastSnapshot.Outcome),
-IntegerToString((int)m_memory.LastSnapshot.LossCause),
-IntegerToString((int)m_memory.LastSnapshot.WinCause),
-DoubleToString(m_memory.LastSnapshot.FinalProfit, 2),
-                
-                DoubleToString(m_memory.LastSnapshot.FinalRR, 2),
-                DoubleToString(m_memory.LastSnapshot.ClosePrice, _Digits),
-                TimeToString(m_memory.LastSnapshot.CloseTime, TIME_DATE | TIME_SECONDS),
-                m_memory.LastSnapshot.TradeLabel,
-                m_memory.LastSnapshot.AdvancedLabel,
-                m_memory.LastSnapshot.LabelQuality,
-                m_memory.LastSnapshot.DynamicQualityLabel,
-               m_memory.LastSnapshot.ProbabilityClass,
-m_memory.LastSnapshot.OutcomeReadinessClass,
-m_memory.LastSnapshot.LabelReadinessClass,
-m_memory.LastSnapshot.OutcomeTrackingClass,
-m_memory.LastSnapshot.TradeQualityAuditClass,
-m_memory.LastSnapshot.TradeLifecycleClass,
-m_datasetReadinessClass,
-                m_datasetQualityClass,
-                (m_mlReadyFlag ? "TRUE" : "FALSE"),
-                IntegerToString(m_mlFeatureCount),
-                DoubleToString(m_datasetMaturityScore, 2),
-                m_datasetMaturityClass,
-                DoubleToString(m_datasetBalanceScore, 2),
-                m_datasetBalanceClass,
-                DoubleToString(m_winLossBalance, 2),
-                DoubleToString(m_probabilityBalance, 2),
-                DoubleToString(m_labelBalance, 2),
-
-                DoubleToString(m_memory.LastSnapshot.ArchitectureAuditScore, 2),
-                m_memory.LastSnapshot.ArchitectureAuditClass,
-                (m_memory.LastSnapshot.ArchitectureApproved ? "TRUE" : "FALSE"),
-
-                DoubleToString(m_memory.LastSnapshot.DatasetIntegrityScore, 2),
-                m_memory.LastSnapshot.DatasetIntegrityClass,
-                (m_memory.LastSnapshot.DatasetIntegrityApproved ? "TRUE" : "FALSE"),
-
-                DoubleToString(m_memory.LastSnapshot.TestReadinessScore, 2),
-                m_memory.LastSnapshot.TestReadinessClass,
-                (m_memory.LastSnapshot.TestReady ? "TRUE" : "FALSE"),
-                
-                
-DoubleToString(m_memory.LastSnapshot.DatasetCompletenessScore, 2),
-m_memory.LastSnapshot.DatasetCompletenessClass,
-(m_memory.LastSnapshot.DatasetComplete ? "TRUE" : "FALSE"),
-
-DoubleToString(m_memory.LastSnapshot.DatasetReliabilityScore, 2),
-m_memory.LastSnapshot.DatasetReliabilityClass,
-(m_memory.LastSnapshot.DatasetReliable ? "TRUE" : "FALSE"),
-
-DoubleToString(m_memory.LastSnapshot.DatasetStabilityScore, 2),
-m_memory.LastSnapshot.DatasetStabilityClass,
-(m_memory.LastSnapshot.DatasetStable ? "TRUE" : "FALSE"),
-
-DoubleToString(m_memory.LastSnapshot.DatasetHealthScore, 2),
-m_memory.LastSnapshot.DatasetHealthClass,
-(m_memory.LastSnapshot.DatasetHealthy ? "TRUE" : "FALSE"));
 
                 m_totalRows++;
                 m_validRows++;

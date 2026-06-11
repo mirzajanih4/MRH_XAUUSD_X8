@@ -411,6 +411,11 @@ double DatasetHealthScore;
 string DatasetHealthClass;
 bool   DatasetHealthy;
 
+//--- STEP70 Dataset Confidence Layer
+double DatasetConfidenceScore;
+string DatasetConfidenceClass;
+bool   DatasetConfidenceApproved;
+
 };
 
 //==================================================
