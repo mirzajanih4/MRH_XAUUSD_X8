@@ -449,6 +449,13 @@ double ValidationCampaignProgressScore;
 string ValidationCampaignStatusClass;
 bool   ValidationCampaignReady;
 
+// STEP76 - Validation Performance Tracking Layer
+double ValidationSuccessRate;
+double ValidationFailureRate;
+double ValidationPerformanceScore;
+string ValidationPerformanceClass;
+bool   ValidationPerformanceReady;
+
 };
 
 //==================================================
