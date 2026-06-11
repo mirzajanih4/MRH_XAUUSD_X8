@@ -87,6 +87,18 @@ enum ENUM_MRH_LOSS_CAUSE
    MRH_LOSS_CAUSE_SPREAD_OR_COST,
    MRH_LOSS_CAUSE_UNKNOWN
 };
+
+enum ENUM_MRH_WIN_CAUSE
+{
+   MRH_WIN_CAUSE_NONE = 0,
+   MRH_WIN_CAUSE_TAKEPROFIT,
+   MRH_WIN_CAUSE_LIQUIDITY_TARGET,
+   MRH_WIN_CAUSE_OB_REACTION,
+   MRH_WIN_CAUSE_STRUCTURE_CONTINUATION,
+   MRH_WIN_CAUSE_HIGH_CONFLUENCE,
+   MRH_WIN_CAUSE_UNKNOWN
+};
+
 //==================================================
 // Swing Type
 //==================================================
@@ -269,6 +281,8 @@ struct TradeData
    
    ENUM_MRH_LOSS_CAUSE LossCause;
    
+   ENUM_MRH_WIN_CAUSE WinCause;
+   
    double FinalProfit;
    double FinalRR;
    double ClosePrice;
@@ -301,6 +315,8 @@ struct MLDataRow
    ENUM_TRADE_OUTCOME Outcome;
    
    ENUM_MRH_LOSS_CAUSE LossCause;
+   
+   ENUM_MRH_WIN_CAUSE WinCause;
    
    double FinalProfit;
    double FinalRR;
@@ -343,6 +359,8 @@ struct MLTradeSnapshot
    ENUM_TRADE_OUTCOME Outcome;
  
    ENUM_MRH_LOSS_CAUSE LossCause;
+   
+   ENUM_MRH_WIN_CAUSE WinCause;
    
    double FinalProfit;
    double FinalRR;

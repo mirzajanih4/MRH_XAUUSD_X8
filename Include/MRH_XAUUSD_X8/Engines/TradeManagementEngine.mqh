@@ -244,6 +244,24 @@ if(m_memory.Trade.Outcome == TRADE_OUTCOME_LOSS)
       m_memory.Trade.LossCause = MRH_LOSS_CAUSE_UNKNOWN;
 }
 
+m_memory.Trade.WinCause = MRH_WIN_CAUSE_NONE;
+
+if(m_memory.Trade.Outcome == TRADE_OUTCOME_WIN)
+{
+   if(m_memory.Trade.ExitReason == EXIT_TAKEPROFIT)
+      m_memory.Trade.WinCause = MRH_WIN_CAUSE_TAKEPROFIT;
+   else if(m_memory.Liquidity.TargetLiquidity > 0.0)
+      m_memory.Trade.WinCause = MRH_WIN_CAUSE_LIQUIDITY_TARGET;
+   else if(m_memory.OB.Valid && m_memory.OB.Mitigated && !m_memory.OB.Invalidated)
+      m_memory.Trade.WinCause = MRH_WIN_CAUSE_OB_REACTION;
+   else if(m_memory.Structure.State == STRUCTURE_TRENDING)
+      m_memory.Trade.WinCause = MRH_WIN_CAUSE_STRUCTURE_CONTINUATION;
+   else if(m_memory.Execution.ConfluenceScore >= 80.0)
+      m_memory.Trade.WinCause = MRH_WIN_CAUSE_HIGH_CONFLUENCE;
+   else
+      m_memory.Trade.WinCause = MRH_WIN_CAUSE_UNKNOWN;
+}
+
       GenerateTradeLabel();
 
    MRH_Log("TRADE_MANAGEMENT_ENGINE",
@@ -252,11 +270,13 @@ if(m_memory.Trade.Outcome == TRADE_OUTCOME_LOSS)
            " | FinalRR=" + DoubleToString(m_memory.Trade.FinalRR, 2) +
            " | ClosePrice=" + DoubleToString(m_memory.Trade.ClosePrice, _Digits) +
            " | TradeLabel=" + m_memory.Trade.TradeLabel +
-           " | LossCause=" + IntegerToString((int)m_memory.Trade.LossCause));
+           " | LossCause=" + IntegerToString((int)m_memory.Trade.LossCause) +
+           " | WinCause=" + IntegerToString((int)m_memory.Trade.WinCause));
            
 }
 
 void GenerateTradeLabel()
+
 {
    if(m_memory == NULL)
       return;
