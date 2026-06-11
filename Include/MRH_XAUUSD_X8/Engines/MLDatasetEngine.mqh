@@ -62,6 +62,10 @@ double m_datasetApprovalScore;
 string m_datasetApprovalClass;
 bool   m_datasetApproved;
 
+double m_datasetReleaseScore;
+string m_datasetReleaseClass;
+bool   m_datasetReleaseReady;
+
    double m_winLossBalance;
    double m_probabilityBalance;
    double m_labelBalance;
@@ -517,6 +521,19 @@ m_memory.LastSnapshot.DatasetApprovalClass =
 m_memory.LastSnapshot.DatasetApproved =
    m_datasetApproved;
       
+      CalculateDatasetReleaseReadiness();
+
+// STEP72.1 - Dataset Release Readiness Snapshot
+
+m_memory.LastSnapshot.DatasetReleaseScore =
+   m_datasetReleaseScore;
+
+m_memory.LastSnapshot.DatasetReleaseClass =
+   m_datasetReleaseClass;
+
+m_memory.LastSnapshot.DatasetReleaseReady =
+   m_datasetReleaseReady;
+      
       if(m_memory.Trade.TradeLabel == "WIN")
    m_winLabels++;
 
@@ -910,6 +927,32 @@ void CalculateDatasetApproval()
    }
 }
 
+void CalculateDatasetReleaseReadiness()
+{
+   if(m_memory == NULL)
+      return;
+
+   m_datasetReleaseScore =
+      (m_datasetApprovalScore +
+       m_datasetConfidenceScore) / 2.0;
+
+   if(m_datasetReleaseScore >= 80.0)
+   {
+      m_datasetReleaseClass = "RELEASE_READY";
+      m_datasetReleaseReady = true;
+   }
+   else if(m_datasetReleaseScore >= 60.0)
+   {
+      m_datasetReleaseClass = "VALIDATION_REQUIRED";
+      m_datasetReleaseReady = false;
+   }
+   else
+   {
+      m_datasetReleaseClass = "NOT_READY";
+      m_datasetReleaseReady = false;
+   }
+}
+
 void LogDatasetSessionSummary()
 {
    if(m_totalRows <= 0)
@@ -934,9 +977,8 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
    if(FileSize(fileHandle) > 0)
       return;
 
-   string header =
-      "SnapshotTime\tLiquidityScore\tOBScore\tPermissionScore\tConfluenceScore\tExecutionGrade\tConfidenceLevel\tAuditReason\tRecommendedRisk\tRiskProfile\tTradeState\tCurrentRR\tExitReason\tOutcome\tLossCause\tWinCause\tFinalProfit\tFinalRR\tClosePrice\tCloseTime\tTradeLabel\tAdvancedLabel\tLabelQuality\tDynamicQualityLabel\tProbabilityClass\tOutcomeReadinessClass\tLabelReadinessClass\tOutcomeTrackingClass\tTradeQualityAuditClass\tTradeLifecycleClass\tDatasetReadinessClass\tDatasetQualityClass\tMLReadyFlag\tMLFeatureCount\tDatasetMaturityScore\tDatasetMaturityClass\tDatasetBalanceScore\tDatasetBalanceClass\tWinLossBalance\tProbabilityBalance\tLabelBalance\tArchitectureAuditScore\tArchitectureAuditClass\tArchitectureApproved\tDatasetIntegrityScore\tDatasetIntegrityClass\tDatasetIntegrityApproved\tTestReadinessScore\tTestReadinessClass\tTestReady\tDatasetCompletenessScore\tDatasetCompletenessClass\tDatasetComplete\tDatasetReliabilityScore\tDatasetReliabilityClass\tDatasetReliable\tDatasetStabilityScore\tDatasetStabilityClass\tDatasetStable\tDatasetHealthScore\tDatasetHealthClass\tDatasetHealthy\tDatasetConfidenceScore\tDatasetConfidenceClass\tDatasetConfidenceApproved\tDatasetApprovalScore\tDatasetApprovalClass\tDatasetApproved";
-
+  string header =
+"SnapshotTime\tLiquidityScore\tOBScore\tPermissionScore\tConfluenceScore\tExecutionGrade\tConfidenceLevel\tAuditReason\tRecommendedRisk\tRiskProfile\tTradeState\tCurrentRR\tExitReason\tOutcome\tLossCause\tWinCause\tFinalProfit\tFinalRR\tClosePrice\tCloseTime\tTradeLabel\tAdvancedLabel\tLabelQuality\tDynamicQualityLabel\tProbabilityClass\tOutcomeReadinessClass\tLabelReadinessClass\tOutcomeTrackingClass\tTradeQualityAuditClass\tTradeLifecycleClass\tDatasetReadinessClass\tDatasetQualityClass\tMLReadyFlag\tMLFeatureCount\tDatasetMaturityScore\tDatasetMaturityClass\tDatasetBalanceScore\tDatasetBalanceClass\tWinLossBalance\tProbabilityBalance\tLabelBalance\tArchitectureAuditScore\tArchitectureAuditClass\tArchitectureApproved\tDatasetIntegrityScore\tDatasetIntegrityClass\tDatasetIntegrityApproved\tTestReadinessScore\tTestReadinessClass\tTestReady\tDatasetCompletenessScore\tDatasetCompletenessClass\tDatasetComplete\tDatasetReliabilityScore\tDatasetReliabilityClass\tDatasetReliable\tDatasetStabilityScore\tDatasetStabilityClass\tDatasetStable\tDatasetHealthScore\tDatasetHealthClass\tDatasetHealthy\tDatasetConfidenceScore\tDatasetConfidenceClass\tDatasetConfidenceApproved\tDatasetApprovalScore\tDatasetApprovalClass\tDatasetApproved\tDatasetReleaseScore\tDatasetReleaseClass\tDatasetReleaseReady";
    FileWriteString(fileHandle, header + "\r\n");
 }
 
@@ -1042,7 +1084,10 @@ if(!IsDatasetRowComplete())
 + "\t" +
 DoubleToString(m_memory.LastSnapshot.DatasetApprovalScore, 2) + "\t" +
 m_memory.LastSnapshot.DatasetApprovalClass + "\t" +
-(m_memory.LastSnapshot.DatasetApproved ? "TRUE" : "FALSE");
+(m_memory.LastSnapshot.DatasetApproved ? "TRUE" : "FALSE")+ "\t" +
+DoubleToString(m_memory.LastSnapshot.DatasetReleaseScore, 2) + "\t" +
+m_memory.LastSnapshot.DatasetReleaseClass + "\t" +
+(m_memory.LastSnapshot.DatasetReleaseReady ? "TRUE" : "FALSE");
 FileWriteString(fileHandle, row + "\r\n");
 
 

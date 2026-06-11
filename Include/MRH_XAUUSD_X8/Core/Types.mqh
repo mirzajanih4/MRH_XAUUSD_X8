@@ -421,6 +421,11 @@ double DatasetApprovalScore;
 string DatasetApprovalClass;
 bool   DatasetApproved;
 
+//--- STEP72 Dataset Release Readiness Layer
+double DatasetReleaseScore;
+string DatasetReleaseClass;
+bool   DatasetReleaseReady;
+
 };
 
 //==================================================
