@@ -434,6 +434,14 @@ string InternalValidationReason;
 int    InternalValidationSampleCount;
 int    InternalValidationFailureCount;
 
+// STEP74 - Validation Evidence Collection Layer
+int    ValidationPassCount;
+int    ValidationWarningCount;
+int    ValidationFailCount;
+double ValidationEvidenceScore;
+string ValidationEvidenceClass;
+bool   ValidationEvidenceReady;
+
 };
 
 //==================================================
