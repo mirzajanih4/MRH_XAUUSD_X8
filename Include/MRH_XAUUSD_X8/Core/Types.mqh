@@ -391,6 +391,10 @@ string TradeLifecycleClass;
    double TestReadinessScore;
    string TestReadinessClass;
    bool   TestReady;
+   //--- STEP66 Dataset Completeness Audit Layer
+   double DatasetCompletenessScore;
+   string DatasetCompletenessClass;
+   bool   DatasetComplete;
 };
 
 //==================================================
