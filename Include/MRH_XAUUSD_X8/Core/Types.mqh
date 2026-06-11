@@ -442,6 +442,13 @@ double ValidationEvidenceScore;
 string ValidationEvidenceClass;
 bool   ValidationEvidenceReady;
 
+// STEP75 - Validation Campaign Tracking Layer
+int    ValidationCampaignSampleCount;
+int    ValidationCampaignSessionCount;
+double ValidationCampaignProgressScore;
+string ValidationCampaignStatusClass;
+bool   ValidationCampaignReady;
+
 };
 
 //==================================================
