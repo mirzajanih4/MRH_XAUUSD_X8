@@ -462,6 +462,12 @@ string ValidationCertificationClass;
 bool   ValidationCertified;
 string ValidationCertificationReason;
 
+// STEP78 - Validation Report Layer
+double ValidationReportScore;
+string ValidationReportClass;
+bool   ValidationReportReady;
+string ValidationReportSummary;
+
 };
 
 //==================================================
