@@ -426,6 +426,14 @@ double DatasetReleaseScore;
 string DatasetReleaseClass;
 bool   DatasetReleaseReady;
 
+// STEP73 - Internal Validation Metrics Foundation
+double InternalValidationScore;
+string InternalValidationClass;
+bool   InternalValidationPassed;
+string InternalValidationReason;
+int    InternalValidationSampleCount;
+int    InternalValidationFailureCount;
+
 };
 
 //==================================================
