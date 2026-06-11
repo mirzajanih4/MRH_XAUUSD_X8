@@ -401,6 +401,11 @@ double DatasetReliabilityScore;
 string DatasetReliabilityClass;
 bool   DatasetReliable;
 
+//--- STEP68 Dataset Stability Layer
+double DatasetStabilityScore;
+string DatasetStabilityClass;
+bool   DatasetStable;
+
 };
 
 //==================================================
