@@ -468,6 +468,12 @@ string ValidationReportClass;
 bool   ValidationReportReady;
 string ValidationReportSummary;
 
+// STEP79 - Validation Decision Layer
+double ValidationDecisionScore;
+string ValidationDecisionClass;
+bool   ValidationApproved;
+string ValidationDecisionReason;
+
 };
 
 //==================================================

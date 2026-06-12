@@ -571,6 +571,9 @@ UpdateValidationCertification();
       
       // STEP78.4 - Validation Report Update
 UpdateValidationReport();
+
+// STEP79.4 - Validation Decision Update
+UpdateValidationDecision();
       
       if(m_memory.Trade.TradeLabel == "WIN")
    m_winLabels++;
@@ -646,6 +649,12 @@ m_memory.LastSnapshot.ValidationReportScore = 0.0;
 m_memory.LastSnapshot.ValidationReportClass = "NO_REPORT";
 m_memory.LastSnapshot.ValidationReportReady = false;
 m_memory.LastSnapshot.ValidationReportSummary = "REPORT_NOT_GENERATED";
+
+// STEP79 - Validation Decision Layer
+m_memory.LastSnapshot.ValidationDecisionScore = 0.0;
+m_memory.LastSnapshot.ValidationDecisionClass = "DECISION_NOT_MADE";
+m_memory.LastSnapshot.ValidationApproved = false;
+m_memory.LastSnapshot.ValidationDecisionReason = "DECISION_NOT_AVAILABLE";
 
    }
    
@@ -1026,6 +1035,71 @@ void UpdateValidationReport()
    m_memory.LastSnapshot.ValidationReportSummary
 );
    
+}
+
+// STEP79.3 - Validation Decision Calculation
+void UpdateValidationDecision()
+{
+   if(m_memory == NULL)
+      return;
+
+   double score = 0.0;
+   string reason = "";
+
+   if(m_memory.LastSnapshot.InternalValidationPassed)
+      score += 20.0;
+   else
+      reason += "INTERNAL_VALIDATION_BLOCKED;";
+
+   if(m_memory.LastSnapshot.ValidationEvidenceReady)
+      score += 20.0;
+   else
+      reason += "EVIDENCE_NOT_READY;";
+
+   if(m_memory.LastSnapshot.ValidationCampaignReady)
+      score += 20.0;
+   else
+      reason += "CAMPAIGN_NOT_READY;";
+
+   if(m_memory.LastSnapshot.ValidationPerformanceReady)
+      score += 20.0;
+   else
+      reason += "PERFORMANCE_NOT_READY;";
+
+   if(m_memory.LastSnapshot.ValidationReportReady)
+      score += 20.0;
+   else
+      reason += "REPORT_NOT_READY;";
+
+   m_memory.LastSnapshot.ValidationDecisionScore = score;
+
+   if(score >= 100.0)
+   {
+      m_memory.LastSnapshot.ValidationDecisionClass = "INTERNAL_MT5_TEST_APPROVED";
+      m_memory.LastSnapshot.ValidationApproved = true;
+      m_memory.LastSnapshot.ValidationDecisionReason = "VALIDATION_APPROVED";
+   }
+   else if(score >= 60.0)
+   {
+      m_memory.LastSnapshot.ValidationDecisionClass = "INTERNAL_MT5_TEST_PENDING";
+      m_memory.LastSnapshot.ValidationApproved = false;
+      m_memory.LastSnapshot.ValidationDecisionReason = reason;
+   }
+   else
+   {
+      m_memory.LastSnapshot.ValidationDecisionClass = "INTERNAL_MT5_TEST_BLOCKED";
+      m_memory.LastSnapshot.ValidationApproved = false;
+      m_memory.LastSnapshot.ValidationDecisionReason = reason;
+   }
+   
+   PrintFormat(
+   "MRH_X8 STEP79 | DecisionScore=%.2f | Class=%s | Approved=%s | Reason=%s",
+   m_memory.LastSnapshot.ValidationDecisionScore,
+   m_memory.LastSnapshot.ValidationDecisionClass,
+   (m_memory.LastSnapshot.ValidationApproved ? "TRUE" : "FALSE"),
+   m_memory.LastSnapshot.ValidationDecisionReason
+);
+
 }
    
 void ValidateOutcomeSnapshot()
@@ -1439,7 +1513,7 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
       return;
 
   string header =
-"SnapshotTime\tLiquidityScore\tOBScore\tPermissionScore\tConfluenceScore\tExecutionGrade\tConfidenceLevel\tAuditReason\tRecommendedRisk\tRiskProfile\tTradeState\tCurrentRR\tExitReason\tOutcome\tLossCause\tWinCause\tFinalProfit\tFinalRR\tClosePrice\tCloseTime\tTradeLabel\tAdvancedLabel\tLabelQuality\tDynamicQualityLabel\tProbabilityClass\tOutcomeReadinessClass\tLabelReadinessClass\tOutcomeTrackingClass\tTradeQualityAuditClass\tTradeLifecycleClass\tDatasetReadinessClass\tDatasetQualityClass\tMLReadyFlag\tMLFeatureCount\tDatasetMaturityScore\tDatasetMaturityClass\tDatasetBalanceScore\tDatasetBalanceClass\tWinLossBalance\tProbabilityBalance\tLabelBalance\tArchitectureAuditScore\tArchitectureAuditClass\tArchitectureApproved\tDatasetIntegrityScore\tDatasetIntegrityClass\tDatasetIntegrityApproved\tTestReadinessScore\tTestReadinessClass\tTestReady\tDatasetCompletenessScore\tDatasetCompletenessClass\tDatasetComplete\tDatasetReliabilityScore\tDatasetReliabilityClass\tDatasetReliable\tDatasetStabilityScore\tDatasetStabilityClass\tDatasetStable\tDatasetHealthScore\tDatasetHealthClass\tDatasetHealthy\tDatasetConfidenceScore\tDatasetConfidenceClass\tDatasetConfidenceApproved\tDatasetApprovalScore\tDatasetApprovalClass\tDatasetApproved\tDatasetReleaseScore\tDatasetReleaseClass\tDatasetReleaseReady\tInternalValidationScore\tInternalValidationClass\tInternalValidationPassed\tInternalValidationReason\tInternalValidationSampleCount\tInternalValidationFailureCount\tValidationPassCount\tValidationWarningCount\tValidationFailCount\tValidationEvidenceScore\tValidationEvidenceClass\tValidationEvidenceReady\tValidationCampaignSampleCount\tValidationCampaignSessionCount\tValidationCampaignProgressScore\tValidationCampaignStatusClass\tValidationCampaignReady\tValidationSuccessRate\tValidationFailureRate\tValidationPerformanceScore\tValidationPerformanceClass\tValidationPerformanceReady\tValidationCertificationScore\tValidationCertificationClass\tValidationCertified\tValidationCertificationReason\tValidationReportScore\tValidationReportClass\tValidationReportReady\tValidationReportSummary";
+"SnapshotTime\tLiquidityScore\tOBScore\tPermissionScore\tConfluenceScore\tExecutionGrade\tConfidenceLevel\tAuditReason\tRecommendedRisk\tRiskProfile\tTradeState\tCurrentRR\tExitReason\tOutcome\tLossCause\tWinCause\tFinalProfit\tFinalRR\tClosePrice\tCloseTime\tTradeLabel\tAdvancedLabel\tLabelQuality\tDynamicQualityLabel\tProbabilityClass\tOutcomeReadinessClass\tLabelReadinessClass\tOutcomeTrackingClass\tTradeQualityAuditClass\tTradeLifecycleClass\tDatasetReadinessClass\tDatasetQualityClass\tMLReadyFlag\tMLFeatureCount\tDatasetMaturityScore\tDatasetMaturityClass\tDatasetBalanceScore\tDatasetBalanceClass\tWinLossBalance\tProbabilityBalance\tLabelBalance\tArchitectureAuditScore\tArchitectureAuditClass\tArchitectureApproved\tDatasetIntegrityScore\tDatasetIntegrityClass\tDatasetIntegrityApproved\tTestReadinessScore\tTestReadinessClass\tTestReady\tDatasetCompletenessScore\tDatasetCompletenessClass\tDatasetComplete\tDatasetReliabilityScore\tDatasetReliabilityClass\tDatasetReliable\tDatasetStabilityScore\tDatasetStabilityClass\tDatasetStable\tDatasetHealthScore\tDatasetHealthClass\tDatasetHealthy\tDatasetConfidenceScore\tDatasetConfidenceClass\tDatasetConfidenceApproved\tDatasetApprovalScore\tDatasetApprovalClass\tDatasetApproved\tDatasetReleaseScore\tDatasetReleaseClass\tDatasetReleaseReady\tInternalValidationScore\tInternalValidationClass\tInternalValidationPassed\tInternalValidationReason\tInternalValidationSampleCount\tInternalValidationFailureCount\tValidationPassCount\tValidationWarningCount\tValidationFailCount\tValidationEvidenceScore\tValidationEvidenceClass\tValidationEvidenceReady\tValidationCampaignSampleCount\tValidationCampaignSessionCount\tValidationCampaignProgressScore\tValidationCampaignStatusClass\tValidationCampaignReady\tValidationSuccessRate\tValidationFailureRate\tValidationPerformanceScore\tValidationPerformanceClass\tValidationPerformanceReady\tValidationCertificationScore\tValidationCertificationClass\tValidationCertified\tValidationCertificationReason\tValidationReportScore\tValidationReportClass\tValidationReportReady\tValidationReportSummary\tValidationDecisionScore\tValidationDecisionClass\tValidationApproved\tValidationDecisionReason";
    FileWriteString(fileHandle, header + "\r\n");
 }
 
@@ -1584,7 +1658,12 @@ m_memory.LastSnapshot.ValidationCertificationReason + "\t" +
 DoubleToString(m_memory.LastSnapshot.ValidationReportScore, 2) + "\t" +
 m_memory.LastSnapshot.ValidationReportClass + "\t" +
 (m_memory.LastSnapshot.ValidationReportReady ? "TRUE" : "FALSE") + "\t" +
-m_memory.LastSnapshot.ValidationReportSummary;
+m_memory.LastSnapshot.ValidationReportSummary + "\t" +
+
+DoubleToString(m_memory.LastSnapshot.ValidationDecisionScore, 2) + "\t" +
+m_memory.LastSnapshot.ValidationDecisionClass + "\t" +
+(m_memory.LastSnapshot.ValidationApproved ? "TRUE" : "FALSE") + "\t" +
+m_memory.LastSnapshot.ValidationDecisionReason;
 
 FileWriteString(fileHandle, row + "\r\n");
 
