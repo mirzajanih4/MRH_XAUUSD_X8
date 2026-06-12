@@ -504,6 +504,14 @@ double ValidationEventImpactScore;
 string ValidationEventImpactClass;
 bool   ValidationEventImpactReady;
 
+// STEP84 - Validation Stability Layer
+int    ValidationStateChanges;
+int    ValidationStableEvents;
+int    ValidationUnstableEvents;
+double ValidationStabilityScore;
+string ValidationStabilityClass;
+bool   ValidationStabilityReady;
+
 };
 
 //==================================================
