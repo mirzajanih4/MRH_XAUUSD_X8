@@ -488,6 +488,14 @@ int    ValidationEventCount;
 string ValidationLastEventType;
 bool   ValidationNewEventDetected;
 
+// STEP82 - Validation Event Quality Layer
+int    ValidationHighQualityEvents;
+int    ValidationMediumQualityEvents;
+int    ValidationLowQualityEvents;
+double ValidationEventQualityScore;
+string ValidationEventQualityClass;
+bool   ValidationEventQualityReady;
+
 };
 
 //==================================================
