@@ -535,6 +535,12 @@ string ValidationAnalyticsClass;
 bool   ValidationAnalyticsReady;
 string ValidationAnalyticsSummary;
 
+// STEP90 - Validation Dashboard Layer
+double ValidationDashboardScore;
+string ValidationDashboardClass;
+bool   ValidationDashboardReady;
+string ValidationDashboardStatus;
+
 };
 
 //==================================================

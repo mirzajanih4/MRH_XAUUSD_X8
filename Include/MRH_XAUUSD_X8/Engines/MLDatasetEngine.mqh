@@ -656,6 +656,8 @@ UpdateValidationConfidence();
       // STEP89.4 - Validation Analytics Update
 UpdateValidationAnalytics();
       
+      // STEP90.4 - Validation Dashboard Update
+UpdateValidationDashboard();
       
       if(m_memory.Trade.TradeLabel == "WIN")
    m_winLabels++;
@@ -798,6 +800,12 @@ m_memory.LastSnapshot.ValidationAnalyticsScore = 0.0;
 m_memory.LastSnapshot.ValidationAnalyticsClass = "NO_ANALYTICS";
 m_memory.LastSnapshot.ValidationAnalyticsReady = false;
 m_memory.LastSnapshot.ValidationAnalyticsSummary = "ANALYTICS_NOT_EVALUATED";
+
+// STEP90 - Validation Dashboard Layer
+m_memory.LastSnapshot.ValidationDashboardScore = 0.0;
+m_memory.LastSnapshot.ValidationDashboardClass = "NO_DASHBOARD";
+m_memory.LastSnapshot.ValidationDashboardReady = false;
+m_memory.LastSnapshot.ValidationDashboardStatus = "DASHBOARD_NOT_EVALUATED";
    }
    
    // STEP73.3 - Internal Validation Metrics Calculation
@@ -1880,6 +1888,88 @@ void UpdateValidationAnalytics()
    );
 }
    
+   // STEP90.3 - Validation Dashboard Calculation
+void UpdateValidationDashboard()
+{
+   if(m_memory == NULL)
+      return;
+
+   double score = 0.0;
+   string status = "";
+
+   if(m_memory.LastSnapshot.ValidationAnalyticsReady)
+   {
+      score += 30.0;
+      status += "ANALYTICS_READY;";
+   }
+   else
+      status += "ANALYTICS_NOT_READY;";
+
+   if(m_memory.LastSnapshot.ValidationApproved)
+   {
+      score += 25.0;
+      status += "VALIDATION_APPROVED;";
+   }
+   else
+      status += "VALIDATION_NOT_APPROVED;";
+
+   if(m_memory.LastSnapshot.ValidationConfidenceReady)
+   {
+      score += 20.0;
+      status += "CONFIDENCE_READY;";
+   }
+   else
+      status += "CONFIDENCE_NOT_READY;";
+
+   if(m_memory.LastSnapshot.ValidationMature)
+   {
+      score += 15.0;
+      status += "VALIDATION_MATURE;";
+   }
+   else
+      status += "VALIDATION_NOT_MATURE;";
+
+   if(m_memory.LastSnapshot.ValidationTrendImproving)
+   {
+      score += 10.0;
+      status += "TREND_IMPROVING;";
+   }
+   else
+      status += "TREND_NOT_IMPROVING;";
+
+   m_memory.LastSnapshot.ValidationDashboardScore = score;
+
+   if(score >= 90.0)
+   {
+      m_memory.LastSnapshot.ValidationDashboardClass = "STRONG_VALIDATION_DASHBOARD";
+      m_memory.LastSnapshot.ValidationDashboardReady = true;
+   }
+   else if(score >= 70.0)
+   {
+      m_memory.LastSnapshot.ValidationDashboardClass = "GOOD_VALIDATION_DASHBOARD";
+      m_memory.LastSnapshot.ValidationDashboardReady = true;
+   }
+   else if(score >= 50.0)
+   {
+      m_memory.LastSnapshot.ValidationDashboardClass = "WEAK_VALIDATION_DASHBOARD";
+      m_memory.LastSnapshot.ValidationDashboardReady = false;
+   }
+   else
+   {
+      m_memory.LastSnapshot.ValidationDashboardClass = "NO_VALIDATION_DASHBOARD";
+      m_memory.LastSnapshot.ValidationDashboardReady = false;
+   }
+
+   m_memory.LastSnapshot.ValidationDashboardStatus = status;
+
+   PrintFormat(
+      "MRH_X8 STEP90 | DashboardScore=%.2f | Class=%s | Ready=%s | Status=%s",
+      m_memory.LastSnapshot.ValidationDashboardScore,
+      m_memory.LastSnapshot.ValidationDashboardClass,
+      (m_memory.LastSnapshot.ValidationDashboardReady ? "TRUE" : "FALSE"),
+      m_memory.LastSnapshot.ValidationDashboardStatus
+   );
+}
    
 void ValidateOutcomeSnapshot()
 {
