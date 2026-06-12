@@ -547,6 +547,16 @@ string ValidationConsistencyClass;
 bool   ValidationConsistencyReady;
 string ValidationConsistencyReason;
 
+// STEP92 - Validation Historical Persistence Layer
+int    ValidationPersistenceSamples;
+int    ValidationApprovedPersistenceCount;
+int    ValidationConfidencePersistenceCount;
+int    ValidationMaturityPersistenceCount;
+double ValidationPersistenceScore;
+string ValidationPersistenceClass;
+bool   ValidationPersistenceReady;
+string ValidationPersistenceReason;
+
 };
 
 //==================================================

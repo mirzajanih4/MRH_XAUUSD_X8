@@ -16,6 +16,11 @@ private:
    int m_winLabels;
    int m_lossLabels;
    int m_breakevenLabels;
+   // STEP92 - Validation Historical Persistence Internal State
+int  m_validationPersistenceSamples;
+int  m_validationApprovedPersistenceCount;
+int  m_validationConfidencePersistenceCount;
+int  m_validationMaturityPersistenceCount;
    double m_winRate;
    double m_lossRate;
    double m_breakevenRate;
@@ -146,6 +151,13 @@ public:
      m_winLabels = 0;
      m_lossLabels = 0;
      m_breakevenLabels = 0;
+     
+     // STEP92 - Validation Historical Persistence Internal State
+m_validationPersistenceSamples = 0;
+m_validationApprovedPersistenceCount = 0;
+m_validationConfidencePersistenceCount = 0;
+m_validationMaturityPersistenceCount = 0;
+
      m_winRate = 0.0;
      m_lossRate = 0.0;
      m_breakevenRate = 0.0;
@@ -662,6 +674,9 @@ UpdateValidationDashboard();
       // STEP91.4 - Validation Consistency Update
 UpdateValidationConsistency();
       
+      // STEP92.6 - Validation Historical Persistence Update
+UpdateValidationHistoricalPersistence();
+      
       if(m_memory.Trade.TradeLabel == "WIN")
    m_winLabels++;
 
@@ -815,6 +830,16 @@ m_memory.LastSnapshot.ValidationConsistencyScore = 0.0;
 m_memory.LastSnapshot.ValidationConsistencyClass = "NO_CONSISTENCY";
 m_memory.LastSnapshot.ValidationConsistencyReady = false;
 m_memory.LastSnapshot.ValidationConsistencyReason = "CONSISTENCY_NOT_EVALUATED";
+
+// STEP92 - Validation Historical Persistence Layer
+m_memory.LastSnapshot.ValidationPersistenceSamples = 0;
+m_memory.LastSnapshot.ValidationApprovedPersistenceCount = 0;
+m_memory.LastSnapshot.ValidationConfidencePersistenceCount = 0;
+m_memory.LastSnapshot.ValidationMaturityPersistenceCount = 0;
+m_memory.LastSnapshot.ValidationPersistenceScore = 0.0;
+m_memory.LastSnapshot.ValidationPersistenceClass = "NO_PERSISTENCE";
+m_memory.LastSnapshot.ValidationPersistenceReady = false;
+m_memory.LastSnapshot.ValidationPersistenceReason = "PERSISTENCE_NOT_EVALUATED";
 
    }
    
@@ -2046,6 +2071,108 @@ void UpdateValidationConsistency()
       m_memory.LastSnapshot.ValidationConsistencyClass,
       (m_memory.LastSnapshot.ValidationConsistencyReady ? "TRUE" : "FALSE"),
       m_memory.LastSnapshot.ValidationConsistencyReason
+   );
+}
+   
+   // STEP92.5 - Validation Historical Persistence Calculation
+void UpdateValidationHistoricalPersistence()
+{
+   if(m_memory == NULL)
+      return;
+
+   m_validationPersistenceSamples++;
+
+   if(m_memory.LastSnapshot.ValidationApproved)
+      m_validationApprovedPersistenceCount++;
+
+   if(m_memory.LastSnapshot.ValidationConfidenceReady)
+      m_validationConfidencePersistenceCount++;
+
+   if(m_memory.LastSnapshot.ValidationMature)
+      m_validationMaturityPersistenceCount++;
+
+   m_memory.LastSnapshot.ValidationPersistenceSamples =
+      m_validationPersistenceSamples;
+
+   m_memory.LastSnapshot.ValidationApprovedPersistenceCount =
+      m_validationApprovedPersistenceCount;
+
+   m_memory.LastSnapshot.ValidationConfidencePersistenceCount =
+      m_validationConfidencePersistenceCount;
+
+   m_memory.LastSnapshot.ValidationMaturityPersistenceCount =
+      m_validationMaturityPersistenceCount;
+
+   double approvedRate = 0.0;
+   double confidenceRate = 0.0;
+   double maturityRate = 0.0;
+
+   if(m_validationPersistenceSamples > 0)
+   {
+      approvedRate =
+         (double)m_validationApprovedPersistenceCount /
+         (double)m_validationPersistenceSamples;
+
+      confidenceRate =
+         (double)m_validationConfidencePersistenceCount /
+         (double)m_validationPersistenceSamples;
+
+      maturityRate =
+         (double)m_validationMaturityPersistenceCount /
+         (double)m_validationPersistenceSamples;
+   }
+
+   double score =
+      (approvedRate * 40.0) +
+      (confidenceRate * 30.0) +
+      (maturityRate * 30.0);
+
+   m_memory.LastSnapshot.ValidationPersistenceScore = score;
+
+   string reason = "";
+
+   if(m_validationPersistenceSamples < 5)
+      reason += "INSUFFICIENT_HISTORY;";
+
+   if(approvedRate < 0.60)
+      reason += "LOW_APPROVAL_PERSISTENCE;";
+
+   if(confidenceRate < 0.60)
+      reason += "LOW_CONFIDENCE_PERSISTENCE;";
+
+   if(maturityRate < 0.60)
+      reason += "LOW_MATURITY_PERSISTENCE;";
+
+   if(score >= 85.0 && m_validationPersistenceSamples >= 5)
+   {
+      m_memory.LastSnapshot.ValidationPersistenceClass = "HIGH_PERSISTENCE";
+      m_memory.LastSnapshot.ValidationPersistenceReady = true;
+   }
+   else if(score >= 65.0 && m_validationPersistenceSamples >= 5)
+   {
+      m_memory.LastSnapshot.ValidationPersistenceClass = "MEDIUM_PERSISTENCE";
+      m_memory.LastSnapshot.ValidationPersistenceReady = true;
+   }
+   else if(score >= 40.0)
+   {
+      m_memory.LastSnapshot.ValidationPersistenceClass = "LOW_PERSISTENCE";
+      m_memory.LastSnapshot.ValidationPersistenceReady = false;
+   }
+   else
+   {
+      m_memory.LastSnapshot.ValidationPersistenceClass = "NO_PERSISTENCE";
+      m_memory.LastSnapshot.ValidationPersistenceReady = false;
+   }
+
+   m_memory.LastSnapshot.ValidationPersistenceReason = reason;
+
+   PrintFormat(
+      "MRH_X8 STEP92 | PersistenceSamples=%d | PersistenceScore=%.2f | Class=%s | Ready=%s | Reason=%s",
+      m_memory.LastSnapshot.ValidationPersistenceSamples,
+      m_memory.LastSnapshot.ValidationPersistenceScore,
+      m_memory.LastSnapshot.ValidationPersistenceClass,
+      (m_memory.LastSnapshot.ValidationPersistenceReady ? "TRUE" : "FALSE"),
+      m_memory.LastSnapshot.ValidationPersistenceReason
    );
 }
    
