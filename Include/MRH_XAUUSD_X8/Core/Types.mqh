@@ -496,6 +496,14 @@ double ValidationEventQualityScore;
 string ValidationEventQualityClass;
 bool   ValidationEventQualityReady;
 
+// STEP83 - Validation Event Impact Layer
+int    ValidationCriticalEvents;
+int    ValidationMajorEvents;
+int    ValidationMinorEvents;
+double ValidationEventImpactScore;
+string ValidationEventImpactClass;
+bool   ValidationEventImpactReady;
+
 };
 
 //==================================================
