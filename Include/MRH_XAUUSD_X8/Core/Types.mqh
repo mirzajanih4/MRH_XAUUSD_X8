@@ -523,6 +523,11 @@ double ValidationTrendScore;
 string ValidationTrendClass;
 bool   ValidationTrendImproving;
 
+// STEP87 - Validation Confidence Layer
+double ValidationConfidenceScore;
+string ValidationConfidenceClass;
+bool   ValidationConfidenceReady;
+string ValidationConfidenceReason;
 };
 
 //==================================================

@@ -650,6 +650,8 @@ UpdateValidationMaturity();
 // STEP86.4 - Validation Trend Update
 UpdateValidationTrend();
       
+     // STEP87.4 - Validation Confidence Update
+UpdateValidationConfidence(); 
       
       
       if(m_memory.Trade.TradeLabel == "WIN")
@@ -782,6 +784,11 @@ m_memory.LastSnapshot.ValidationTrendScore = 0.0;
 m_memory.LastSnapshot.ValidationTrendClass = "NO_TREND";
 m_memory.LastSnapshot.ValidationTrendImproving = false;
 
+// STEP87 - Validation Confidence Layer
+m_memory.LastSnapshot.ValidationConfidenceScore = 0.0;
+m_memory.LastSnapshot.ValidationConfidenceClass = "NO_CONFIDENCE";
+m_memory.LastSnapshot.ValidationConfidenceReady = false;
+m_memory.LastSnapshot.ValidationConfidenceReason = "CONFIDENCE_NOT_EVALUATED";
    }
    
    // STEP73.3 - Internal Validation Metrics Calculation
@@ -1701,6 +1708,75 @@ void UpdateValidationMaturity()
       m_memory.LastSnapshot.ValidationTrendScore,
       m_memory.LastSnapshot.ValidationTrendClass,
       (m_memory.LastSnapshot.ValidationTrendImproving ? "TRUE" : "FALSE")
+   );
+}
+   
+   void UpdateValidationConfidence()
+{
+   if(m_memory == NULL)
+      return;
+
+   double score = 0.0;
+   string reason = "";
+
+   if(m_memory.LastSnapshot.ValidationStatisticsReady)
+      score += 20.0;
+   else
+      reason += "STATISTICS_NOT_READY;";
+
+   if(m_memory.LastSnapshot.ValidationEventQualityReady)
+      score += 20.0;
+   else
+      reason += "EVENT_QUALITY_NOT_READY;";
+
+   if(m_memory.LastSnapshot.ValidationEventImpactReady)
+      score += 20.0;
+   else
+      reason += "EVENT_IMPACT_NOT_READY;";
+
+   if(m_memory.LastSnapshot.ValidationStabilityReady)
+      score += 20.0;
+   else
+      reason += "STABILITY_NOT_READY;";
+
+   if(m_memory.LastSnapshot.ValidationMature)
+      score += 20.0;
+   else
+      reason += "VALIDATION_NOT_MATURE;";
+
+   m_memory.LastSnapshot.ValidationConfidenceScore = score;
+
+   if(score >= 90.0)
+   {
+      m_memory.LastSnapshot.ValidationConfidenceClass = "HIGH_CONFIDENCE";
+      m_memory.LastSnapshot.ValidationConfidenceReady = true;
+      m_memory.LastSnapshot.ValidationConfidenceReason = "VALIDATION_CONFIDENT";
+   }
+   else if(score >= 70.0)
+   {
+      m_memory.LastSnapshot.ValidationConfidenceClass = "MEDIUM_CONFIDENCE";
+      m_memory.LastSnapshot.ValidationConfidenceReady = true;
+      m_memory.LastSnapshot.ValidationConfidenceReason = reason;
+   }
+   else if(score >= 50.0)
+   {
+      m_memory.LastSnapshot.ValidationConfidenceClass = "LOW_CONFIDENCE";
+      m_memory.LastSnapshot.ValidationConfidenceReady = false;
+      m_memory.LastSnapshot.ValidationConfidenceReason = reason;
+   }
+   else
+   {
+      m_memory.LastSnapshot.ValidationConfidenceClass = "NO_CONFIDENCE";
+      m_memory.LastSnapshot.ValidationConfidenceReady = false;
+      m_memory.LastSnapshot.ValidationConfidenceReason = reason;
+   }
+
+   PrintFormat(
+      "MRH_X8 STEP87 | ConfidenceScore=%.2f | Class=%s | Ready=%s | Reason=%s",
+      m_memory.LastSnapshot.ValidationConfidenceScore,
+      m_memory.LastSnapshot.ValidationConfidenceClass,
+      (m_memory.LastSnapshot.ValidationConfidenceReady ? "TRUE" : "FALSE"),
+      m_memory.LastSnapshot.ValidationConfidenceReason
    );
 }
    
