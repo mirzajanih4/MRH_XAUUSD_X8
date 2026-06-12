@@ -541,6 +541,12 @@ string ValidationDashboardClass;
 bool   ValidationDashboardReady;
 string ValidationDashboardStatus;
 
+// STEP91 - Validation Consistency Layer
+double ValidationConsistencyScore;
+string ValidationConsistencyClass;
+bool   ValidationConsistencyReady;
+string ValidationConsistencyReason;
+
 };
 
 //==================================================
