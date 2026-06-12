@@ -557,6 +557,42 @@ string ValidationPersistenceClass;
 bool   ValidationPersistenceReady;
 string ValidationPersistenceReason;
 
+// STEP95 - Setup Reliability Layer
+double SetupReliabilityScore;
+string SetupReliabilityClass;
+bool   SetupReliable;
+string SetupReliabilityReason;
+
+// STEP96 - Setup Learning Readiness Layer
+double SetupLearningReadinessScore;
+string SetupLearningReadinessClass;
+bool   SetupLearningReady;
+string SetupLearningReadinessReason;
+
+// STEP97 - Setup Probability Stability Layer
+double SetupProbabilityStabilityScore;
+string SetupProbabilityStabilityClass;
+bool   SetupProbabilityStable;
+string SetupProbabilityStabilityReason;
+
+// STEP98 - Forward Test Readiness Layer
+double ForwardTestReadinessScore;
+string ForwardTestReadinessClass;
+bool   ForwardTestReady;
+string ForwardTestReadinessReason;
+
+// STEP99 - ML Dataset Certification Layer
+double MLDatasetCertificationScore;
+string MLDatasetCertificationClass;
+bool   MLDatasetCertified;
+string MLDatasetCertificationReason;
+
+// STEP100 - Release Candidate Validation Layer
+double ReleaseCandidateScore;
+string ReleaseCandidateClass;
+bool   ReleaseCandidateReady;
+string ReleaseCandidateReason;
+
 };
 
 //==================================================

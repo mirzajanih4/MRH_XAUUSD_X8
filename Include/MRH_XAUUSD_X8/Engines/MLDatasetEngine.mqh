@@ -21,6 +21,16 @@ int  m_validationPersistenceSamples;
 int  m_validationApprovedPersistenceCount;
 int  m_validationConfidencePersistenceCount;
 int  m_validationMaturityPersistenceCount;
+
+// STEP93 - Historical Trend Internal State
+double m_previousValidationMaturityScore;
+
+// STEP94 - Historical Consistency Internal State
+bool m_previousValidationApproved;
+bool m_previousValidationConfidenceReady;
+int  m_validationConsistencyStableCount;
+int  m_validationConsistencyChangeCount;
+
    double m_winRate;
    double m_lossRate;
    double m_breakevenRate;
@@ -157,6 +167,15 @@ m_validationPersistenceSamples = 0;
 m_validationApprovedPersistenceCount = 0;
 m_validationConfidencePersistenceCount = 0;
 m_validationMaturityPersistenceCount = 0;
+
+// STEP93 - Historical Trend Internal State
+m_previousValidationMaturityScore = 0.0;
+
+// STEP94 - Historical Consistency Internal State
+m_previousValidationApproved = false;
+m_previousValidationConfidenceReady = false;
+m_validationConsistencyStableCount = 0;
+m_validationConsistencyChangeCount = 0;
 
      m_winRate = 0.0;
      m_lossRate = 0.0;
@@ -677,6 +696,24 @@ UpdateValidationConsistency();
       // STEP92.6 - Validation Historical Persistence Update
 UpdateValidationHistoricalPersistence();
       
+      // STEP95.4 - Setup Reliability Update
+UpdateSetupReliability();
+
+// STEP96.4 - Setup Learning Readiness Update
+UpdateSetupLearningReadiness();
+      
+      // STEP97.4 - Setup Probability Stability Update
+UpdateSetupProbabilityStability();
+      
+      // STEP98.4 - Forward Test Readiness Update
+UpdateForwardTestReadiness();
+      
+     // STEP99.4 - ML Dataset Certification Update
+UpdateMLDatasetCertification(); 
+      
+      // STEP100.4 - Release Candidate Validation Update
+UpdateReleaseCandidateValidation();
+
       if(m_memory.Trade.TradeLabel == "WIN")
    m_winLabels++;
 
@@ -840,6 +877,42 @@ m_memory.LastSnapshot.ValidationPersistenceScore = 0.0;
 m_memory.LastSnapshot.ValidationPersistenceClass = "NO_PERSISTENCE";
 m_memory.LastSnapshot.ValidationPersistenceReady = false;
 m_memory.LastSnapshot.ValidationPersistenceReason = "PERSISTENCE_NOT_EVALUATED";
+
+// STEP95 - Setup Reliability Layer
+m_memory.LastSnapshot.SetupReliabilityScore = 0.0;
+m_memory.LastSnapshot.SetupReliabilityClass = "NO_SETUP_RELIABILITY";
+m_memory.LastSnapshot.SetupReliable = false;
+m_memory.LastSnapshot.SetupReliabilityReason = "SETUP_RELIABILITY_NOT_EVALUATED";
+
+// STEP96 - Setup Learning Readiness Layer
+m_memory.LastSnapshot.SetupLearningReadinessScore = 0.0;
+m_memory.LastSnapshot.SetupLearningReadinessClass = "NOT_READY_FOR_LEARNING";
+m_memory.LastSnapshot.SetupLearningReady = false;
+m_memory.LastSnapshot.SetupLearningReadinessReason = "SETUP_LEARNING_NOT_EVALUATED";
+
+// STEP97 - Setup Probability Stability Layer
+m_memory.LastSnapshot.SetupProbabilityStabilityScore = 0.0;
+m_memory.LastSnapshot.SetupProbabilityStabilityClass = "NO_PROBABILITY_STABILITY";
+m_memory.LastSnapshot.SetupProbabilityStable = false;
+m_memory.LastSnapshot.SetupProbabilityStabilityReason = "PROBABILITY_STABILITY_NOT_EVALUATED";
+
+// STEP98 - Forward Test Readiness Layer
+m_memory.LastSnapshot.ForwardTestReadinessScore = 0.0;
+m_memory.LastSnapshot.ForwardTestReadinessClass = "NOT_READY_FOR_FORWARD_TEST";
+m_memory.LastSnapshot.ForwardTestReady = false;
+m_memory.LastSnapshot.ForwardTestReadinessReason = "FORWARD_TEST_NOT_EVALUATED";
+
+// STEP99 - ML Dataset Certification Layer
+m_memory.LastSnapshot.MLDatasetCertificationScore = 0.0;
+m_memory.LastSnapshot.MLDatasetCertificationClass = "NOT_CERTIFIED";
+m_memory.LastSnapshot.MLDatasetCertified = false;
+m_memory.LastSnapshot.MLDatasetCertificationReason = "ML_DATASET_NOT_EVALUATED";
+
+// STEP100 - Release Candidate Validation Layer
+m_memory.LastSnapshot.ReleaseCandidateScore = 0.0;
+m_memory.LastSnapshot.ReleaseCandidateClass = "NOT_READY_FOR_ML_PHASE";
+m_memory.LastSnapshot.ReleaseCandidateReady = false;
+m_memory.LastSnapshot.ReleaseCandidateReason = "RELEASE_CANDIDATE_NOT_EVALUATED";
 
    }
    
@@ -1739,46 +1812,65 @@ void UpdateValidationMaturity()
    
 }
    
-   void UpdateValidationTrend()
+   // STEP93.3 - Historical Validation Trend Refinement
+void UpdateValidationTrend()
 {
    if(m_memory == NULL)
       return;
 
-   double maturityScore =
+   double currentMaturityScore =
       m_memory.LastSnapshot.ValidationMaturityScore;
 
-   m_memory.LastSnapshot.ValidationTrendScore =
-      maturityScore - 50.0;
-
-   if(maturityScore >= 100.0)
+   if(m_previousValidationMaturityScore <= 0.0)
    {
-      m_memory.LastSnapshot.ValidationTrendClass = "STRONG_UPTREND";
-      m_memory.LastSnapshot.ValidationTrendImproving = true;
-   }
-   else if(maturityScore >= 75.0)
-   {
-      m_memory.LastSnapshot.ValidationTrendClass = "UPTREND";
-      m_memory.LastSnapshot.ValidationTrendImproving = true;
-   }
-   else if(maturityScore >= 50.0)
-   {
-      m_memory.LastSnapshot.ValidationTrendClass = "STABLE";
+      m_memory.LastSnapshot.ValidationTrendScore = 0.0;
+      m_memory.LastSnapshot.ValidationTrendClass = "NO_HISTORICAL_TREND";
       m_memory.LastSnapshot.ValidationTrendImproving = false;
    }
    else
    {
-      m_memory.LastSnapshot.ValidationTrendClass = "DOWNTREND";
-      m_memory.LastSnapshot.ValidationTrendImproving = false;
+      double trendDelta =
+         currentMaturityScore - m_previousValidationMaturityScore;
+
+      m_memory.LastSnapshot.ValidationTrendScore = trendDelta;
+
+      if(trendDelta >= 10.0)
+      {
+         m_memory.LastSnapshot.ValidationTrendClass = "STRONG_HISTORICAL_UPTREND";
+         m_memory.LastSnapshot.ValidationTrendImproving = true;
+      }
+      else if(trendDelta > 0.0)
+      {
+         m_memory.LastSnapshot.ValidationTrendClass = "HISTORICAL_UPTREND";
+         m_memory.LastSnapshot.ValidationTrendImproving = true;
+      }
+      else if(trendDelta == 0.0)
+      {
+         m_memory.LastSnapshot.ValidationTrendClass = "HISTORICAL_STABLE";
+         m_memory.LastSnapshot.ValidationTrendImproving = false;
+      }
+      else if(trendDelta <= -10.0)
+      {
+         m_memory.LastSnapshot.ValidationTrendClass = "STRONG_HISTORICAL_DOWNTREND";
+         m_memory.LastSnapshot.ValidationTrendImproving = false;
+      }
+      else
+      {
+         m_memory.LastSnapshot.ValidationTrendClass = "HISTORICAL_DOWNTREND";
+         m_memory.LastSnapshot.ValidationTrendImproving = false;
+      }
    }
 
+   m_previousValidationMaturityScore = currentMaturityScore;
+
    PrintFormat(
-      "MRH_X8 STEP86 | TrendScore=%.2f | Class=%s | Improving=%s",
+      "MRH_X8 STEP93 | HistoricalTrendScore=%.2f | Class=%s | Improving=%s | CurrentMaturity=%.2f",
       m_memory.LastSnapshot.ValidationTrendScore,
       m_memory.LastSnapshot.ValidationTrendClass,
-      (m_memory.LastSnapshot.ValidationTrendImproving ? "TRUE" : "FALSE")
+      (m_memory.LastSnapshot.ValidationTrendImproving ? "TRUE" : "FALSE"),
+      currentMaturityScore
    );
 }
-   
    void UpdateValidationConfidence()
 {
    if(m_memory == NULL)
@@ -2006,70 +2098,87 @@ void UpdateValidationDashboard()
    );
 }
    
-   // STEP91.3 - Validation Consistency Calculation
+   // STEP94.3 - Historical Validation Consistency Refinement
 void UpdateValidationConsistency()
 {
    if(m_memory == NULL)
       return;
 
+   bool currentApproved =
+      m_memory.LastSnapshot.ValidationApproved;
+
+   bool currentConfidenceReady =
+      m_memory.LastSnapshot.ValidationConfidenceReady;
+
+   bool approvalStable =
+      (currentApproved == m_previousValidationApproved);
+
+   bool confidenceStable =
+      (currentConfidenceReady == m_previousValidationConfidenceReady);
+
+   if(approvalStable && confidenceStable)
+      m_validationConsistencyStableCount++;
+   else
+      m_validationConsistencyChangeCount++;
+
+   int totalChecks =
+      m_validationConsistencyStableCount +
+      m_validationConsistencyChangeCount;
+
    double score = 0.0;
    string reason = "";
 
-   if(m_memory.LastSnapshot.ValidationDashboardReady)
-      score += 25.0;
-   else
-      reason += "DASHBOARD_NOT_READY;";
+   if(totalChecks > 0)
+   {
+      score =
+         ((double)m_validationConsistencyStableCount /
+          (double)totalChecks) * 100.0;
+   }
 
-   if(m_memory.LastSnapshot.ValidationAnalyticsReady)
-      score += 25.0;
-   else
-      reason += "ANALYTICS_NOT_READY;";
+   if(totalChecks < 5)
+      reason += "INSUFFICIENT_CONSISTENCY_HISTORY;";
 
-   if(m_memory.LastSnapshot.ValidationConfidenceReady)
-      score += 20.0;
-   else
-      reason += "CONFIDENCE_NOT_READY;";
+   if(!approvalStable)
+      reason += "APPROVAL_STATE_CHANGED;";
 
-   if(m_memory.LastSnapshot.ValidationMature)
-      score += 20.0;
-   else
-      reason += "VALIDATION_NOT_MATURE;";
-
-   if(m_memory.LastSnapshot.ValidationTrendImproving)
-      score += 10.0;
-   else
-      reason += "TREND_NOT_IMPROVING;";
+   if(!confidenceStable)
+      reason += "CONFIDENCE_STATE_CHANGED;";
 
    m_memory.LastSnapshot.ValidationConsistencyScore = score;
 
-   if(score >= 90.0)
+   if(score >= 85.0 && totalChecks >= 5)
    {
-      m_memory.LastSnapshot.ValidationConsistencyClass = "HIGH_CONSISTENCY";
+      m_memory.LastSnapshot.ValidationConsistencyClass = "HIGH_HISTORICAL_CONSISTENCY";
       m_memory.LastSnapshot.ValidationConsistencyReady = true;
    }
-   else if(score >= 70.0)
+   else if(score >= 65.0 && totalChecks >= 5)
    {
-      m_memory.LastSnapshot.ValidationConsistencyClass = "MEDIUM_CONSISTENCY";
+      m_memory.LastSnapshot.ValidationConsistencyClass = "MEDIUM_HISTORICAL_CONSISTENCY";
       m_memory.LastSnapshot.ValidationConsistencyReady = true;
    }
-   else if(score >= 50.0)
+   else if(score >= 40.0)
    {
-      m_memory.LastSnapshot.ValidationConsistencyClass = "LOW_CONSISTENCY";
+      m_memory.LastSnapshot.ValidationConsistencyClass = "LOW_HISTORICAL_CONSISTENCY";
       m_memory.LastSnapshot.ValidationConsistencyReady = false;
    }
    else
    {
-      m_memory.LastSnapshot.ValidationConsistencyClass = "NO_CONSISTENCY";
+      m_memory.LastSnapshot.ValidationConsistencyClass = "NO_HISTORICAL_CONSISTENCY";
       m_memory.LastSnapshot.ValidationConsistencyReady = false;
    }
 
    m_memory.LastSnapshot.ValidationConsistencyReason = reason;
 
+   m_previousValidationApproved = currentApproved;
+   m_previousValidationConfidenceReady = currentConfidenceReady;
+
    PrintFormat(
-      "MRH_X8 STEP91 | ConsistencyScore=%.2f | Class=%s | Ready=%s | Reason=%s",
+      "MRH_X8 STEP94 | HistoricalConsistencyScore=%.2f | Class=%s | Ready=%s | StableCount=%d | ChangeCount=%d | Reason=%s",
       m_memory.LastSnapshot.ValidationConsistencyScore,
       m_memory.LastSnapshot.ValidationConsistencyClass,
       (m_memory.LastSnapshot.ValidationConsistencyReady ? "TRUE" : "FALSE"),
+      m_validationConsistencyStableCount,
+      m_validationConsistencyChangeCount,
       m_memory.LastSnapshot.ValidationConsistencyReason
    );
 }
@@ -2176,6 +2285,391 @@ void UpdateValidationHistoricalPersistence()
    );
 }
    
+   // STEP95.3 - Setup Reliability Calculation
+void UpdateSetupReliability()
+{
+   if(m_memory == NULL)
+      return;
+
+   double score = 0.0;
+   string reason = "";
+
+   if(m_memory.Trade.TradeLabel == "WIN")
+      score += 30.0;
+   else if(m_memory.Trade.TradeLabel == "LOSS")
+      reason += "LOSS_LABEL;";
+   else
+      reason += "NO_VALID_TRADE_LABEL;";
+
+   if(m_memory.Trade.AdvancedLabel == "GOOD_WIN")
+      score += 25.0;
+   else
+      reason += "ADVANCED_LABEL_NOT_STRONG;";
+
+   if(m_memory.LastSnapshot.ValidationConfidenceReady)
+      score += 20.0;
+   else
+      reason += "VALIDATION_CONFIDENCE_NOT_READY;";
+
+   if(m_memory.LastSnapshot.ValidationPersistenceReady)
+      score += 15.0;
+   else
+      reason += "VALIDATION_PERSISTENCE_NOT_READY;";
+
+   if(m_memory.LastSnapshot.ValidationConsistencyReady)
+      score += 10.0;
+   else
+      reason += "VALIDATION_CONSISTENCY_NOT_READY;";
+
+   m_memory.LastSnapshot.SetupReliabilityScore = score;
+
+   if(score >= 80.0)
+   {
+      m_memory.LastSnapshot.SetupReliabilityClass = "HIGH_SETUP_RELIABILITY";
+      m_memory.LastSnapshot.SetupReliable = true;
+   }
+   else if(score >= 60.0)
+   {
+      m_memory.LastSnapshot.SetupReliabilityClass = "MEDIUM_SETUP_RELIABILITY";
+      m_memory.LastSnapshot.SetupReliable = true;
+   }
+   else if(score >= 40.0)
+   {
+      m_memory.LastSnapshot.SetupReliabilityClass = "LOW_SETUP_RELIABILITY";
+      m_memory.LastSnapshot.SetupReliable = false;
+   }
+   else
+   {
+      m_memory.LastSnapshot.SetupReliabilityClass = "NO_SETUP_RELIABILITY";
+      m_memory.LastSnapshot.SetupReliable = false;
+   }
+
+   m_memory.LastSnapshot.SetupReliabilityReason = reason;
+
+   PrintFormat(
+      "MRH_X8 STEP95 | SetupReliabilityScore=%.2f | Class=%s | Reliable=%s | Reason=%s",
+      m_memory.LastSnapshot.SetupReliabilityScore,
+      m_memory.LastSnapshot.SetupReliabilityClass,
+      (m_memory.LastSnapshot.SetupReliable ? "TRUE" : "FALSE"),
+      m_memory.LastSnapshot.SetupReliabilityReason
+   );
+}
+
+// STEP96.3 - Setup Learning Readiness Calculation
+void UpdateSetupLearningReadiness()
+{
+   if(m_memory == NULL)
+      return;
+
+   double score = 0.0;
+   string reason = "";
+
+   if(m_memory.LastSnapshot.SetupReliable)
+      score += 35.0;
+   else
+      reason += "SETUP_NOT_RELIABLE;";
+
+   if(m_memory.LastSnapshot.ValidationPersistenceReady)
+      score += 25.0;
+   else
+      reason += "PERSISTENCE_NOT_READY;";
+
+   if(m_memory.LastSnapshot.ValidationConsistencyReady)
+      score += 20.0;
+   else
+      reason += "CONSISTENCY_NOT_READY;";
+
+   if(m_memory.LastSnapshot.ValidationConfidenceReady)
+      score += 20.0;
+   else
+      reason += "CONFIDENCE_NOT_READY;";
+
+   m_memory.LastSnapshot.SetupLearningReadinessScore = score;
+
+   if(score >= 80.0)
+   {
+      m_memory.LastSnapshot.SetupLearningReadinessClass =
+         "READY_FOR_ML_LEARNING";
+      m_memory.LastSnapshot.SetupLearningReady = true;
+   }
+   else if(score >= 60.0)
+   {
+      m_memory.LastSnapshot.SetupLearningReadinessClass =
+         "PARTIALLY_READY_FOR_ML_LEARNING";
+      m_memory.LastSnapshot.SetupLearningReady = false;
+   }
+   else
+   {
+      m_memory.LastSnapshot.SetupLearningReadinessClass =
+         "NOT_READY_FOR_ML_LEARNING";
+      m_memory.LastSnapshot.SetupLearningReady = false;
+   }
+
+   m_memory.LastSnapshot.SetupLearningReadinessReason = reason;
+
+   PrintFormat(
+      "MRH_X8 STEP96 | LearningReadinessScore=%.2f | Class=%s | Ready=%s | Reason=%s",
+      m_memory.LastSnapshot.SetupLearningReadinessScore,
+      m_memory.LastSnapshot.SetupLearningReadinessClass,
+      (m_memory.LastSnapshot.SetupLearningReady ? "TRUE" : "FALSE"),
+      m_memory.LastSnapshot.SetupLearningReadinessReason
+   );
+}
+   
+   // STEP97.3 - Setup Probability Stability Calculation
+void UpdateSetupProbabilityStability()
+{
+   if(m_memory == NULL)
+      return;
+
+   double score = 0.0;
+   string reason = "";
+
+   if(m_memory.LastSnapshot.SetupLearningReady)
+      score += 40.0;
+   else
+      reason += "LEARNING_NOT_READY;";
+
+   if(m_memory.LastSnapshot.SetupReliable)
+      score += 30.0;
+   else
+      reason += "SETUP_NOT_RELIABLE;";
+
+   if(m_memory.LastSnapshot.ValidationPersistenceReady)
+      score += 20.0;
+   else
+      reason += "PERSISTENCE_NOT_READY;";
+
+   if(m_memory.LastSnapshot.ValidationConsistencyReady)
+      score += 10.0;
+   else
+      reason += "CONSISTENCY_NOT_READY;";
+
+   m_memory.LastSnapshot.SetupProbabilityStabilityScore = score;
+
+   if(score >= 80.0)
+   {
+      m_memory.LastSnapshot.SetupProbabilityStabilityClass =
+         "HIGH_PROBABILITY_STABILITY";
+      m_memory.LastSnapshot.SetupProbabilityStable = true;
+   }
+   else if(score >= 60.0)
+   {
+      m_memory.LastSnapshot.SetupProbabilityStabilityClass =
+         "MEDIUM_PROBABILITY_STABILITY";
+      m_memory.LastSnapshot.SetupProbabilityStable = true;
+   }
+   else if(score >= 40.0)
+   {
+      m_memory.LastSnapshot.SetupProbabilityStabilityClass =
+         "LOW_PROBABILITY_STABILITY";
+      m_memory.LastSnapshot.SetupProbabilityStable = false;
+   }
+   else
+   {
+      m_memory.LastSnapshot.SetupProbabilityStabilityClass =
+         "NO_PROBABILITY_STABILITY";
+      m_memory.LastSnapshot.SetupProbabilityStable = false;
+   }
+
+   m_memory.LastSnapshot.SetupProbabilityStabilityReason = reason;
+
+   PrintFormat(
+      "MRH_X8 STEP97 | ProbabilityStabilityScore=%.2f | Class=%s | Stable=%s | Reason=%s",
+      m_memory.LastSnapshot.SetupProbabilityStabilityScore,
+      m_memory.LastSnapshot.SetupProbabilityStabilityClass,
+      (m_memory.LastSnapshot.SetupProbabilityStable ? "TRUE" : "FALSE"),
+      m_memory.LastSnapshot.SetupProbabilityStabilityReason
+   );
+}
+   
+   // STEP98.3 - Forward Test Readiness Calculation
+void UpdateForwardTestReadiness()
+{
+   if(m_memory == NULL)
+      return;
+
+   double score = 0.0;
+   string reason = "";
+
+   if(m_memory.LastSnapshot.ValidationPersistenceReady)
+      score += 25.0;
+   else
+      reason += "PERSISTENCE_NOT_READY;";
+
+   if(m_memory.LastSnapshot.ValidationConsistencyReady)
+      score += 25.0;
+   else
+      reason += "CONSISTENCY_NOT_READY;";
+
+   if(m_memory.LastSnapshot.SetupLearningReady)
+      score += 25.0;
+   else
+      reason += "SETUP_LEARNING_NOT_READY;";
+
+   if(m_memory.LastSnapshot.SetupProbabilityStable)
+      score += 25.0;
+   else
+      reason += "PROBABILITY_NOT_STABLE;";
+
+   m_memory.LastSnapshot.ForwardTestReadinessScore = score;
+
+   if(score >= 80.0)
+   {
+      m_memory.LastSnapshot.ForwardTestReadinessClass =
+         "READY_FOR_FORWARD_TEST";
+      m_memory.LastSnapshot.ForwardTestReady = true;
+   }
+   else if(score >= 60.0)
+   {
+      m_memory.LastSnapshot.ForwardTestReadinessClass =
+         "PARTIALLY_READY_FOR_FORWARD_TEST";
+      m_memory.LastSnapshot.ForwardTestReady = false;
+   }
+   else
+   {
+      m_memory.LastSnapshot.ForwardTestReadinessClass =
+         "NOT_READY_FOR_FORWARD_TEST";
+      m_memory.LastSnapshot.ForwardTestReady = false;
+   }
+
+   m_memory.LastSnapshot.ForwardTestReadinessReason = reason;
+
+   PrintFormat(
+      "MRH_X8 STEP98 | ForwardTestScore=%.2f | Class=%s | Ready=%s | Reason=%s",
+      m_memory.LastSnapshot.ForwardTestReadinessScore,
+      m_memory.LastSnapshot.ForwardTestReadinessClass,
+      (m_memory.LastSnapshot.ForwardTestReady ? "TRUE" : "FALSE"),
+      m_memory.LastSnapshot.ForwardTestReadinessReason
+   );
+}
+   
+   // STEP99.3 - ML Dataset Certification Calculation
+void UpdateMLDatasetCertification()
+{
+   if(m_memory == NULL)
+      return;
+
+   double score = 0.0;
+   string reason = "";
+
+   if(m_memory.LastSnapshot.DatasetApproved)
+      score += 25.0;
+   else
+      reason += "DATASET_NOT_APPROVED;";
+
+   if(m_memory.LastSnapshot.ValidationPersistenceReady)
+      score += 20.0;
+   else
+      reason += "PERSISTENCE_NOT_READY;";
+
+   if(m_memory.LastSnapshot.ValidationConsistencyReady)
+      score += 20.0;
+   else
+      reason += "CONSISTENCY_NOT_READY;";
+
+   if(m_memory.LastSnapshot.SetupLearningReady)
+      score += 20.0;
+   else
+      reason += "SETUP_LEARNING_NOT_READY;";
+
+   if(m_memory.LastSnapshot.SetupProbabilityStable)
+      score += 15.0;
+   else
+      reason += "PROBABILITY_NOT_STABLE;";
+
+   m_memory.LastSnapshot.MLDatasetCertificationScore = score;
+
+   if(score >= 85.0)
+   {
+      m_memory.LastSnapshot.MLDatasetCertificationClass =
+         "ML_DATASET_CERTIFIED";
+      m_memory.LastSnapshot.MLDatasetCertified = true;
+   }
+   else if(score >= 65.0)
+   {
+      m_memory.LastSnapshot.MLDatasetCertificationClass =
+         "ML_DATASET_PARTIALLY_CERTIFIED";
+      m_memory.LastSnapshot.MLDatasetCertified = false;
+   }
+   else
+   {
+      m_memory.LastSnapshot.MLDatasetCertificationClass =
+         "ML_DATASET_NOT_CERTIFIED";
+      m_memory.LastSnapshot.MLDatasetCertified = false;
+   }
+
+   m_memory.LastSnapshot.MLDatasetCertificationReason = reason;
+
+   PrintFormat(
+      "MRH_X8 STEP99 | MLDatasetCertificationScore=%.2f | Class=%s | Certified=%s | Reason=%s",
+      m_memory.LastSnapshot.MLDatasetCertificationScore,
+      m_memory.LastSnapshot.MLDatasetCertificationClass,
+      (m_memory.LastSnapshot.MLDatasetCertified ? "TRUE" : "FALSE"),
+      m_memory.LastSnapshot.MLDatasetCertificationReason
+   );
+}
+   
+   // STEP100.3 - Release Candidate Validation Calculation
+void UpdateReleaseCandidateValidation()
+{
+   if(m_memory == NULL)
+      return;
+
+   double score = 0.0;
+   string reason = "";
+
+   if(m_memory.LastSnapshot.MLDatasetCertified)
+      score += 40.0;
+   else
+      reason += "ML_DATASET_NOT_CERTIFIED;";
+
+   if(m_memory.LastSnapshot.ForwardTestReady)
+      score += 30.0;
+   else
+      reason += "FORWARD_TEST_NOT_READY;";
+
+   if(m_memory.LastSnapshot.SetupLearningReady)
+      score += 20.0;
+   else
+      reason += "SETUP_LEARNING_NOT_READY;";
+
+   if(m_memory.LastSnapshot.SetupProbabilityStable)
+      score += 10.0;
+   else
+      reason += "PROBABILITY_NOT_STABLE;";
+
+   m_memory.LastSnapshot.ReleaseCandidateScore = score;
+
+   if(score >= 85.0)
+   {
+      m_memory.LastSnapshot.ReleaseCandidateClass =
+         "READY_FOR_ML_PHASE";
+      m_memory.LastSnapshot.ReleaseCandidateReady = true;
+   }
+   else if(score >= 60.0)
+   {
+      m_memory.LastSnapshot.ReleaseCandidateClass =
+         "PARTIALLY_READY_FOR_ML_PHASE";
+      m_memory.LastSnapshot.ReleaseCandidateReady = false;
+   }
+   else
+   {
+      m_memory.LastSnapshot.ReleaseCandidateClass =
+         "NOT_READY_FOR_ML_PHASE";
+      m_memory.LastSnapshot.ReleaseCandidateReady = false;
+   }
+
+   m_memory.LastSnapshot.ReleaseCandidateReason = reason;
+
+   PrintFormat(
+      "MRH_X8 STEP100 | ReleaseCandidateScore=%.2f | Class=%s | Ready=%s | Reason=%s",
+      m_memory.LastSnapshot.ReleaseCandidateScore,
+      m_memory.LastSnapshot.ReleaseCandidateClass,
+      (m_memory.LastSnapshot.ReleaseCandidateReady ? "TRUE" : "FALSE"),
+      m_memory.LastSnapshot.ReleaseCandidateReason
+   );
+}
    
 void ValidateOutcomeSnapshot()
 {
