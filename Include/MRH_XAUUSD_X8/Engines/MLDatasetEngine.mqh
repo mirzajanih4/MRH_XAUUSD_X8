@@ -1204,15 +1204,31 @@ void UpdateValidationDecision()
    else
       reason += "REPORT_NOT_READY;";
 
+// STEP88 - Validation Decision Enhancement Layer
+if(m_memory.LastSnapshot.ValidationMature)
+   score += 10.0;
+else
+   reason += "VALIDATION_NOT_MATURE;";
+
+if(m_memory.LastSnapshot.ValidationConfidenceReady)
+   score += 10.0;
+else
+   reason += "CONFIDENCE_NOT_READY;";
+
+if(m_memory.LastSnapshot.ValidationTrendImproving)
+   score += 5.0;
+else
+   reason += "TREND_NOT_IMPROVING;";
+
    m_memory.LastSnapshot.ValidationDecisionScore = score;
 
-   if(score >= 100.0)
+   if(score >= 115.0)
    {
       m_memory.LastSnapshot.ValidationDecisionClass = "INTERNAL_MT5_TEST_APPROVED";
       m_memory.LastSnapshot.ValidationApproved = true;
       m_memory.LastSnapshot.ValidationDecisionReason = "VALIDATION_APPROVED";
    }
-   else if(score >= 60.0)
+   else if(score >= 75.0)
    {
       m_memory.LastSnapshot.ValidationDecisionClass = "INTERNAL_MT5_TEST_PENDING";
       m_memory.LastSnapshot.ValidationApproved = false;

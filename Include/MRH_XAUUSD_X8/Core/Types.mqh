@@ -528,6 +528,8 @@ double ValidationConfidenceScore;
 string ValidationConfidenceClass;
 bool   ValidationConfidenceReady;
 string ValidationConfidenceReason;
+
+
 };
 
 //==================================================
