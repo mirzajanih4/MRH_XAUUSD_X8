@@ -529,6 +529,11 @@ string ValidationConfidenceClass;
 bool   ValidationConfidenceReady;
 string ValidationConfidenceReason;
 
+// STEP89 - Validation Analytics Layer
+double ValidationAnalyticsScore;
+string ValidationAnalyticsClass;
+bool   ValidationAnalyticsReady;
+string ValidationAnalyticsSummary;
 
 };
 
