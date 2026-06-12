@@ -512,6 +512,13 @@ double ValidationStabilityScore;
 string ValidationStabilityClass;
 bool   ValidationStabilityReady;
 
+// STEP85 - Validation Maturity Layer
+double ValidationMaturityScore;
+string ValidationMaturityClass;
+bool   ValidationMature;
+string ValidationMaturityReason;
+
+
 };
 
 //==================================================
