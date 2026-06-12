@@ -87,6 +87,11 @@ int m_validationFailCount;
 int m_validationCampaignSampleCount;
 int m_validationCampaignSessionCount;
 
+// STEP80.3 - Persistent Validation Statistics Counters
+int m_validationTotalSamples;
+int m_validationApprovedSamples;
+int m_validationBlockedSamples;
+
    string TradeOutcomeToString(ENUM_TRADE_OUTCOME outcome)
    {
       switch(outcome)
@@ -163,6 +168,11 @@ m_validationFailCount = 0;
 // STEP75.4 - Persistent Validation Campaign Counters
 m_validationCampaignSampleCount = 0;
 m_validationCampaignSessionCount = 0;
+
+// STEP80.4 - Persistent Validation Statistics Counters
+m_validationTotalSamples = 0;
+m_validationApprovedSamples = 0;
+m_validationBlockedSamples = 0;
 
    }
 
@@ -574,6 +584,10 @@ UpdateValidationReport();
 
 // STEP79.4 - Validation Decision Update
 UpdateValidationDecision();
+
+// STEP80.6 - Validation Statistics Update
+UpdateValidationStatistics();
+
       
       if(m_memory.Trade.TradeLabel == "WIN")
    m_winLabels++;
@@ -655,6 +669,15 @@ m_memory.LastSnapshot.ValidationDecisionScore = 0.0;
 m_memory.LastSnapshot.ValidationDecisionClass = "DECISION_NOT_MADE";
 m_memory.LastSnapshot.ValidationApproved = false;
 m_memory.LastSnapshot.ValidationDecisionReason = "DECISION_NOT_AVAILABLE";
+
+// STEP80 - Validation Statistics Foundation
+m_memory.LastSnapshot.ValidationTotalSamples = 0;
+m_memory.LastSnapshot.ValidationApprovedSamples = 0;
+m_memory.LastSnapshot.ValidationBlockedSamples = 0;
+m_memory.LastSnapshot.ValidationApprovalRate = 0.0;
+m_memory.LastSnapshot.ValidationBlockRate = 0.0;
+m_memory.LastSnapshot.ValidationStatisticsClass = "NO_STATISTICS";
+m_memory.LastSnapshot.ValidationStatisticsReady = false;
 
    }
    
@@ -1102,6 +1125,77 @@ void UpdateValidationDecision()
 
 }
    
+   // STEP80.5 - Validation Statistics Foundation Calculation
+void UpdateValidationStatistics()
+{
+   if(m_memory == NULL)
+      return;
+
+   m_validationTotalSamples++;
+
+   if(m_memory.LastSnapshot.ValidationApproved)
+      m_validationApprovedSamples++;
+   else
+      m_validationBlockedSamples++;
+
+   m_memory.LastSnapshot.ValidationTotalSamples =
+      m_validationTotalSamples;
+
+   m_memory.LastSnapshot.ValidationApprovedSamples =
+      m_validationApprovedSamples;
+
+   m_memory.LastSnapshot.ValidationBlockedSamples =
+      m_validationBlockedSamples;
+
+   if(m_validationTotalSamples <= 0)
+   {
+      m_memory.LastSnapshot.ValidationApprovalRate = 0.0;
+      m_memory.LastSnapshot.ValidationBlockRate = 0.0;
+      m_memory.LastSnapshot.ValidationStatisticsClass = "NO_STATISTICS";
+      m_memory.LastSnapshot.ValidationStatisticsReady = false;
+      return;
+   }
+
+   m_memory.LastSnapshot.ValidationApprovalRate =
+      ((double)m_validationApprovedSamples / (double)m_validationTotalSamples) * 100.0;
+
+   m_memory.LastSnapshot.ValidationBlockRate =
+      ((double)m_validationBlockedSamples / (double)m_validationTotalSamples) * 100.0;
+
+   if(m_validationTotalSamples < 20)
+   {
+      m_memory.LastSnapshot.ValidationStatisticsClass = "INSUFFICIENT_SAMPLES";
+      m_memory.LastSnapshot.ValidationStatisticsReady = false;
+   }
+   else if(m_memory.LastSnapshot.ValidationApprovalRate >= 80.0)
+   {
+      m_memory.LastSnapshot.ValidationStatisticsClass = "STRONG_STATISTICS";
+      m_memory.LastSnapshot.ValidationStatisticsReady = true;
+   }
+   else if(m_memory.LastSnapshot.ValidationApprovalRate >= 60.0)
+   {
+      m_memory.LastSnapshot.ValidationStatisticsClass = "MODERATE_STATISTICS";
+      m_memory.LastSnapshot.ValidationStatisticsReady = false;
+   }
+   else
+   {
+      m_memory.LastSnapshot.ValidationStatisticsClass = "WEAK_STATISTICS";
+      m_memory.LastSnapshot.ValidationStatisticsReady = false;
+   }
+   
+   PrintFormat(
+   "MRH_X8 STEP80 | Total=%d | Approved=%d | Blocked=%d | ApprovalRate=%.2f | BlockRate=%.2f | Class=%s | Ready=%s",
+   m_memory.LastSnapshot.ValidationTotalSamples,
+   m_memory.LastSnapshot.ValidationApprovedSamples,
+   m_memory.LastSnapshot.ValidationBlockedSamples,
+   m_memory.LastSnapshot.ValidationApprovalRate,
+   m_memory.LastSnapshot.ValidationBlockRate,
+   m_memory.LastSnapshot.ValidationStatisticsClass,
+   (m_memory.LastSnapshot.ValidationStatisticsReady ? "TRUE" : "FALSE")
+);
+   
+}
+   
 void ValidateOutcomeSnapshot()
 {
    if(m_memory == NULL)
@@ -1513,7 +1607,7 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
       return;
 
   string header =
-"SnapshotTime\tLiquidityScore\tOBScore\tPermissionScore\tConfluenceScore\tExecutionGrade\tConfidenceLevel\tAuditReason\tRecommendedRisk\tRiskProfile\tTradeState\tCurrentRR\tExitReason\tOutcome\tLossCause\tWinCause\tFinalProfit\tFinalRR\tClosePrice\tCloseTime\tTradeLabel\tAdvancedLabel\tLabelQuality\tDynamicQualityLabel\tProbabilityClass\tOutcomeReadinessClass\tLabelReadinessClass\tOutcomeTrackingClass\tTradeQualityAuditClass\tTradeLifecycleClass\tDatasetReadinessClass\tDatasetQualityClass\tMLReadyFlag\tMLFeatureCount\tDatasetMaturityScore\tDatasetMaturityClass\tDatasetBalanceScore\tDatasetBalanceClass\tWinLossBalance\tProbabilityBalance\tLabelBalance\tArchitectureAuditScore\tArchitectureAuditClass\tArchitectureApproved\tDatasetIntegrityScore\tDatasetIntegrityClass\tDatasetIntegrityApproved\tTestReadinessScore\tTestReadinessClass\tTestReady\tDatasetCompletenessScore\tDatasetCompletenessClass\tDatasetComplete\tDatasetReliabilityScore\tDatasetReliabilityClass\tDatasetReliable\tDatasetStabilityScore\tDatasetStabilityClass\tDatasetStable\tDatasetHealthScore\tDatasetHealthClass\tDatasetHealthy\tDatasetConfidenceScore\tDatasetConfidenceClass\tDatasetConfidenceApproved\tDatasetApprovalScore\tDatasetApprovalClass\tDatasetApproved\tDatasetReleaseScore\tDatasetReleaseClass\tDatasetReleaseReady\tInternalValidationScore\tInternalValidationClass\tInternalValidationPassed\tInternalValidationReason\tInternalValidationSampleCount\tInternalValidationFailureCount\tValidationPassCount\tValidationWarningCount\tValidationFailCount\tValidationEvidenceScore\tValidationEvidenceClass\tValidationEvidenceReady\tValidationCampaignSampleCount\tValidationCampaignSessionCount\tValidationCampaignProgressScore\tValidationCampaignStatusClass\tValidationCampaignReady\tValidationSuccessRate\tValidationFailureRate\tValidationPerformanceScore\tValidationPerformanceClass\tValidationPerformanceReady\tValidationCertificationScore\tValidationCertificationClass\tValidationCertified\tValidationCertificationReason\tValidationReportScore\tValidationReportClass\tValidationReportReady\tValidationReportSummary\tValidationDecisionScore\tValidationDecisionClass\tValidationApproved\tValidationDecisionReason";
+"SnapshotTime\tLiquidityScore\tOBScore\tPermissionScore\tConfluenceScore\tExecutionGrade\tConfidenceLevel\tAuditReason\tRecommendedRisk\tRiskProfile\tTradeState\tCurrentRR\tExitReason\tOutcome\tLossCause\tWinCause\tFinalProfit\tFinalRR\tClosePrice\tCloseTime\tTradeLabel\tAdvancedLabel\tLabelQuality\tDynamicQualityLabel\tProbabilityClass\tOutcomeReadinessClass\tLabelReadinessClass\tOutcomeTrackingClass\tTradeQualityAuditClass\tTradeLifecycleClass\tDatasetReadinessClass\tDatasetQualityClass\tMLReadyFlag\tMLFeatureCount\tDatasetMaturityScore\tDatasetMaturityClass\tDatasetBalanceScore\tDatasetBalanceClass\tWinLossBalance\tProbabilityBalance\tLabelBalance\tArchitectureAuditScore\tArchitectureAuditClass\tArchitectureApproved\tDatasetIntegrityScore\tDatasetIntegrityClass\tDatasetIntegrityApproved\tTestReadinessScore\tTestReadinessClass\tTestReady\tDatasetCompletenessScore\tDatasetCompletenessClass\tDatasetComplete\tDatasetReliabilityScore\tDatasetReliabilityClass\tDatasetReliable\tDatasetStabilityScore\tDatasetStabilityClass\tDatasetStable\tDatasetHealthScore\tDatasetHealthClass\tDatasetHealthy\tDatasetConfidenceScore\tDatasetConfidenceClass\tDatasetConfidenceApproved\tDatasetApprovalScore\tDatasetApprovalClass\tDatasetApproved\tDatasetReleaseScore\tDatasetReleaseClass\tDatasetReleaseReady\tInternalValidationScore\tInternalValidationClass\tInternalValidationPassed\tInternalValidationReason\tInternalValidationSampleCount\tInternalValidationFailureCount\tValidationPassCount\tValidationWarningCount\tValidationFailCount\tValidationEvidenceScore\tValidationEvidenceClass\tValidationEvidenceReady\tValidationCampaignSampleCount\tValidationCampaignSessionCount\tValidationCampaignProgressScore\tValidationCampaignStatusClass\tValidationCampaignReady\tValidationSuccessRate\tValidationFailureRate\tValidationPerformanceScore\tValidationPerformanceClass\tValidationPerformanceReady\tValidationCertificationScore\tValidationCertificationClass\tValidationCertified\tValidationCertificationReason\tValidationReportScore\tValidationReportClass\tValidationReportReady\tValidationReportSummary\tValidationDecisionScore\tValidationDecisionClass\tValidationApproved\tValidationDecisionReason\tValidationTotalSamples\tValidationApprovedSamples\tValidationBlockedSamples\tValidationApprovalRate\tValidationBlockRate\tValidationStatisticsClass\tValidationStatisticsReady";
    FileWriteString(fileHandle, header + "\r\n");
 }
 
@@ -1663,7 +1757,16 @@ m_memory.LastSnapshot.ValidationReportSummary + "\t" +
 DoubleToString(m_memory.LastSnapshot.ValidationDecisionScore, 2) + "\t" +
 m_memory.LastSnapshot.ValidationDecisionClass + "\t" +
 (m_memory.LastSnapshot.ValidationApproved ? "TRUE" : "FALSE") + "\t" +
-m_memory.LastSnapshot.ValidationDecisionReason;
+m_memory.LastSnapshot.ValidationDecisionReason + "\t" +
+
+IntegerToString(m_memory.LastSnapshot.ValidationTotalSamples) + "\t" +
+IntegerToString(m_memory.LastSnapshot.ValidationApprovedSamples) + "\t" +
+IntegerToString(m_memory.LastSnapshot.ValidationBlockedSamples) + "\t" +
+DoubleToString(m_memory.LastSnapshot.ValidationApprovalRate, 2) + "\t" +
+DoubleToString(m_memory.LastSnapshot.ValidationBlockRate, 2) + "\t" +
+m_memory.LastSnapshot.ValidationStatisticsClass + "\t" +
+(m_memory.LastSnapshot.ValidationStatisticsReady ? "TRUE" : "FALSE");
+
 
 FileWriteString(fileHandle, row + "\r\n");
 

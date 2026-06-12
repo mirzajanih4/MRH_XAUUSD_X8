@@ -474,6 +474,15 @@ string ValidationDecisionClass;
 bool   ValidationApproved;
 string ValidationDecisionReason;
 
+// STEP80 - Validation Statistics Foundation
+int    ValidationTotalSamples;
+int    ValidationApprovedSamples;
+int    ValidationBlockedSamples;
+double ValidationApprovalRate;
+double ValidationBlockRate;
+string ValidationStatisticsClass;
+bool   ValidationStatisticsReady;
+
 };
 
 //==================================================
