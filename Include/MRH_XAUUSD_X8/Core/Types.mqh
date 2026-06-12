@@ -518,6 +518,10 @@ string ValidationMaturityClass;
 bool   ValidationMature;
 string ValidationMaturityReason;
 
+// STEP86 - Validation Trend Layer
+double ValidationTrendScore;
+string ValidationTrendClass;
+bool   ValidationTrendImproving;
 
 };
 

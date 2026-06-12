@@ -646,6 +646,11 @@ UpdateValidationStability();
 
 // STEP85.4 - Validation Maturity Update
 UpdateValidationMaturity();
+
+// STEP86.4 - Validation Trend Update
+UpdateValidationTrend();
+      
+      
       
       if(m_memory.Trade.TradeLabel == "WIN")
    m_winLabels++;
@@ -771,6 +776,11 @@ m_memory.LastSnapshot.ValidationMaturityScore = 0.0;
 m_memory.LastSnapshot.ValidationMaturityClass = "NOT_MATURE";
 m_memory.LastSnapshot.ValidationMature = false;
 m_memory.LastSnapshot.ValidationMaturityReason = "MATURITY_NOT_EVALUATED";
+
+// STEP86 - Validation Trend Layer
+m_memory.LastSnapshot.ValidationTrendScore = 0.0;
+m_memory.LastSnapshot.ValidationTrendClass = "NO_TREND";
+m_memory.LastSnapshot.ValidationTrendImproving = false;
 
    }
    
@@ -1652,6 +1662,46 @@ void UpdateValidationMaturity()
    m_memory.LastSnapshot.ValidationMaturityReason
 );
    
+}
+   
+   void UpdateValidationTrend()
+{
+   if(m_memory == NULL)
+      return;
+
+   double maturityScore =
+      m_memory.LastSnapshot.ValidationMaturityScore;
+
+   m_memory.LastSnapshot.ValidationTrendScore =
+      maturityScore - 50.0;
+
+   if(maturityScore >= 100.0)
+   {
+      m_memory.LastSnapshot.ValidationTrendClass = "STRONG_UPTREND";
+      m_memory.LastSnapshot.ValidationTrendImproving = true;
+   }
+   else if(maturityScore >= 75.0)
+   {
+      m_memory.LastSnapshot.ValidationTrendClass = "UPTREND";
+      m_memory.LastSnapshot.ValidationTrendImproving = true;
+   }
+   else if(maturityScore >= 50.0)
+   {
+      m_memory.LastSnapshot.ValidationTrendClass = "STABLE";
+      m_memory.LastSnapshot.ValidationTrendImproving = false;
+   }
+   else
+   {
+      m_memory.LastSnapshot.ValidationTrendClass = "DOWNTREND";
+      m_memory.LastSnapshot.ValidationTrendImproving = false;
+   }
+
+   PrintFormat(
+      "MRH_X8 STEP86 | TrendScore=%.2f | Class=%s | Improving=%s",
+      m_memory.LastSnapshot.ValidationTrendScore,
+      m_memory.LastSnapshot.ValidationTrendClass,
+      (m_memory.LastSnapshot.ValidationTrendImproving ? "TRUE" : "FALSE")
+   );
 }
    
 void ValidateOutcomeSnapshot()
