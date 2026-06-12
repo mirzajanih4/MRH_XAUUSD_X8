@@ -483,6 +483,11 @@ double ValidationBlockRate;
 string ValidationStatisticsClass;
 bool   ValidationStatisticsReady;
 
+// STEP81 - Validation Event Tracking Foundation
+int    ValidationEventCount;
+string ValidationLastEventType;
+bool   ValidationNewEventDetected;
+
 };
 
 //==================================================
