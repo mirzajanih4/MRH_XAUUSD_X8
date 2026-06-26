@@ -169,6 +169,10 @@ public:
       LastSnapshot.DynamicQualityLabel = "UNRATED";
       LastSnapshot.ProbabilityClass = "UNCLASSIFIED";
       
+      LastSnapshot.HistoricalSetupConfidence = 0.0;
+      LastSnapshot.HistoricalSetupConfidenceClass = "NO_HISTORY";
+      LastSnapshot.HistoricalSetupConfidenceReady = false;
+      
       // STEP44 - Architecture Audit Reset
       LastSnapshot.ArchitectureAuditScore = 0.0;
       LastSnapshot.ArchitectureAuditClass = "NOT_READY";

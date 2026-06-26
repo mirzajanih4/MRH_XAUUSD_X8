@@ -439,6 +439,58 @@ void UpdateSetupPerformance()
    }
 }
 
+void UpdateHistoricalSetupConfidence()
+{
+   if(m_memory == NULL)
+      return;
+
+   double confidence = 0.0;
+   string confidenceClass = "NO_HISTORY";
+   bool ready = false;
+
+   if(m_memory.Execution.ExecutionGrade == "A_SETUP")
+   {
+      if(m_memory.ASetupPerformance.TotalTrades >= 10)
+      {
+         confidence = m_memory.ASetupPerformance.WinRate;
+         ready = true;
+      }
+   }
+   else if(m_memory.Execution.ExecutionGrade == "B_SETUP")
+   {
+      if(m_memory.BSetupPerformance.TotalTrades >= 10)
+      {
+         confidence = m_memory.BSetupPerformance.WinRate;
+         ready = true;
+      }
+   }
+
+   if(!ready)
+   {
+      confidence = 0.0;
+      confidenceClass = "INSUFFICIENT_HISTORY";
+   }
+   else if(confidence >= 70.0)
+      confidenceClass = "HIGH_HISTORICAL_CONFIDENCE";
+   else if(confidence >= 55.0)
+      confidenceClass = "MEDIUM_HISTORICAL_CONFIDENCE";
+   else if(confidence >= 40.0)
+      confidenceClass = "LOW_HISTORICAL_CONFIDENCE";
+   else
+      confidenceClass = "WEAK_HISTORICAL_CONFIDENCE";
+
+   m_memory.LastSnapshot.HistoricalSetupConfidence = confidence;
+   m_memory.LastSnapshot.HistoricalSetupConfidenceClass = confidenceClass;
+   m_memory.LastSnapshot.HistoricalSetupConfidenceReady = ready;
+
+   MRH_Log("TRADE_MANAGEMENT_ENGINE",
+           "HISTORICAL_SETUP_CONFIDENCE",
+           "Grade=" + m_memory.Execution.ExecutionGrade +
+           " | Confidence=" + DoubleToString(confidence, 2) +
+           " | Class=" + confidenceClass +
+           " | Ready=" + (ready ? "TRUE" : "FALSE"));
+}
+
    void DebugTradeState()
    {
       if(m_memory == NULL)
@@ -495,9 +547,10 @@ void UpdateSetupPerformance()
       ManageFinalExit();
       PopulateTradeOutcomeOnClose();
       UpdateSetupPerformance();
+      UpdateHistoricalSetupConfidence();
 
-DebugTradeState();
-
+      DebugTradeState();
+      
       MRH_Log("TRADE_MANAGEMENT_ENGINE",
               "UPDATE",
               "New bar update");

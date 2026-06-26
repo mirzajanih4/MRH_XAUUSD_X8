@@ -593,6 +593,11 @@ string ReleaseCandidateClass;
 bool   ReleaseCandidateReady;
 string ReleaseCandidateReason;
 
+//--- STEP105 Adaptive Setup Confidence
+double HistoricalSetupConfidence;
+string HistoricalSetupConfidenceClass;
+bool   HistoricalSetupConfidenceReady;
+
 };
 
 //==================================================
