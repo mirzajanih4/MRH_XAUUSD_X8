@@ -59,38 +59,41 @@ public:
    }
 
    void CalculateCurrentRR()
+{
+   if(m_memory == NULL)
+      return;
+
+   m_memory.Trade.CurrentRR = 0.0;
+
+   if(m_memory.Trade.State != TRADE_ACTIVE &&
+      m_memory.Trade.State != TRADE_BE &&
+      m_memory.Trade.State != TRADE_PARTIAL)
    {
-      if(m_memory == NULL)
-         return;
-
-      m_memory.Trade.CurrentRR = 0.0;
-
-      if(m_memory.Trade.State != TRADE_ACTIVE &&
-         m_memory.Trade.State != TRADE_BE &&
-         m_memory.Trade.State != TRADE_PARTIAL)
-      {
-         return;
-      }
-
-      double entry = m_memory.Execution.EntryPrice;
-      double sl    = m_memory.Execution.StopLoss;
-
-      if(entry <= 0.0 || sl <= 0.0)
-         return;
-
-      double riskDistance = MathAbs(entry - sl);
-
-      if(riskDistance <= 0.0)
-         return;
-
-      double currentPrice = iClose(_Symbol, _Period, 1);
-
-      if(m_memory.Structure.Bias == BIAS_BULLISH)
-         m_memory.Trade.CurrentRR = (currentPrice - entry) / riskDistance;
-
-      else if(m_memory.Structure.Bias == BIAS_BEARISH)
-         m_memory.Trade.CurrentRR = (entry - currentPrice) / riskDistance;
+      return;
    }
+
+   double entry = m_memory.Execution.EntryPrice;
+   double sl    = m_memory.Execution.StopLoss;
+
+   if(entry <= 0.0 || sl <= 0.0)
+      return;
+
+   double riskDistance = MathAbs(entry - sl);
+
+   if(riskDistance <= 0.0)
+      return;
+
+   bool isBuy  = (sl < entry);
+   bool isSell = (sl > entry);
+
+   double highPrice = iHigh(_Symbol, _Period, 1);
+   double lowPrice  = iLow(_Symbol, _Period, 1);
+
+   if(isBuy)
+      m_memory.Trade.CurrentRR = (highPrice - entry) / riskDistance;
+   else if(isSell)
+      m_memory.Trade.CurrentRR = (entry - lowPrice) / riskDistance;
+}
 
    void ManageBreakEven()
    {
