@@ -598,6 +598,12 @@ double HistoricalSetupConfidence;
 string HistoricalSetupConfidenceClass;
 bool   HistoricalSetupConfidenceReady;
 
+//--- STEP106 Feature Reliability Engine
+double FeatureReliabilityScore;
+string FeatureReliabilityClass;
+bool   FeatureReliabilityReady;
+string FeatureReliabilityReason;
+
 };
 
 //==================================================
