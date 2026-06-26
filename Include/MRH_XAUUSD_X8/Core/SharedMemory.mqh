@@ -15,6 +15,8 @@ public:
    RiskData       Risk;
    TradeData      Trade;
    SafetyData Safety;
+   SetupPerformanceData ASetupPerformance;
+   SetupPerformanceData BSetupPerformance;
    //==================================================
 // Last Trade Snapshot
 //==================================================
@@ -122,6 +124,24 @@ public:
       Trade.LabelQuality = "UNKNOWN";
       Trade.DynamicQualityLabel = "UNRATED";
       Trade.ProbabilityClass = "UNCLASSIFIED";
+      
+      ASetupPerformance.SetupName = "A_SETUP";
+      ASetupPerformance.TotalTrades = 0;
+      ASetupPerformance.Wins = 0;
+      ASetupPerformance.Losses = 0;
+      ASetupPerformance.Breakevens = 0;
+      ASetupPerformance.WinRate = 0.0;
+      ASetupPerformance.AverageRR = 0.0;
+      ASetupPerformance.AverageProfit = 0.0;
+
+      BSetupPerformance.SetupName = "B_SETUP";
+      BSetupPerformance.TotalTrades = 0;
+      BSetupPerformance.Wins = 0;
+      BSetupPerformance.Losses = 0;
+      BSetupPerformance.Breakevens = 0;
+      BSetupPerformance.WinRate = 0.0;
+      BSetupPerformance.AverageRR = 0.0;
+      BSetupPerformance.AverageProfit = 0.0;
       
       LastSnapshot.SnapshotTime = 0;
       LastSnapshot.LiquidityScore = 0.0;

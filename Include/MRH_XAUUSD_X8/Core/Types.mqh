@@ -607,4 +607,19 @@ struct SafetyData
    bool TradingAllowed;
 };
 
+struct SetupPerformanceData
+{
+   string SetupName;
+
+   int TotalTrades;
+   int Wins;
+   int Losses;
+   int Breakevens;
+
+   double WinRate;
+
+   double AverageRR;
+   double AverageProfit;
+};
+
 #endif
