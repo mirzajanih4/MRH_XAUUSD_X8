@@ -348,6 +348,96 @@ else
            " | DynamicQualityLabel=" + m_memory.Trade.DynamicQualityLabel);
 }
 
+void UpdateSetupPerformance()
+{
+   if(m_memory == NULL)
+      return;
+
+   if(m_memory.Trade.State != TRADE_CLOSED)
+      return;
+
+   if(m_memory.Trade.Outcome == TRADE_OUTCOME_UNKNOWN)
+      return;
+
+   if(m_memory.Execution.ExecutionGrade == "A_SETUP")
+   {
+      double previousCount = (double)m_memory.ASetupPerformance.TotalTrades;
+
+      m_memory.ASetupPerformance.TotalTrades++;
+
+      if(m_memory.Trade.Outcome == TRADE_OUTCOME_WIN)
+         m_memory.ASetupPerformance.Wins++;
+      else if(m_memory.Trade.Outcome == TRADE_OUTCOME_LOSS)
+         m_memory.ASetupPerformance.Losses++;
+      else if(m_memory.Trade.Outcome == TRADE_OUTCOME_BREAKEVEN)
+         m_memory.ASetupPerformance.Breakevens++;
+
+      if(m_memory.ASetupPerformance.TotalTrades > 0)
+         m_memory.ASetupPerformance.WinRate =
+            ((double)m_memory.ASetupPerformance.Wins /
+             (double)m_memory.ASetupPerformance.TotalTrades) * 100.0;
+
+      m_memory.ASetupPerformance.AverageRR =
+         ((m_memory.ASetupPerformance.AverageRR * previousCount) +
+          m_memory.Trade.FinalRR) /
+         (double)m_memory.ASetupPerformance.TotalTrades;
+
+      m_memory.ASetupPerformance.AverageProfit =
+         ((m_memory.ASetupPerformance.AverageProfit * previousCount) +
+          m_memory.Trade.FinalProfit) /
+         (double)m_memory.ASetupPerformance.TotalTrades;
+
+      MRH_Log("TRADE_MANAGEMENT_ENGINE",
+              "SETUP_PERFORMANCE",
+              "Setup=A_SETUP" +
+              " | Total=" + IntegerToString(m_memory.ASetupPerformance.TotalTrades) +
+              " | Wins=" + IntegerToString(m_memory.ASetupPerformance.Wins) +
+              " | Losses=" + IntegerToString(m_memory.ASetupPerformance.Losses) +
+              " | BE=" + IntegerToString(m_memory.ASetupPerformance.Breakevens) +
+              " | WinRate=" + DoubleToString(m_memory.ASetupPerformance.WinRate, 2) +
+              " | AvgRR=" + DoubleToString(m_memory.ASetupPerformance.AverageRR, 2) +
+              " | AvgProfit=" + DoubleToString(m_memory.ASetupPerformance.AverageProfit, 2));
+   }
+   else if(m_memory.Execution.ExecutionGrade == "B_SETUP")
+   {
+      double previousCount = (double)m_memory.BSetupPerformance.TotalTrades;
+
+      m_memory.BSetupPerformance.TotalTrades++;
+
+      if(m_memory.Trade.Outcome == TRADE_OUTCOME_WIN)
+         m_memory.BSetupPerformance.Wins++;
+      else if(m_memory.Trade.Outcome == TRADE_OUTCOME_LOSS)
+         m_memory.BSetupPerformance.Losses++;
+      else if(m_memory.Trade.Outcome == TRADE_OUTCOME_BREAKEVEN)
+         m_memory.BSetupPerformance.Breakevens++;
+
+      if(m_memory.BSetupPerformance.TotalTrades > 0)
+         m_memory.BSetupPerformance.WinRate =
+            ((double)m_memory.BSetupPerformance.Wins /
+             (double)m_memory.BSetupPerformance.TotalTrades) * 100.0;
+
+      m_memory.BSetupPerformance.AverageRR =
+         ((m_memory.BSetupPerformance.AverageRR * previousCount) +
+          m_memory.Trade.FinalRR) /
+         (double)m_memory.BSetupPerformance.TotalTrades;
+
+      m_memory.BSetupPerformance.AverageProfit =
+         ((m_memory.BSetupPerformance.AverageProfit * previousCount) +
+          m_memory.Trade.FinalProfit) /
+         (double)m_memory.BSetupPerformance.TotalTrades;
+
+      MRH_Log("TRADE_MANAGEMENT_ENGINE",
+              "SETUP_PERFORMANCE",
+              "Setup=B_SETUP" +
+              " | Total=" + IntegerToString(m_memory.BSetupPerformance.TotalTrades) +
+              " | Wins=" + IntegerToString(m_memory.BSetupPerformance.Wins) +
+              " | Losses=" + IntegerToString(m_memory.BSetupPerformance.Losses) +
+              " | BE=" + IntegerToString(m_memory.BSetupPerformance.Breakevens) +
+              " | WinRate=" + DoubleToString(m_memory.BSetupPerformance.WinRate, 2) +
+              " | AvgRR=" + DoubleToString(m_memory.BSetupPerformance.AverageRR, 2) +
+              " | AvgProfit=" + DoubleToString(m_memory.BSetupPerformance.AverageProfit, 2));
+   }
+}
 
    void DebugTradeState()
    {
@@ -404,8 +494,9 @@ else
       ManageTrailingStop();
       ManageFinalExit();
       PopulateTradeOutcomeOnClose();
+      UpdateSetupPerformance();
 
-      DebugTradeState();
+DebugTradeState();
 
       MRH_Log("TRADE_MANAGEMENT_ENGINE",
               "UPDATE",
