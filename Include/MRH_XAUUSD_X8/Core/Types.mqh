@@ -604,6 +604,17 @@ string FeatureReliabilityClass;
 bool   FeatureReliabilityReady;
 string FeatureReliabilityReason;
 
+//--- STEP107 Feature Weight Engine
+double StructureFeatureWeight;
+double LiquidityFeatureWeight;
+double OBFeatureWeight;
+double ExecutionFeatureWeight;
+double RiskFeatureWeight;
+double SetupConfidenceWeight;
+double OverallFeatureWeightScore;
+string FeatureWeightClass;
+bool   FeatureWeightReady;
+
 };
 
 //==================================================
