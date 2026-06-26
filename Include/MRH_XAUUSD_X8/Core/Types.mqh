@@ -615,6 +615,12 @@ double OverallFeatureWeightScore;
 string FeatureWeightClass;
 bool   FeatureWeightReady;
 
+//--- STEP108 Adaptive Feature Weight Refinement
+double AdaptiveFeatureWeightScore;
+string AdaptiveFeatureWeightClass;
+bool   AdaptiveFeatureWeightReady;
+string AdaptiveFeatureWeightReason;
+
 };
 
 //==================================================

@@ -3082,7 +3082,7 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
       return;
 
   string header =
-"SnapshotTime\tLiquidityScore\tOBScore\tPermissionScore\tConfluenceScore\tExecutionGrade\tConfidenceLevel\tAuditReason\tRecommendedRisk\tRiskProfile\tTradeState\tCurrentRR\tExitReason\tOutcome\tLossCause\tWinCause\tFinalProfit\tFinalRR\tClosePrice\tCloseTime\tTradeLabel\tAdvancedLabel\tLabelQuality\tDynamicQualityLabel\tProbabilityClass\tOutcomeReadinessClass\tLabelReadinessClass\tOutcomeTrackingClass\tTradeQualityAuditClass\tTradeLifecycleClass\tDatasetReadinessClass\tDatasetQualityClass\tMLReadyFlag\tMLFeatureCount\tDatasetMaturityScore\tDatasetMaturityClass\tDatasetBalanceScore\tDatasetBalanceClass\tWinLossBalance\tProbabilityBalance\tLabelBalance\tArchitectureAuditScore\tArchitectureAuditClass\tArchitectureApproved\tDatasetIntegrityScore\tDatasetIntegrityClass\tDatasetIntegrityApproved\tTestReadinessScore\tTestReadinessClass\tTestReady\tDatasetCompletenessScore\tDatasetCompletenessClass\tDatasetComplete\tDatasetReliabilityScore\tDatasetReliabilityClass\tDatasetReliable\tDatasetStabilityScore\tDatasetStabilityClass\tDatasetStable\tDatasetHealthScore\tDatasetHealthClass\tDatasetHealthy\tDatasetConfidenceScore\tDatasetConfidenceClass\tDatasetConfidenceApproved\tDatasetApprovalScore\tDatasetApprovalClass\tDatasetApproved\tDatasetReleaseScore\tDatasetReleaseClass\tDatasetReleaseReady\tInternalValidationScore\tInternalValidationClass\tInternalValidationPassed\tInternalValidationReason\tInternalValidationSampleCount\tInternalValidationFailureCount\tValidationPassCount\tValidationWarningCount\tValidationFailCount\tValidationEvidenceScore\tValidationEvidenceClass\tValidationEvidenceReady\tValidationCampaignSampleCount\tValidationCampaignSessionCount\tValidationCampaignProgressScore\tValidationCampaignStatusClass\tValidationCampaignReady\tValidationSuccessRate\tValidationFailureRate\tValidationPerformanceScore\tValidationPerformanceClass\tValidationPerformanceReady\tValidationCertificationScore\tValidationCertificationClass\tValidationCertified\tValidationCertificationReason\tValidationReportScore\tValidationReportClass\tValidationReportReady\tValidationReportSummary\tValidationDecisionScore\tValidationDecisionClass\tValidationApproved\tValidationDecisionReason\tValidationTotalSamples\tValidationApprovedSamples\tValidationBlockedSamples\tValidationApprovalRate\tValidationBlockRate\tValidationStatisticsClass\tValidationStatisticsReady\tValidationEventCount\tValidationLastEventType\tValidationNewEventDetected\tValidationHighQualityEvents\tValidationMediumQualityEvents\tValidationLowQualityEvents\tValidationEventQualityScore\tValidationEventQualityClass\tValidationEventQualityReady\tValidationCriticalEvents\tValidationMajorEvents\tValidationMinorEvents\tValidationEventImpactScore\tValidationEventImpactClass\tValidationEventImpactReady\tValidationStateChanges\tValidationStableEvents\tValidationUnstableEvents\tValidationStabilityScore\tValidationStabilityClass\tValidationStabilityReady\tValidationMaturityScore\tValidationMaturityClass\tValidationMature\tValidationMaturityReason\tFeatureReliabilityScore\tFeatureReliabilityClass\tFeatureReliabilityReady\tFeatureReliabilityReason\tStructureFeatureWeight\tLiquidityFeatureWeight\tOBFeatureWeight\tExecutionFeatureWeight\tRiskFeatureWeight\tSetupConfidenceWeight\tOverallFeatureWeightScore\tFeatureWeightClass\tFeatureWeightReady";
+"SnapshotTime\tLiquidityScore\tOBScore\tPermissionScore\tConfluenceScore\tExecutionGrade\tConfidenceLevel\tAuditReason\tRecommendedRisk\tRiskProfile\tTradeState\tCurrentRR\tExitReason\tOutcome\tLossCause\tWinCause\tFinalProfit\tFinalRR\tClosePrice\tCloseTime\tTradeLabel\tAdvancedLabel\tLabelQuality\tDynamicQualityLabel\tProbabilityClass\tOutcomeReadinessClass\tLabelReadinessClass\tOutcomeTrackingClass\tTradeQualityAuditClass\tTradeLifecycleClass\tDatasetReadinessClass\tDatasetQualityClass\tMLReadyFlag\tMLFeatureCount\tDatasetMaturityScore\tDatasetMaturityClass\tDatasetBalanceScore\tDatasetBalanceClass\tWinLossBalance\tProbabilityBalance\tLabelBalance\tArchitectureAuditScore\tArchitectureAuditClass\tArchitectureApproved\tDatasetIntegrityScore\tDatasetIntegrityClass\tDatasetIntegrityApproved\tTestReadinessScore\tTestReadinessClass\tTestReady\tDatasetCompletenessScore\tDatasetCompletenessClass\tDatasetComplete\tDatasetReliabilityScore\tDatasetReliabilityClass\tDatasetReliable\tDatasetStabilityScore\tDatasetStabilityClass\tDatasetStable\tDatasetHealthScore\tDatasetHealthClass\tDatasetHealthy\tDatasetConfidenceScore\tDatasetConfidenceClass\tDatasetConfidenceApproved\tDatasetApprovalScore\tDatasetApprovalClass\tDatasetApproved\tDatasetReleaseScore\tDatasetReleaseClass\tDatasetReleaseReady\tInternalValidationScore\tInternalValidationClass\tInternalValidationPassed\tInternalValidationReason\tInternalValidationSampleCount\tInternalValidationFailureCount\tValidationPassCount\tValidationWarningCount\tValidationFailCount\tValidationEvidenceScore\tValidationEvidenceClass\tValidationEvidenceReady\tValidationCampaignSampleCount\tValidationCampaignSessionCount\tValidationCampaignProgressScore\tValidationCampaignStatusClass\tValidationCampaignReady\tValidationSuccessRate\tValidationFailureRate\tValidationPerformanceScore\tValidationPerformanceClass\tValidationPerformanceReady\tValidationCertificationScore\tValidationCertificationClass\tValidationCertified\tValidationCertificationReason\tValidationReportScore\tValidationReportClass\tValidationReportReady\tValidationReportSummary\tValidationDecisionScore\tValidationDecisionClass\tValidationApproved\tValidationDecisionReason\tValidationTotalSamples\tValidationApprovedSamples\tValidationBlockedSamples\tValidationApprovalRate\tValidationBlockRate\tValidationStatisticsClass\tValidationStatisticsReady\tValidationEventCount\tValidationLastEventType\tValidationNewEventDetected\tValidationHighQualityEvents\tValidationMediumQualityEvents\tValidationLowQualityEvents\tValidationEventQualityScore\tValidationEventQualityClass\tValidationEventQualityReady\tValidationCriticalEvents\tValidationMajorEvents\tValidationMinorEvents\tValidationEventImpactScore\tValidationEventImpactClass\tValidationEventImpactReady\tValidationStateChanges\tValidationStableEvents\tValidationUnstableEvents\tValidationStabilityScore\tValidationStabilityClass\tValidationStabilityReady\tValidationMaturityScore\tValidationMaturityClass\tValidationMature\tValidationMaturityReason\tFeatureReliabilityScore\tFeatureReliabilityClass\tFeatureReliabilityReady\tFeatureReliabilityReason\tStructureFeatureWeight\tLiquidityFeatureWeight\tOBFeatureWeight\tExecutionFeatureWeight\tRiskFeatureWeight\tSetupConfidenceWeight\tOverallFeatureWeightScore\tFeatureWeightClass\tFeatureWeightReady\tAdaptiveFeatureWeightScore\tAdaptiveFeatureWeightClass\tAdaptiveFeatureWeightReady\tAdaptiveFeatureWeightReason";
    FileWriteString(fileHandle, header + "\r\n");
 }
 
@@ -3283,7 +3283,12 @@ DoubleToString(m_memory.LastSnapshot.RiskFeatureWeight, 2) + "\t" +
 DoubleToString(m_memory.LastSnapshot.SetupConfidenceWeight, 2) + "\t" +
 DoubleToString(m_memory.LastSnapshot.OverallFeatureWeightScore, 2) + "\t" +
 m_memory.LastSnapshot.FeatureWeightClass + "\t" +
-(m_memory.LastSnapshot.FeatureWeightReady ? "TRUE" : "FALSE");
+
+(m_memory.LastSnapshot.FeatureWeightReady ? "TRUE" : "FALSE") + "\t" +
+DoubleToString(m_memory.LastSnapshot.AdaptiveFeatureWeightScore, 2) + "\t" +
+m_memory.LastSnapshot.AdaptiveFeatureWeightClass + "\t" +
+(m_memory.LastSnapshot.AdaptiveFeatureWeightReady ? "TRUE" : "FALSE") + "\t" +
+m_memory.LastSnapshot.AdaptiveFeatureWeightReason;
 
 FileWriteString(fileHandle, row + "\r\n");
 
@@ -3814,6 +3819,46 @@ MRH_Log("ML_DATASET_ENGINE",
         " | Class=" + m_memory.LastSnapshot.FeatureWeightClass +
         " | Ready=" + (m_memory.LastSnapshot.FeatureWeightReady ? "TRUE" : "FALSE"));
         
+        // STEP108 - Adaptive Feature Weight Refinement
+double adaptiveWeightMultiplier = 1.0;
+
+if(m_memory.LastSnapshot.FeatureReliabilityScore < 60.0)
+   adaptiveWeightMultiplier = 0.50;
+else if(m_memory.LastSnapshot.FeatureReliabilityScore < 80.0)
+   adaptiveWeightMultiplier = 0.75;
+else
+   adaptiveWeightMultiplier = 1.00;
+
+m_memory.LastSnapshot.AdaptiveFeatureWeightScore =
+   m_memory.LastSnapshot.OverallFeatureWeightScore * adaptiveWeightMultiplier;
+
+if(m_memory.LastSnapshot.AdaptiveFeatureWeightScore >= 80.0)
+{
+   m_memory.LastSnapshot.AdaptiveFeatureWeightClass = "ADAPTIVE_WEIGHT_STRONG";
+   m_memory.LastSnapshot.AdaptiveFeatureWeightReady = true;
+   m_memory.LastSnapshot.AdaptiveFeatureWeightReason = "RELIABILITY_SUPPORTS_WEIGHT_PROFILE";
+}
+else if(m_memory.LastSnapshot.AdaptiveFeatureWeightScore >= 60.0)
+{
+   m_memory.LastSnapshot.AdaptiveFeatureWeightClass = "ADAPTIVE_WEIGHT_MEDIUM";
+   m_memory.LastSnapshot.AdaptiveFeatureWeightReady = false;
+   m_memory.LastSnapshot.AdaptiveFeatureWeightReason = "PARTIAL_RELIABILITY_SUPPORT";
+}
+else
+{
+   m_memory.LastSnapshot.AdaptiveFeatureWeightClass = "ADAPTIVE_WEIGHT_WEAK";
+   m_memory.LastSnapshot.AdaptiveFeatureWeightReady = false;
+   m_memory.LastSnapshot.AdaptiveFeatureWeightReason = "INSUFFICIENT_FEATURE_RELIABILITY";
+}
+   
+   MRH_Log("ML_DATASET_ENGINE",
+        "STEP108_ADAPTIVE_FEATURE_WEIGHT",
+        "Score=" + DoubleToString(m_memory.LastSnapshot.AdaptiveFeatureWeightScore, 2) +
+        " | Class=" + m_memory.LastSnapshot.AdaptiveFeatureWeightClass +
+        " | Ready=" + (m_memory.LastSnapshot.AdaptiveFeatureWeightReady ? "TRUE" : "FALSE") +
+        " | Reason=" + m_memory.LastSnapshot.AdaptiveFeatureWeightReason);
+        
+             
       string row = BuildDatasetRow();
 
       MRH_Log("ML_DATASET_ENGINE",
