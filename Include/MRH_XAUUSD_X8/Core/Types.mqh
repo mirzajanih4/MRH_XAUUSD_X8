@@ -621,6 +621,15 @@ string AdaptiveFeatureWeightClass;
 bool   AdaptiveFeatureWeightReady;
 string AdaptiveFeatureWeightReason;
 
+//--- STEP109 Historical Feature Performance Engine
+int    HistoricalFeatureTrades;
+int    HistoricalFeatureWins;
+int    HistoricalFeatureLosses;
+double HistoricalFeatureWinRate;
+double HistoricalFeaturePerformanceScore;
+string HistoricalFeaturePerformanceClass;
+bool   HistoricalFeaturePerformanceReady;
+
 };
 
 //==================================================
