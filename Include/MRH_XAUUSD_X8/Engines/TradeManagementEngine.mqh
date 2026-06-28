@@ -207,7 +207,11 @@ void PopulateTradeOutcomeOnClose()
 
    m_memory.Trade.ClosePrice = closePrice;
    m_memory.Trade.CloseTime  = TimeCurrent();
-
+   
+   m_memory.Trade.TradeTicket =
+   (ulong)m_memory.Trade.CloseTime * 1000000 +
+   (ulong)MathRound(m_memory.Trade.ClosePrice * 100.0);
+   
    if(m_memory.Structure.Bias == BIAS_BULLISH)
       m_memory.Trade.FinalRR = (closePrice - entry) / riskDistance;
    else if(m_memory.Structure.Bias == BIAS_BEARISH)

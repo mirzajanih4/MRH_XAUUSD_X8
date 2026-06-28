@@ -16,6 +16,12 @@ private:
    int m_winLabels;
    int m_lossLabels;
    int m_breakevenLabels;
+   
+   // STEP110 - Persistent Historical Feature Statistics
+int m_historicalFeatureTrades;
+int m_historicalFeatureWins;
+int m_historicalFeatureLosses;
+ulong m_lastProcessedHistoricalFeatureTicket;
    // STEP92 - Validation Historical Persistence Internal State
 int  m_validationPersistenceSamples;
 int  m_validationApprovedPersistenceCount;
@@ -162,6 +168,11 @@ public:
      m_lossLabels = 0;
      m_breakevenLabels = 0;
      
+     m_historicalFeatureTrades = 0;
+     m_historicalFeatureWins = 0;
+     m_historicalFeatureLosses = 0;
+     m_lastProcessedHistoricalFeatureTicket = 0;
+
      // STEP92 - Validation Historical Persistence Internal State
 m_validationPersistenceSamples = 0;
 m_validationApprovedPersistenceCount = 0;
@@ -384,6 +395,10 @@ row += "," + m_memory.LastSnapshot.TradeLifecycleClass;
 
       m_memory.LastSnapshot.CloseTime =
          m_memory.Trade.CloseTime;
+         
+         m_memory.LastSnapshot.TradeTicket =
+   m_memory.Trade.TradeTicket;
+   
          m_memory.LastSnapshot.TradeLabel =
       m_memory.Trade.TradeLabel;
       m_memory.LastSnapshot.AdvancedLabel =
@@ -3866,25 +3881,32 @@ else
         " | Ready=" + (m_memory.LastSnapshot.AdaptiveFeatureWeightReady ? "TRUE" : "FALSE") +
         " | Reason=" + m_memory.LastSnapshot.AdaptiveFeatureWeightReason);
         
-   // STEP109 - Historical Feature Performance Engine
+  // STEP110 - Persistent Historical Feature Statistics Engine
+ulong currentFeatureTicket = m_memory.LastSnapshot.TradeTicket;
 
-if(m_memory.LastSnapshot.Outcome != TRADE_OUTCOME_UNKNOWN)
+if(m_memory.LastSnapshot.Outcome != TRADE_OUTCOME_UNKNOWN &&
+   currentFeatureTicket > 0 &&
+   currentFeatureTicket != m_lastProcessedHistoricalFeatureTicket)
 {
-   m_memory.LastSnapshot.HistoricalFeatureTrades++;
+   m_historicalFeatureTrades++;
 
    if(m_memory.LastSnapshot.Outcome == TRADE_OUTCOME_WIN)
-      m_memory.LastSnapshot.HistoricalFeatureWins++;
+      m_historicalFeatureWins++;
 
    if(m_memory.LastSnapshot.Outcome == TRADE_OUTCOME_LOSS)
-      m_memory.LastSnapshot.HistoricalFeatureLosses++;
+      m_historicalFeatureLosses++;
+
+   m_lastProcessedHistoricalFeatureTicket = currentFeatureTicket;
 }
 
-if(m_memory.LastSnapshot.HistoricalFeatureTrades > 0)
+m_memory.LastSnapshot.HistoricalFeatureTrades = m_historicalFeatureTrades;
+m_memory.LastSnapshot.HistoricalFeatureWins = m_historicalFeatureWins;
+m_memory.LastSnapshot.HistoricalFeatureLosses = m_historicalFeatureLosses;
+
+if(m_historicalFeatureTrades > 0)
 {
    m_memory.LastSnapshot.HistoricalFeatureWinRate =
-      (100.0 *
-       m_memory.LastSnapshot.HistoricalFeatureWins) /
-      m_memory.LastSnapshot.HistoricalFeatureTrades;
+      (100.0 * m_historicalFeatureWins) / m_historicalFeatureTrades;
 }
 else
 {
@@ -3904,7 +3926,6 @@ else
    m_memory.LastSnapshot.HistoricalFeaturePerformanceClass = "FEATURE_HISTORY_BUILDING";
    m_memory.LastSnapshot.HistoricalFeaturePerformanceReady = false;
 }
-
   MRH_Log("ML_DATASET_ENGINE",
         "STEP109_HISTORICAL_FEATURE_PERFORMANCE",
         "Trades=" + IntegerToString(m_memory.LastSnapshot.HistoricalFeatureTrades) +

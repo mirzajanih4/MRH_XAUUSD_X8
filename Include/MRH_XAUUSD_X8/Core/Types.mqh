@@ -266,7 +266,7 @@ struct RiskData
 struct TradeData
 {
    ENUM_TRADE_STATE State;
-
+   ulong TradeTicket;
    bool PartialClosed;
    bool BreakEvenActivated;
    bool TrailingStopActivated;
@@ -340,7 +340,7 @@ struct MLDataRow
 struct MLTradeSnapshot
 {
    datetime SnapshotTime;
-
+   ulong TradeTicket;
    double LiquidityScore;
    double OBScore;
    double PermissionScore;
