@@ -648,6 +648,11 @@ string DemoReadinessClass;
 bool   DemoReady;
 string DemoReadinessReason;
 
+//--- STEP114 Demo Decision Gate
+bool   DemoGateOpen;
+string DemoGateStatus;
+string DemoGateReason;
+
 };
 
 //==================================================
