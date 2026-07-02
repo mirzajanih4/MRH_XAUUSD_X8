@@ -663,6 +663,11 @@ string DemoGateBlockers;
 int    DemoGateFailedConditions;
 bool   DemoGateDiagnosticsReady;
 
+//--- STEP118 Validation History Engine
+double ValidationHistoryAverage;
+double ValidationHistoryMinimum;
+double ValidationHistoryMaximum;
+int    ValidationHistorySamples;
 
 };
 
