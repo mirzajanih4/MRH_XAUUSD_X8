@@ -653,6 +653,16 @@ bool   DemoGateOpen;
 string DemoGateStatus;
 string DemoGateReason;
 
+//--- STEP115 Controlled Demo Observation Layer
+bool   DemoObservationMode;
+string DemoObservationStatus;
+string DemoObservationReason;
+
+//--- STEP116 Demo Gate Diagnostics Engine
+string DemoGateBlockers;
+int    DemoGateFailedConditions;
+bool   DemoGateDiagnosticsReady;
+
 };
 
 //==================================================

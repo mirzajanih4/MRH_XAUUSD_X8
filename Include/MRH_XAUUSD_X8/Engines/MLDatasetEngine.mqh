@@ -3097,7 +3097,7 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
       return;
 
   string header =
-"SnapshotTime\tLiquidityScore\tOBScore\tPermissionScore\tConfluenceScore\tExecutionGrade\tConfidenceLevel\tAuditReason\tRecommendedRisk\tRiskProfile\tTradeState\tCurrentRR\tExitReason\tOutcome\tLossCause\tWinCause\tFinalProfit\tFinalRR\tClosePrice\tCloseTime\tTradeLabel\tAdvancedLabel\tLabelQuality\tDynamicQualityLabel\tProbabilityClass\tOutcomeReadinessClass\tLabelReadinessClass\tOutcomeTrackingClass\tTradeQualityAuditClass\tTradeLifecycleClass\tDatasetReadinessClass\tDatasetQualityClass\tMLReadyFlag\tMLFeatureCount\tDatasetMaturityScore\tDatasetMaturityClass\tDatasetBalanceScore\tDatasetBalanceClass\tWinLossBalance\tProbabilityBalance\tLabelBalance\tArchitectureAuditScore\tArchitectureAuditClass\tArchitectureApproved\tDatasetIntegrityScore\tDatasetIntegrityClass\tDatasetIntegrityApproved\tTestReadinessScore\tTestReadinessClass\tTestReady\tDatasetCompletenessScore\tDatasetCompletenessClass\tDatasetComplete\tDatasetReliabilityScore\tDatasetReliabilityClass\tDatasetReliable\tDatasetStabilityScore\tDatasetStabilityClass\tDatasetStable\tDatasetHealthScore\tDatasetHealthClass\tDatasetHealthy\tDatasetConfidenceScore\tDatasetConfidenceClass\tDatasetConfidenceApproved\tDatasetApprovalScore\tDatasetApprovalClass\tDatasetApproved\tDatasetReleaseScore\tDatasetReleaseClass\tDatasetReleaseReady\tInternalValidationScore\tInternalValidationClass\tInternalValidationPassed\tInternalValidationReason\tInternalValidationSampleCount\tInternalValidationFailureCount\tValidationPassCount\tValidationWarningCount\tValidationFailCount\tValidationEvidenceScore\tValidationEvidenceClass\tValidationEvidenceReady\tValidationCampaignSampleCount\tValidationCampaignSessionCount\tValidationCampaignProgressScore\tValidationCampaignStatusClass\tValidationCampaignReady\tValidationSuccessRate\tValidationFailureRate\tValidationPerformanceScore\tValidationPerformanceClass\tValidationPerformanceReady\tValidationCertificationScore\tValidationCertificationClass\tValidationCertified\tValidationCertificationReason\tValidationReportScore\tValidationReportClass\tValidationReportReady\tValidationReportSummary\tValidationDecisionScore\tValidationDecisionClass\tValidationApproved\tValidationDecisionReason\tValidationTotalSamples\tValidationApprovedSamples\tValidationBlockedSamples\tValidationApprovalRate\tValidationBlockRate\tValidationStatisticsClass\tValidationStatisticsReady\tValidationEventCount\tValidationLastEventType\tValidationNewEventDetected\tValidationHighQualityEvents\tValidationMediumQualityEvents\tValidationLowQualityEvents\tValidationEventQualityScore\tValidationEventQualityClass\tValidationEventQualityReady\tValidationCriticalEvents\tValidationMajorEvents\tValidationMinorEvents\tValidationEventImpactScore\tValidationEventImpactClass\tValidationEventImpactReady\tValidationStateChanges\tValidationStableEvents\tValidationUnstableEvents\tValidationStabilityScore\tValidationStabilityClass\tValidationStabilityReady\tValidationMaturityScore\tValidationMaturityClass\tValidationMature\tValidationMaturityReason\tFeatureReliabilityScore\tFeatureReliabilityClass\tFeatureReliabilityReady\tFeatureReliabilityReason\tStructureFeatureWeight\tLiquidityFeatureWeight\tOBFeatureWeight\tExecutionFeatureWeight\tRiskFeatureWeight\tSetupConfidenceWeight\tOverallFeatureWeightScore\tFeatureWeightClass\tFeatureWeightReady\tAdaptiveFeatureWeightScore\tAdaptiveFeatureWeightClass\tAdaptiveFeatureWeightReady\tAdaptiveFeatureWeightReason\tHistoricalFeatureTrades\tHistoricalFeatureWins\tHistoricalFeatureLosses\tHistoricalFeatureWinRate\tHistoricalFeaturePerformanceScore\tHistoricalFeaturePerformanceClass\tHistoricalFeaturePerformanceReady\tProbabilityReady\tProbabilityReason\tProbabilityConfidence\tProbabilityCalibrationError\tProbabilityCalibrationScore\tProbabilityCalibrationClass\tProbabilityCalibrationReady\tProbabilityCalibrationReason\tDemoReadinessScore\tDemoReadinessClass\tDemoReady\tDemoReadinessReason\tDemoGateOpen\tDemoGateStatus\tDemoGateReason";
+"SnapshotTime\tLiquidityScore\tOBScore\tPermissionScore\tConfluenceScore\tExecutionGrade\tConfidenceLevel\tAuditReason\tRecommendedRisk\tRiskProfile\tTradeState\tCurrentRR\tExitReason\tOutcome\tLossCause\tWinCause\tFinalProfit\tFinalRR\tClosePrice\tCloseTime\tTradeLabel\tAdvancedLabel\tLabelQuality\tDynamicQualityLabel\tProbabilityClass\tOutcomeReadinessClass\tLabelReadinessClass\tOutcomeTrackingClass\tTradeQualityAuditClass\tTradeLifecycleClass\tDatasetReadinessClass\tDatasetQualityClass\tMLReadyFlag\tMLFeatureCount\tDatasetMaturityScore\tDatasetMaturityClass\tDatasetBalanceScore\tDatasetBalanceClass\tWinLossBalance\tProbabilityBalance\tLabelBalance\tArchitectureAuditScore\tArchitectureAuditClass\tArchitectureApproved\tDatasetIntegrityScore\tDatasetIntegrityClass\tDatasetIntegrityApproved\tTestReadinessScore\tTestReadinessClass\tTestReady\tDatasetCompletenessScore\tDatasetCompletenessClass\tDatasetComplete\tDatasetReliabilityScore\tDatasetReliabilityClass\tDatasetReliable\tDatasetStabilityScore\tDatasetStabilityClass\tDatasetStable\tDatasetHealthScore\tDatasetHealthClass\tDatasetHealthy\tDatasetConfidenceScore\tDatasetConfidenceClass\tDatasetConfidenceApproved\tDatasetApprovalScore\tDatasetApprovalClass\tDatasetApproved\tDatasetReleaseScore\tDatasetReleaseClass\tDatasetReleaseReady\tInternalValidationScore\tInternalValidationClass\tInternalValidationPassed\tInternalValidationReason\tInternalValidationSampleCount\tInternalValidationFailureCount\tValidationPassCount\tValidationWarningCount\tValidationFailCount\tValidationEvidenceScore\tValidationEvidenceClass\tValidationEvidenceReady\tValidationCampaignSampleCount\tValidationCampaignSessionCount\tValidationCampaignProgressScore\tValidationCampaignStatusClass\tValidationCampaignReady\tValidationSuccessRate\tValidationFailureRate\tValidationPerformanceScore\tValidationPerformanceClass\tValidationPerformanceReady\tValidationCertificationScore\tValidationCertificationClass\tValidationCertified\tValidationCertificationReason\tValidationReportScore\tValidationReportClass\tValidationReportReady\tValidationReportSummary\tValidationDecisionScore\tValidationDecisionClass\tValidationApproved\tValidationDecisionReason\tValidationTotalSamples\tValidationApprovedSamples\tValidationBlockedSamples\tValidationApprovalRate\tValidationBlockRate\tValidationStatisticsClass\tValidationStatisticsReady\tValidationEventCount\tValidationLastEventType\tValidationNewEventDetected\tValidationHighQualityEvents\tValidationMediumQualityEvents\tValidationLowQualityEvents\tValidationEventQualityScore\tValidationEventQualityClass\tValidationEventQualityReady\tValidationCriticalEvents\tValidationMajorEvents\tValidationMinorEvents\tValidationEventImpactScore\tValidationEventImpactClass\tValidationEventImpactReady\tValidationStateChanges\tValidationStableEvents\tValidationUnstableEvents\tValidationStabilityScore\tValidationStabilityClass\tValidationStabilityReady\tValidationMaturityScore\tValidationMaturityClass\tValidationMature\tValidationMaturityReason\tFeatureReliabilityScore\tFeatureReliabilityClass\tFeatureReliabilityReady\tFeatureReliabilityReason\tStructureFeatureWeight\tLiquidityFeatureWeight\tOBFeatureWeight\tExecutionFeatureWeight\tRiskFeatureWeight\tSetupConfidenceWeight\tOverallFeatureWeightScore\tFeatureWeightClass\tFeatureWeightReady\tAdaptiveFeatureWeightScore\tAdaptiveFeatureWeightClass\tAdaptiveFeatureWeightReady\tAdaptiveFeatureWeightReason\tHistoricalFeatureTrades\tHistoricalFeatureWins\tHistoricalFeatureLosses\tHistoricalFeatureWinRate\tHistoricalFeaturePerformanceScore\tHistoricalFeaturePerformanceClass\tHistoricalFeaturePerformanceReady\tProbabilityReady\tProbabilityReason\tProbabilityConfidence\tProbabilityCalibrationError\tProbabilityCalibrationScore\tProbabilityCalibrationClass\tProbabilityCalibrationReady\tProbabilityCalibrationReason\tDemoReadinessScore\tDemoReadinessClass\tDemoReady\tDemoReadinessReason\tDemoGateOpen\tDemoGateStatus\tDemoGateReason\tDemoObservationMode\tDemoObservationStatus\tDemoObservationReason\tDemoGateBlockers\tDemoGateFailedConditions\tDemoGateDiagnosticsReady";
    FileWriteString(fileHandle, header + "\r\n");
 }
 
@@ -3330,7 +3330,15 @@ m_memory.LastSnapshot.DemoReadinessClass + "\t" +
 m_memory.LastSnapshot.DemoReadinessReason + "\t" +
 (m_memory.LastSnapshot.DemoGateOpen ? "TRUE" : "FALSE") + "\t" +
 m_memory.LastSnapshot.DemoGateStatus + "\t" +
-m_memory.LastSnapshot.DemoGateReason;
+
+m_memory.LastSnapshot.DemoGateReason + "\t" +
+(m_memory.LastSnapshot.DemoObservationMode ? "TRUE" : "FALSE") + "\t" +
+m_memory.LastSnapshot.DemoObservationStatus + "\t" +
+
+m_memory.LastSnapshot.DemoObservationReason + "\t" +
+m_memory.LastSnapshot.DemoGateBlockers + "\t" +
+IntegerToString(m_memory.LastSnapshot.DemoGateFailedConditions) + "\t" +
+(m_memory.LastSnapshot.DemoGateDiagnosticsReady ? "TRUE" : "FALSE");
 
 FileWriteString(fileHandle, row + "\r\n");
 
@@ -4098,6 +4106,75 @@ MRH_Log("ML_DATASET_ENGINE",
         " | Reason=" + m_memory.LastSnapshot.DemoGateReason +
         " | Trades=" + IntegerToString(m_memory.LastSnapshot.HistoricalFeatureTrades));
         
+                          // STEP115 - Controlled Demo Observation Layer
+
+m_memory.LastSnapshot.DemoObservationMode = true;
+
+if(m_memory.LastSnapshot.DemoGateOpen)
+{
+   m_memory.LastSnapshot.DemoObservationStatus = "OBSERVATION_GATE_OPEN";
+   m_memory.LastSnapshot.DemoObservationReason = "MONITORING_REAL_DEMO_BEHAVIOR";
+}
+else if(m_memory.LastSnapshot.HistoricalFeatureTrades < 10)
+{
+   m_memory.LastSnapshot.DemoObservationStatus = "OBSERVATION_BUILDING_SAMPLE";
+   m_memory.LastSnapshot.DemoObservationReason = "WAITING_FIRST_10_TRADES";
+}
+else
+{
+   m_memory.LastSnapshot.DemoObservationStatus = "OBSERVATION_GATE_CLOSED";
+   m_memory.LastSnapshot.DemoObservationReason = "CONTINUE_DATA_COLLECTION";
+}
+                  MRH_Log("ML_DATASET_ENGINE",
+        "STEP115_DEMO_OBSERVATION",
+        "Mode=" + (m_memory.LastSnapshot.DemoObservationMode ? "TRUE" : "FALSE") +
+        " | Status=" + m_memory.LastSnapshot.DemoObservationStatus +
+        " | Reason=" + m_memory.LastSnapshot.DemoObservationReason +
+        " | Trades=" + IntegerToString(m_memory.LastSnapshot.HistoricalFeatureTrades));
+        
+        // STEP116 - Demo Gate Diagnostics Engine
+
+m_memory.LastSnapshot.DemoGateBlockers = "";
+m_memory.LastSnapshot.DemoGateFailedConditions = 0;
+
+if(m_memory.LastSnapshot.HistoricalFeatureTrades < minimumDemoTrades)
+{
+   m_memory.LastSnapshot.DemoGateBlockers += "MIN_TRADES;";
+   m_memory.LastSnapshot.DemoGateFailedConditions++;
+}
+
+if(!m_memory.LastSnapshot.ProbabilityReady)
+{
+   m_memory.LastSnapshot.DemoGateBlockers += "PROBABILITY;";
+   m_memory.LastSnapshot.DemoGateFailedConditions++;
+}
+
+if(!m_memory.LastSnapshot.ProbabilityCalibrationReady)
+{
+   m_memory.LastSnapshot.DemoGateBlockers += "CALIBRATION;";
+   m_memory.LastSnapshot.DemoGateFailedConditions++;
+}
+
+if(!m_memory.LastSnapshot.FeatureReliabilityReady)
+{
+   m_memory.LastSnapshot.DemoGateBlockers += "FEATURE_RELIABILITY;";
+   m_memory.LastSnapshot.DemoGateFailedConditions++;
+}
+
+if(!m_memory.LastSnapshot.HistoricalFeaturePerformanceReady)
+{
+   m_memory.LastSnapshot.DemoGateBlockers += "FEATURE_HISTORY;";
+   m_memory.LastSnapshot.DemoGateFailedConditions++;
+}
+
+m_memory.LastSnapshot.DemoGateDiagnosticsReady =
+   (m_memory.LastSnapshot.DemoGateFailedConditions == 0);
+   
+   MRH_Log("ML_DATASET_ENGINE",
+        "STEP116_DEMO_GATE_DIAGNOSTICS",
+        "FailedConditions=" + IntegerToString(m_memory.LastSnapshot.DemoGateFailedConditions) +
+        " | Blockers=" + m_memory.LastSnapshot.DemoGateBlockers +
+        " | Ready=" + (m_memory.LastSnapshot.DemoGateDiagnosticsReady ? "TRUE" : "FALSE"));
                           
       string row = BuildDatasetRow();
 
