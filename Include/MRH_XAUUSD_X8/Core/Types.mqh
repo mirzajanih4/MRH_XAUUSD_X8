@@ -630,6 +630,11 @@ double HistoricalFeaturePerformanceScore;
 string HistoricalFeaturePerformanceClass;
 bool   HistoricalFeaturePerformanceReady;
 
+//--- STEP111 Probability Score Engine
+bool   ProbabilityReady;
+string ProbabilityReason;
+double ProbabilityConfidence;
+
 };
 
 //==================================================
