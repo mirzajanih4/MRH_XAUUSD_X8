@@ -635,6 +635,13 @@ bool   ProbabilityReady;
 string ProbabilityReason;
 double ProbabilityConfidence;
 
+//--- STEP112 Probability Calibration & Self-Validation Engine
+double ProbabilityCalibrationError;
+double ProbabilityCalibrationScore;
+string ProbabilityCalibrationClass;
+bool   ProbabilityCalibrationReady;
+string ProbabilityCalibrationReason;
+
 };
 
 //==================================================

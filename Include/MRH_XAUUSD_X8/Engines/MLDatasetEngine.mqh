@@ -3097,7 +3097,7 @@ void WriteCSVHeaderIfNeeded(int fileHandle)
       return;
 
   string header =
-"SnapshotTime\tLiquidityScore\tOBScore\tPermissionScore\tConfluenceScore\tExecutionGrade\tConfidenceLevel\tAuditReason\tRecommendedRisk\tRiskProfile\tTradeState\tCurrentRR\tExitReason\tOutcome\tLossCause\tWinCause\tFinalProfit\tFinalRR\tClosePrice\tCloseTime\tTradeLabel\tAdvancedLabel\tLabelQuality\tDynamicQualityLabel\tProbabilityClass\tOutcomeReadinessClass\tLabelReadinessClass\tOutcomeTrackingClass\tTradeQualityAuditClass\tTradeLifecycleClass\tDatasetReadinessClass\tDatasetQualityClass\tMLReadyFlag\tMLFeatureCount\tDatasetMaturityScore\tDatasetMaturityClass\tDatasetBalanceScore\tDatasetBalanceClass\tWinLossBalance\tProbabilityBalance\tLabelBalance\tArchitectureAuditScore\tArchitectureAuditClass\tArchitectureApproved\tDatasetIntegrityScore\tDatasetIntegrityClass\tDatasetIntegrityApproved\tTestReadinessScore\tTestReadinessClass\tTestReady\tDatasetCompletenessScore\tDatasetCompletenessClass\tDatasetComplete\tDatasetReliabilityScore\tDatasetReliabilityClass\tDatasetReliable\tDatasetStabilityScore\tDatasetStabilityClass\tDatasetStable\tDatasetHealthScore\tDatasetHealthClass\tDatasetHealthy\tDatasetConfidenceScore\tDatasetConfidenceClass\tDatasetConfidenceApproved\tDatasetApprovalScore\tDatasetApprovalClass\tDatasetApproved\tDatasetReleaseScore\tDatasetReleaseClass\tDatasetReleaseReady\tInternalValidationScore\tInternalValidationClass\tInternalValidationPassed\tInternalValidationReason\tInternalValidationSampleCount\tInternalValidationFailureCount\tValidationPassCount\tValidationWarningCount\tValidationFailCount\tValidationEvidenceScore\tValidationEvidenceClass\tValidationEvidenceReady\tValidationCampaignSampleCount\tValidationCampaignSessionCount\tValidationCampaignProgressScore\tValidationCampaignStatusClass\tValidationCampaignReady\tValidationSuccessRate\tValidationFailureRate\tValidationPerformanceScore\tValidationPerformanceClass\tValidationPerformanceReady\tValidationCertificationScore\tValidationCertificationClass\tValidationCertified\tValidationCertificationReason\tValidationReportScore\tValidationReportClass\tValidationReportReady\tValidationReportSummary\tValidationDecisionScore\tValidationDecisionClass\tValidationApproved\tValidationDecisionReason\tValidationTotalSamples\tValidationApprovedSamples\tValidationBlockedSamples\tValidationApprovalRate\tValidationBlockRate\tValidationStatisticsClass\tValidationStatisticsReady\tValidationEventCount\tValidationLastEventType\tValidationNewEventDetected\tValidationHighQualityEvents\tValidationMediumQualityEvents\tValidationLowQualityEvents\tValidationEventQualityScore\tValidationEventQualityClass\tValidationEventQualityReady\tValidationCriticalEvents\tValidationMajorEvents\tValidationMinorEvents\tValidationEventImpactScore\tValidationEventImpactClass\tValidationEventImpactReady\tValidationStateChanges\tValidationStableEvents\tValidationUnstableEvents\tValidationStabilityScore\tValidationStabilityClass\tValidationStabilityReady\tValidationMaturityScore\tValidationMaturityClass\tValidationMature\tValidationMaturityReason\tFeatureReliabilityScore\tFeatureReliabilityClass\tFeatureReliabilityReady\tFeatureReliabilityReason\tStructureFeatureWeight\tLiquidityFeatureWeight\tOBFeatureWeight\tExecutionFeatureWeight\tRiskFeatureWeight\tSetupConfidenceWeight\tOverallFeatureWeightScore\tFeatureWeightClass\tFeatureWeightReady\tAdaptiveFeatureWeightScore\tAdaptiveFeatureWeightClass\tAdaptiveFeatureWeightReady\tAdaptiveFeatureWeightReason\tHistoricalFeatureTrades\tHistoricalFeatureWins\tHistoricalFeatureLosses\tHistoricalFeatureWinRate\tHistoricalFeaturePerformanceScore\tHistoricalFeaturePerformanceClass\tHistoricalFeaturePerformanceReady\tProbabilityReady\tProbabilityReason\tProbabilityConfidence";
+"SnapshotTime\tLiquidityScore\tOBScore\tPermissionScore\tConfluenceScore\tExecutionGrade\tConfidenceLevel\tAuditReason\tRecommendedRisk\tRiskProfile\tTradeState\tCurrentRR\tExitReason\tOutcome\tLossCause\tWinCause\tFinalProfit\tFinalRR\tClosePrice\tCloseTime\tTradeLabel\tAdvancedLabel\tLabelQuality\tDynamicQualityLabel\tProbabilityClass\tOutcomeReadinessClass\tLabelReadinessClass\tOutcomeTrackingClass\tTradeQualityAuditClass\tTradeLifecycleClass\tDatasetReadinessClass\tDatasetQualityClass\tMLReadyFlag\tMLFeatureCount\tDatasetMaturityScore\tDatasetMaturityClass\tDatasetBalanceScore\tDatasetBalanceClass\tWinLossBalance\tProbabilityBalance\tLabelBalance\tArchitectureAuditScore\tArchitectureAuditClass\tArchitectureApproved\tDatasetIntegrityScore\tDatasetIntegrityClass\tDatasetIntegrityApproved\tTestReadinessScore\tTestReadinessClass\tTestReady\tDatasetCompletenessScore\tDatasetCompletenessClass\tDatasetComplete\tDatasetReliabilityScore\tDatasetReliabilityClass\tDatasetReliable\tDatasetStabilityScore\tDatasetStabilityClass\tDatasetStable\tDatasetHealthScore\tDatasetHealthClass\tDatasetHealthy\tDatasetConfidenceScore\tDatasetConfidenceClass\tDatasetConfidenceApproved\tDatasetApprovalScore\tDatasetApprovalClass\tDatasetApproved\tDatasetReleaseScore\tDatasetReleaseClass\tDatasetReleaseReady\tInternalValidationScore\tInternalValidationClass\tInternalValidationPassed\tInternalValidationReason\tInternalValidationSampleCount\tInternalValidationFailureCount\tValidationPassCount\tValidationWarningCount\tValidationFailCount\tValidationEvidenceScore\tValidationEvidenceClass\tValidationEvidenceReady\tValidationCampaignSampleCount\tValidationCampaignSessionCount\tValidationCampaignProgressScore\tValidationCampaignStatusClass\tValidationCampaignReady\tValidationSuccessRate\tValidationFailureRate\tValidationPerformanceScore\tValidationPerformanceClass\tValidationPerformanceReady\tValidationCertificationScore\tValidationCertificationClass\tValidationCertified\tValidationCertificationReason\tValidationReportScore\tValidationReportClass\tValidationReportReady\tValidationReportSummary\tValidationDecisionScore\tValidationDecisionClass\tValidationApproved\tValidationDecisionReason\tValidationTotalSamples\tValidationApprovedSamples\tValidationBlockedSamples\tValidationApprovalRate\tValidationBlockRate\tValidationStatisticsClass\tValidationStatisticsReady\tValidationEventCount\tValidationLastEventType\tValidationNewEventDetected\tValidationHighQualityEvents\tValidationMediumQualityEvents\tValidationLowQualityEvents\tValidationEventQualityScore\tValidationEventQualityClass\tValidationEventQualityReady\tValidationCriticalEvents\tValidationMajorEvents\tValidationMinorEvents\tValidationEventImpactScore\tValidationEventImpactClass\tValidationEventImpactReady\tValidationStateChanges\tValidationStableEvents\tValidationUnstableEvents\tValidationStabilityScore\tValidationStabilityClass\tValidationStabilityReady\tValidationMaturityScore\tValidationMaturityClass\tValidationMature\tValidationMaturityReason\tFeatureReliabilityScore\tFeatureReliabilityClass\tFeatureReliabilityReady\tFeatureReliabilityReason\tStructureFeatureWeight\tLiquidityFeatureWeight\tOBFeatureWeight\tExecutionFeatureWeight\tRiskFeatureWeight\tSetupConfidenceWeight\tOverallFeatureWeightScore\tFeatureWeightClass\tFeatureWeightReady\tAdaptiveFeatureWeightScore\tAdaptiveFeatureWeightClass\tAdaptiveFeatureWeightReady\tAdaptiveFeatureWeightReason\tHistoricalFeatureTrades\tHistoricalFeatureWins\tHistoricalFeatureLosses\tHistoricalFeatureWinRate\tHistoricalFeaturePerformanceScore\tHistoricalFeaturePerformanceClass\tHistoricalFeaturePerformanceReady\tProbabilityReady\tProbabilityReason\tProbabilityConfidence\tProbabilityCalibrationError\tProbabilityCalibrationScore\tProbabilityCalibrationClass\tProbabilityCalibrationReady\tProbabilityCalibrationReason";
    FileWriteString(fileHandle, header + "\r\n");
 }
 
@@ -3315,7 +3315,13 @@ m_memory.LastSnapshot.HistoricalFeaturePerformanceClass + "\t" +
 (m_memory.LastSnapshot.HistoricalFeaturePerformanceReady ? "TRUE" : "FALSE") + "\t" +
 (m_memory.LastSnapshot.ProbabilityReady ? "TRUE" : "FALSE") + "\t" +
 m_memory.LastSnapshot.ProbabilityReason + "\t" +
-DoubleToString(m_memory.LastSnapshot.ProbabilityConfidence, 2);
+
+DoubleToString(m_memory.LastSnapshot.ProbabilityConfidence, 2) + "\t" +
+DoubleToString(m_memory.LastSnapshot.ProbabilityCalibrationError, 2) + "\t" +
+DoubleToString(m_memory.LastSnapshot.ProbabilityCalibrationScore, 2) + "\t" +
+m_memory.LastSnapshot.ProbabilityCalibrationClass + "\t" +
+(m_memory.LastSnapshot.ProbabilityCalibrationReady ? "TRUE" : "FALSE") + "\t" +
+m_memory.LastSnapshot.ProbabilityCalibrationReason;
 
 FileWriteString(fileHandle, row + "\r\n");
 
@@ -3973,7 +3979,52 @@ MRH_Log("ML_DATASET_ENGINE",
         " | Class=" + m_memory.LastSnapshot.ProbabilityClass +
         " | Ready=" + (m_memory.LastSnapshot.ProbabilityReady ? "TRUE" : "FALSE") +
         " | Reason=" + m_memory.LastSnapshot.ProbabilityReason);
-                
+       
+       // STEP112 - Probability Calibration & Self-Validation Engine
+
+double expectedProbability = m_memory.LastSnapshot.ProbabilityConfidence;
+double actualOutcomeScore = 0.0;
+
+if(m_memory.LastSnapshot.Outcome == TRADE_OUTCOME_WIN)
+   actualOutcomeScore = 100.0;
+else if(m_memory.LastSnapshot.Outcome == TRADE_OUTCOME_BREAKEVEN)
+   actualOutcomeScore = 50.0;
+else if(m_memory.LastSnapshot.Outcome == TRADE_OUTCOME_LOSS)
+   actualOutcomeScore = 0.0;
+
+m_memory.LastSnapshot.ProbabilityCalibrationError =
+   MathAbs(expectedProbability - actualOutcomeScore);
+
+m_memory.LastSnapshot.ProbabilityCalibrationScore =
+   100.0 - m_memory.LastSnapshot.ProbabilityCalibrationError;
+
+if(m_memory.LastSnapshot.ProbabilityCalibrationScore >= 80.0)
+{
+   m_memory.LastSnapshot.ProbabilityCalibrationClass = "WELL_CALIBRATED";
+   m_memory.LastSnapshot.ProbabilityCalibrationReady = true;
+   m_memory.LastSnapshot.ProbabilityCalibrationReason = "PREDICTION_MATCHES_OUTCOME";
+}
+else if(m_memory.LastSnapshot.ProbabilityCalibrationScore >= 60.0)
+{
+   m_memory.LastSnapshot.ProbabilityCalibrationClass = "PARTIALLY_CALIBRATED";
+   m_memory.LastSnapshot.ProbabilityCalibrationReady = false;
+   m_memory.LastSnapshot.ProbabilityCalibrationReason = "MODERATE_CALIBRATION_ERROR";
+}
+else
+{
+   m_memory.LastSnapshot.ProbabilityCalibrationClass = "POORLY_CALIBRATED";
+   m_memory.LastSnapshot.ProbabilityCalibrationReady = false;
+   m_memory.LastSnapshot.ProbabilityCalibrationReason = "HIGH_CALIBRATION_ERROR";
+}
+   
+    MRH_Log("ML_DATASET_ENGINE",
+        "STEP112_PROBABILITY_CALIBRATION",
+        "Error=" + DoubleToString(m_memory.LastSnapshot.ProbabilityCalibrationError, 2) +
+        " | Score=" + DoubleToString(m_memory.LastSnapshot.ProbabilityCalibrationScore, 2) +
+        " | Class=" + m_memory.LastSnapshot.ProbabilityCalibrationClass +
+        " | Ready=" + (m_memory.LastSnapshot.ProbabilityCalibrationReady ? "TRUE" : "FALSE") +
+        " | Reason=" + m_memory.LastSnapshot.ProbabilityCalibrationReason);
+                    
       string row = BuildDatasetRow();
 
       MRH_Log("ML_DATASET_ENGINE",
