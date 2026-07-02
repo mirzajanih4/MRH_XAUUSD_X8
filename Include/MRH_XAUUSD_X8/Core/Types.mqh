@@ -642,6 +642,12 @@ string ProbabilityCalibrationClass;
 bool   ProbabilityCalibrationReady;
 string ProbabilityCalibrationReason;
 
+//--- STEP113 Demo Readiness Evaluation
+double DemoReadinessScore;
+string DemoReadinessClass;
+bool   DemoReady;
+string DemoReadinessReason;
+
 };
 
 //==================================================
