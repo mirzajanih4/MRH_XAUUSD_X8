@@ -663,6 +663,7 @@ string DemoGateBlockers;
 int    DemoGateFailedConditions;
 bool   DemoGateDiagnosticsReady;
 
+
 };
 
 //==================================================

@@ -693,8 +693,8 @@ UpdateValidationStability();
 // STEP85.4 - Validation Maturity Update
 UpdateValidationMaturity();
 
-// STEP86.4 - Validation Trend Update
-UpdateValidationTrend();
+// STEP86.4 - Validation Trend Update moved to STEP117 after demo diagnostics
+// UpdateValidationTrend();
       
      // STEP87.4 - Validation Confidence Update
 UpdateValidationConfidence(); 
@@ -1833,9 +1833,13 @@ void UpdateValidationTrend()
    if(m_memory == NULL)
       return;
 
-   double currentMaturityScore =
-      m_memory.LastSnapshot.ValidationMaturityScore;
-
+   // STEP117 - Validation Trend Engine V2
+double currentMaturityScore =
+   (m_memory.LastSnapshot.ValidationMaturityScore * 0.20) +
+   (m_memory.LastSnapshot.ProbabilityConfidence * 0.20) +
+   (m_memory.LastSnapshot.ProbabilityCalibrationScore * 0.20) +
+   (m_memory.LastSnapshot.DemoReadinessScore * 0.20) +
+   (m_memory.LastSnapshot.FeatureReliabilityScore * 0.20);
    if(m_previousValidationMaturityScore <= 0.0)
    {
       m_memory.LastSnapshot.ValidationTrendScore = 0.0;
@@ -1879,7 +1883,7 @@ void UpdateValidationTrend()
    m_previousValidationMaturityScore = currentMaturityScore;
 
    PrintFormat(
-      "MRH_X8 STEP93 | HistoricalTrendScore=%.2f | Class=%s | Improving=%s | CurrentMaturity=%.2f",
+      "MRH_X8 STEP117 | TrendV2Score=%.2f | Class=%s | Improving=%s | CompositeScore=%.2f",
       m_memory.LastSnapshot.ValidationTrendScore,
       m_memory.LastSnapshot.ValidationTrendClass,
       (m_memory.LastSnapshot.ValidationTrendImproving ? "TRUE" : "FALSE"),
@@ -4175,6 +4179,9 @@ m_memory.LastSnapshot.DemoGateDiagnosticsReady =
         "FailedConditions=" + IntegerToString(m_memory.LastSnapshot.DemoGateFailedConditions) +
         " | Blockers=" + m_memory.LastSnapshot.DemoGateBlockers +
         " | Ready=" + (m_memory.LastSnapshot.DemoGateDiagnosticsReady ? "TRUE" : "FALSE"));
+                          
+                          // STEP117 - Validation Trend V2 Update after probability/demo diagnostics
+UpdateValidationTrend();
                           
       string row = BuildDatasetRow();
 
