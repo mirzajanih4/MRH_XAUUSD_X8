@@ -669,6 +669,12 @@ double ValidationHistoryMinimum;
 double ValidationHistoryMaximum;
 int    ValidationHistorySamples;
 
+//--- STEP119A Execution Permission Audit
+string ExecutionAuditStage;
+string ExecutionAuditDecision;
+string ExecutionAuditReason;
+bool   ExecutionAuditPassed;
+
 };
 
 //==================================================

@@ -198,6 +198,11 @@ else if(m_memory.OB.Strength == OB_INSTITUTIONAL)
    }
 
    DebugOBState();
+  MRH_Log("OB_ENGINE",
+        "STEP119A_OB_AUDIT",
+        "Valid=" + (m_memory.OB.Valid ? "TRUE" : "FALSE") +
+        " | Invalidated=" + (m_memory.OB.Invalidated ? "TRUE" : "FALSE") +
+        " | Score=" + DoubleToString(m_memory.OB.OBScore, 1));
    MRH_Log("OB_ENGINE", "UPDATE", "New bar update");
 }
 };

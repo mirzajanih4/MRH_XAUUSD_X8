@@ -128,12 +128,12 @@ else if(m_memory.Execution.ConfluenceScore >= 40.0)
       return false;
    }
 
-   if(!m_memory.OB.Valid)
-   {
-      m_memory.Execution.AuditReason = "NO_VALID_OB";
-      MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=NO_VALID_OB");
-      return false;
-   }
+  if(!m_memory.OB.Valid)
+{
+   m_memory.Execution.AuditReason = "NO_VALID_OB";
+   MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=NO_VALID_OB");
+   // return false;
+}
 
    if(m_memory.OB.Invalidated)
    {
@@ -169,6 +169,15 @@ void BuildExecutionSetup()
 
    if(!HasExecutionPermission())
       return;
+      
+if(!m_memory.OB.Valid)
+{
+   MRH_Log("EXECUTION_ENGINE",
+           "SETUP_BLOCKED",
+           "Reason=NO_OB_FOR_ENTRY_SL | PermissionApproved=true | Action=WAIT_FOR_VALID_ENTRY_MODEL");
+
+   return;
+}
 
    double riskDistance = 0.0;
 
@@ -203,7 +212,18 @@ void BuildExecutionSetup()
    }
 
    if(riskDistance <= 0.0)
-      return;
+{
+   MRH_Log("EXECUTION_ENGINE",
+           "SETUP_BLOCKED",
+           "Reason=INVALID_RISK_DISTANCE"
+           " | Entry=" + DoubleToString(m_memory.Execution.EntryPrice, _Digits) +
+           " | SL=" + DoubleToString(m_memory.Execution.StopLoss, _Digits) +
+           " | OB.Valid=" + IntegerToString((int)m_memory.OB.Valid) +
+           " | OB.High=" + DoubleToString(m_memory.OB.High, _Digits) +
+           " | OB.Low=" + DoubleToString(m_memory.OB.Low, _Digits));
+
+   return;
+}
 
    m_memory.Execution.EntrySignal = true;
    m_memory.Execution.State = EXECUTION_READY;
@@ -220,18 +240,14 @@ void BuildExecutionSetup()
 
       CalculatePermissionScore();
       
-            // STEP49 - Execution Strictness Layer
+           /*
+      // STEP49 - Execution Strictness Layer
       // No valid OB = no execution permission, no A_SETUP, no risk
       if(!m_memory.OB.Valid || m_memory.OB.Invalidated)
       {
-         m_memory.Execution.ScoreApproved = false;
-         m_memory.Execution.PermissionScore = 0.0;
-         m_memory.Execution.ConfluenceScore = 0.0;
-         m_memory.Execution.ExecutionGrade = "BLOCKED";
-         m_memory.Execution.ConfidenceLevel = "LOW";
-         m_memory.Execution.RecommendedRiskPercent = 0.0;
-         m_memory.Execution.EntrySignal = false;
+         ...
       }
+*/
 
       if(HasExecutionPermission())
       {
