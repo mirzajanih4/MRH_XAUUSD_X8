@@ -171,6 +171,7 @@ else if(m_memory.OB.Strength == OB_INSTITUTIONAL)
            "Valid=" + validText +
            " | High=" + DoubleToString(m_memory.OB.High, _Digits) +
            " | Low=" + DoubleToString(m_memory.OB.Low, _Digits) +
+           " | Range=" + DoubleToString((m_memory.OB.High - m_memory.OB.Low), _Digits) +
            " | Strength=" + strengthText +
            " | OBScore=" + DoubleToString(m_memory.OB.OBScore, 1) +
            " | Freshness=" + IntegerToString(m_memory.OB.Freshness) +
@@ -203,6 +204,20 @@ else if(m_memory.OB.Strength == OB_INSTITUTIONAL)
         "Valid=" + (m_memory.OB.Valid ? "TRUE" : "FALSE") +
         " | Invalidated=" + (m_memory.OB.Invalidated ? "TRUE" : "FALSE") +
         " | Score=" + DoubleToString(m_memory.OB.OBScore, 1));
+        
+        MRH_Log("OB_ENGINE",
+        "STEP120A_OB_VALUATION_AUDIT",
+        "TF=" + EnumToString(_Period) +
+        " | Valid=" + (m_memory.OB.Valid ? "TRUE" : "FALSE") +
+        " | Mitigated=" + (m_memory.OB.Mitigated ? "TRUE" : "FALSE") +
+        " | Invalidated=" + (m_memory.OB.Invalidated ? "TRUE" : "FALSE") +
+        " | Freshness=" + IntegerToString(m_memory.OB.Freshness) +
+        " | StrengthScore=" + DoubleToString((m_memory.OB.Valid ? GetOBStrengthScore() : 0.0), 1) +
+        " | OBScore=" + DoubleToString(m_memory.OB.OBScore, 1) +
+        " | High=" + DoubleToString(m_memory.OB.High, _Digits) +
+        " | Low=" + DoubleToString(m_memory.OB.Low, _Digits) +
+        " | Range=" + DoubleToString((m_memory.OB.High - m_memory.OB.Low), _Digits));
+        
    MRH_Log("OB_ENGINE", "UPDATE", "New bar update");
 }
 };

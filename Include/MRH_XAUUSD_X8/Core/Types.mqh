@@ -302,6 +302,12 @@ struct MLDataRow
    string Scenario;
    double LiquidityScore;
    double OBScore;
+   bool   OBValid;
+   int    OBFreshness;
+   bool   OBMitigated;
+   bool   OBInvalidated;
+   double OBRange;
+   int    OBStrength;
    double PermissionScore;
    string ExecutionGrade;
    string ConfidenceLevel;
@@ -343,6 +349,12 @@ struct MLTradeSnapshot
    ulong TradeTicket;
    double LiquidityScore;
    double OBScore;
+   bool   OBValid;
+   int    OBFreshness;
+   bool   OBMitigated;
+   bool   OBInvalidated;
+   double OBRange;
+   int    OBStrength;
    double PermissionScore;
    double ConfluenceScore;
 
@@ -674,6 +686,13 @@ string ExecutionAuditStage;
 string ExecutionAuditDecision;
 string ExecutionAuditReason;
 bool   ExecutionAuditPassed;
+
+//--- STEP121 Execution Bottleneck Analytics
+int ExecutionBlockedByStructure;
+int ExecutionBlockedByOB;
+int ExecutionBlockedByLiquidity;
+int ExecutionBlockedByPermission;
+int ExecutionAllowedCount;
 
 };
 
