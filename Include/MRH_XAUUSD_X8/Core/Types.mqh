@@ -237,6 +237,8 @@ struct ExecutionData
    double RecommendedRiskPercent;
    string AuditReason;
    
+   // STEP123 - Immutable Primary Block Reason
+string PrimaryBlockReason;
 };
 
 //==================================================
@@ -686,6 +688,9 @@ string ExecutionAuditStage;
 string ExecutionAuditDecision;
 string ExecutionAuditReason;
 bool   ExecutionAuditPassed;
+
+//--- STEP123 Primary Block Snapshot
+string PrimaryBlockReason;
 
 //--- STEP121 Execution Bottleneck Analytics
 int ExecutionBlockedByStructure;

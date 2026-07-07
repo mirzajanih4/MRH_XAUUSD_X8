@@ -10,6 +10,15 @@ private:
    CSharedMemory* m_memory;
    double m_requiredPermissionScore;
 
+void SetPrimaryBlockReason(string reason)
+{
+   if(m_memory == NULL)
+      return;
+
+   if(m_memory.Execution.PrimaryBlockReason == "")
+      m_memory.Execution.PrimaryBlockReason = reason;
+}
+
 public:
    CExecutionEngine()
    {
@@ -45,6 +54,7 @@ void CalculatePermissionScore()
    m_memory.Execution.ScoreApproved   = false;
    m_memory.Execution.ExecutionGrade  = "BLOCKED";
    m_memory.Execution.ConfidenceLevel = "LOW";
+   m_memory.Execution.PrimaryBlockReason = "";
 
    //==================================
    // Structure Score
@@ -115,18 +125,20 @@ else if(m_memory.Execution.ConfluenceScore >= 40.0)
       return false;
 
    if(m_memory.Structure.Bias == BIAS_NEUTRAL)
-   {
-      m_memory.Execution.AuditReason = "NO_STRUCTURE_BIAS";
-      MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=NO_STRUCTURE_BIAS");
-      return false;
-   }
+{
+   m_memory.Execution.AuditReason = "NO_STRUCTURE_BIAS";
+   SetPrimaryBlockReason("NO_STRUCTURE_BIAS");
+   MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=NO_STRUCTURE_BIAS");
+   return false;
+}
 
    if(m_memory.Structure.State == STRUCTURE_RANGE)
-   {
-      m_memory.Execution.AuditReason = "STRUCTURE_RANGE";
-      MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=STRUCTURE_RANGE");
-      return false;
-   }
+{
+   m_memory.Execution.AuditReason = "STRUCTURE_RANGE";
+   SetPrimaryBlockReason("STRUCTURE_RANGE");
+   MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=STRUCTURE_RANGE");
+   return false;
+}
 
   if(!m_memory.OB.Valid)
 {
@@ -136,25 +148,28 @@ else if(m_memory.Execution.ConfluenceScore >= 40.0)
 }
 
    if(m_memory.OB.Invalidated)
-   {
-      m_memory.Execution.AuditReason = "OB_INVALIDATED";
-      MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=OB_INVALIDATED");
-      return false;
-   }
+{
+   m_memory.Execution.AuditReason = "OB_INVALIDATED";
+   SetPrimaryBlockReason("OB_INVALIDATED");
+   MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=OB_INVALIDATED");
+   return false;
+}
 
    if(m_memory.Liquidity.TargetLiquidity <= 0.0)
-   {
-      m_memory.Execution.AuditReason = "NO_TARGET_LIQUIDITY";
-      MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=NO_TARGET_LIQUIDITY");
-      return false;
-   }
+{
+   m_memory.Execution.AuditReason = "NO_TARGET_LIQUIDITY";
+   SetPrimaryBlockReason("NO_TARGET_LIQUIDITY");
+   MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=NO_TARGET_LIQUIDITY");
+   return false;
+}
 
-   if(!m_memory.Execution.ScoreApproved)
-   {
-      m_memory.Execution.AuditReason = "LOW_PERMISSION_SCORE";
-      MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=LOW_PERMISSION_SCORE");
-      return false;
-   }
+  if(!m_memory.Execution.ScoreApproved)
+{
+   m_memory.Execution.AuditReason = "LOW_PERMISSION_SCORE";
+   SetPrimaryBlockReason("LOW_PERMISSION_SCORE");
+   MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=LOW_PERMISSION_SCORE");
+   return false;
+}
 
    m_memory.Execution.AuditReason = "EXECUTION_ALLOWED";
    MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=EXECUTION_ALLOWED");
@@ -278,7 +293,14 @@ if(!m_memory.OB.Valid)
    " | RecommendedRisk=" + DoubleToString(m_memory.Execution.RecommendedRiskPercent, 2);
 
 MRH_Log("EXECUTION_ENGINE", "DEBUG_DETAIL", detailMessage);
+
+MRH_Log("EXECUTION_ENGINE",
+        "STEP123_PRIMARY_BLOCK",
+        "AuditReason=" + m_memory.Execution.AuditReason +
+        " | PrimaryBlockReason=" + m_memory.Execution.PrimaryBlockReason);
    }
+   
+   
 };
 
 #endif
