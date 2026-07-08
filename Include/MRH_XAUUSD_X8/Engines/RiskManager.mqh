@@ -75,24 +75,56 @@ double CalculateBasicLotSize()
 
    double valuePerLot = stopDistance / tickSize * tickValue;
 
-   if(valuePerLot <= 0.0)
-      return 0.0;
+if(valuePerLot <= 0.0)
+   return 0.0;
 
-   double lot = riskMoney / valuePerLot;
+double rawLot = riskMoney / valuePerLot;
 
+// STEP126B - Risk Audit Log
+MRH_Log("RISK_MANAGER",
+        "STEP126B_RISK_AUDIT",
+        "Balance=" + DoubleToString(balance, 2) +
+        " | RiskPercent=" + DoubleToString(m_memory.Risk.RiskPercent, 2) +
+        " | RiskMoney=" + DoubleToString(riskMoney, 2) +
+        " | Entry=" + DoubleToString(entry, _Digits) +
+        " | SL=" + DoubleToString(sl, _Digits) +
+        " | StopDistance=" + DoubleToString(stopDistance, _Digits) +
+        " | TickValue=" + DoubleToString(tickValue, 5) +
+        " | TickSize=" + DoubleToString(tickSize, _Digits) +
+        " | ValuePerLot=" + DoubleToString(valuePerLot, 2) +
+        " | RawLot=" + DoubleToString(rawLot, 4));
+
+   double lot = rawLot;
    double minLot  = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
    double maxLot  = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MAX);
    double lotStep = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
 
    if(lot < minLot)
-      lot = minLot;
+   lot = minLot;
 
-   if(lot > maxLot)
-      lot = maxLot;
+// STEP128A - XAUUSD balance-based volume cap
+// Rule: max 0.01 lot per 1000 account balance
+double balanceLotCap = (balance / 1000.0) * 0.01;
 
-   lot = MathFloor(lot / lotStep) * lotStep;
+if(balanceLotCap < minLot)
+   balanceLotCap = minLot;
 
-   return lot;
+if(lot > balanceLotCap)
+   lot = balanceLotCap;
+
+if(lot > maxLot)
+   lot = maxLot;
+
+lot = MathFloor(lot / lotStep) * lotStep;
+
+MRH_Log("RISK_MANAGER",
+        "STEP128A_VOLUME_CAP",
+        "Balance=" + DoubleToString(balance, 2) +
+        " | RawLot=" + DoubleToString(rawLot, 4) +
+        " | BalanceLotCap=" + DoubleToString(balanceLotCap, 4) +
+        " | FinalLot=" + DoubleToString(lot, 2));
+
+return lot;
 }
 void DebugRiskState()
 {
@@ -133,7 +165,12 @@ if(m_memory.Risk.ExecutionRiskApproved)
    {
       m_memory.Risk.RiskApproved = true;
       m_memory.Risk.ExecutionRiskApproved = true;
-      m_memory.Risk.RiskPercent = m_memory.Execution.RecommendedRiskPercent;
+      
+      // STEP126A - Emergency demo risk cap
+m_memory.Risk.RiskPercent = m_memory.Execution.RecommendedRiskPercent;
+
+if(m_memory.Risk.RiskPercent > 0.50)
+   m_memory.Risk.RiskPercent = 0.50;
 
       m_memory.Risk.RiskProfile = "NO_RISK";
 

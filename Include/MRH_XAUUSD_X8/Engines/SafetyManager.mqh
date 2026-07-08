@@ -10,13 +10,24 @@ private:
    CSharedMemory* m_memory;
 int m_maxSpreadPoints;
 double m_minStopDistancePoints;
+double m_dailyLossLimitPercent;
+double m_dayStartBalance;
+int    m_dayOfYear;
+
+
 public:
-   CSafetyManager()
-   {
-      m_memory = NULL;
-      m_maxSpreadPoints = 80;
-      m_minStopDistancePoints = 300;
-   }
+  
+  CSafetyManager()
+{
+   m_memory = NULL;
+   m_maxSpreadPoints = 80;
+   m_minStopDistancePoints = 300;
+
+   // STEP127B - Daily Loss Guard
+   m_dailyLossLimitPercent = 2.0;
+   m_dayStartBalance = 0.0;
+   m_dayOfYear = -1;
+}
 
    bool Init(CSharedMemory* memory)
    {
@@ -73,6 +84,57 @@ bool IsStopDistanceAllowed()
 
    return false;
 }
+
+void UpdateDailyLossGuard()
+{
+   if(m_memory == NULL)
+      return;
+
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+
+   if(m_dayOfYear != dt.day_of_year || m_dayStartBalance <= 0.0)
+   {
+      m_dayOfYear = dt.day_of_year;
+      m_dayStartBalance = AccountInfoDouble(ACCOUNT_BALANCE);
+      m_memory.Safety.DailyLossPercent = 0.0;
+      m_memory.Safety.DailyLossLimitHit = false;
+   }
+
+   double currentBalance = AccountInfoDouble(ACCOUNT_BALANCE);
+
+   if(m_dayStartBalance <= 0.0)
+      return;
+
+   double lossMoney = m_dayStartBalance - currentBalance;
+
+   if(lossMoney < 0.0)
+      lossMoney = 0.0;
+
+   m_memory.Safety.DailyLossPercent =
+      (lossMoney / m_dayStartBalance) * 100.0;
+
+MRH_Log("SAFETY_MANAGER",
+        "STEP127_DAILY_LOSS_STATUS",
+        "DayStartBalance=" + DoubleToString(m_dayStartBalance, 2) +
+        " | CurrentBalance=" + DoubleToString(currentBalance, 2) +
+        " | DailyLossPercent=" + DoubleToString(m_memory.Safety.DailyLossPercent, 2) +
+        " | Limit=" + DoubleToString(m_dailyLossLimitPercent, 2) +
+        " | Hit=" + (m_memory.Safety.DailyLossLimitHit ? "TRUE" : "FALSE"));
+
+   if(m_memory.Safety.DailyLossPercent >= m_dailyLossLimitPercent)
+   {
+      m_memory.Safety.DailyLossLimitHit = true;
+      m_memory.Safety.KillSwitch = true;
+
+      MRH_Log("SAFETY_MANAGER",
+              "STEP127_DAILY_LOSS_BLOCK",
+              "DailyLossPercent=" + DoubleToString(m_memory.Safety.DailyLossPercent, 2) +
+              " | Limit=" + DoubleToString(m_dailyLossLimitPercent, 2) +
+              " | Action=KILL_SWITCH_ON");
+   }
+}
+
 void UpdateTradingAllowed()
 {
    if(m_memory == NULL)
@@ -127,8 +189,10 @@ void DebugSafetyState()
            "Symbol=" + symbolText +
            " | Spread=" + spreadText +
            " | StopDistance=" + stopText +
-           " | KillSwitch=" + killText +
-           " | TradingAllowed=" + tradeText);
+          " | KillSwitch=" + killText +
+" | TradingAllowed=" + tradeText +
+" | DailyLossPercent=" + DoubleToString(m_memory.Safety.DailyLossPercent, 2) +
+" | DailyLossLimitHit=" + (m_memory.Safety.DailyLossLimitHit ? "true" : "false"));
 }
    void Update()
    {
@@ -136,6 +200,17 @@ void DebugSafetyState()
       {
          return;
       }
+      
+      // STEP127D - Update daily loss guard first
+UpdateDailyLossGuard();
+
+if(m_memory.Safety.DailyLossLimitHit)
+{
+   m_memory.Safety.TradingAllowed = false;
+   MRH_Log("SAFETY_MANAGER", "BLOCKED", "Daily loss limit hit");
+   return;
+}
+      
 if(IsXAUUSDSymbol())
 {
    m_memory.Safety.SymbolAllowed = true;

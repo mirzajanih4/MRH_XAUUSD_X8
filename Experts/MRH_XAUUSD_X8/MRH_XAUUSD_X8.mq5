@@ -417,7 +417,7 @@ void OnTick()
            "Architecture audit is NOT_READY during runtime"
            " | Score=" + DoubleToString(SharedMemory.LastSnapshot.ArchitectureAuditScore, 2));
 }
-      //MRH_DryExecutionCheck();
-     //MRH_ExecuteTrade();
+     MRH_DryExecutionCheck();
+MRH_ExecuteTrade();
    }
 }

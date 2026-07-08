@@ -711,6 +711,8 @@ struct SafetyData
    bool StopDistanceAllowed;
    bool KillSwitch;
    bool TradingAllowed;
+   double DailyLossPercent;
+   bool DailyLossLimitHit;
 };
 
 struct SetupPerformanceData
