@@ -200,16 +200,11 @@ bool MRH_HasOpenPositionByMagic()
 
    return false;
 }
+
+
 bool MRH_CanExecuteTrade()
 {
-if(!MRH_BrokerSafetyCheck())
-   return false;
-   if(!MRH_StopsSafetyCheck())
-   return false;
-   if(!MRH_MarginSafetyCheck())
-   return false;
-   if(!MRH_ExecutionThrottleCheck())
-   return false;
+   // First confirm that a real execution candidate exists
    if(SharedMemory.Execution.State != EXECUTION_READY)
       return false;
 
@@ -225,9 +220,21 @@ if(!MRH_BrokerSafetyCheck())
    if(SharedMemory.Risk.LotSize <= 0.0)
       return false;
 
-   
    if(MRH_HasOpenPositionByMagic())
-   return false;
+      return false;
+
+   // Only then run broker-level checks
+   if(!MRH_BrokerSafetyCheck())
+      return false;
+
+   if(!MRH_StopsSafetyCheck())
+      return false;
+
+   if(!MRH_MarginSafetyCheck())
+      return false;
+
+   if(!MRH_ExecutionThrottleCheck())
+      return false;
 
    return true;
 }
@@ -406,7 +413,8 @@ void OnTick()
       ExecutionEngine.Update();
       RiskManager.Update();
       SafetyManager.Update();
-      TradeManagementEngine.Update();
+      if(EnableLiveTrading)
+   TradeManagementEngine.Update();
       ArchitectureAuditEngine.Update();
       MLDatasetEngine.Update();
       

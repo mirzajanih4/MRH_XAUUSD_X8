@@ -21,6 +21,74 @@ enum ENUM_STRUCTURE_STATE
    STRUCTURE_RANGE = 2
 };
 
+
+//==================================================
+// Market Regime
+//==================================================
+enum ENUM_MARKET_REGIME
+{
+   REGIME_NORMAL = 0,
+   REGIME_MEDIUM_EVENT = 1,
+   REGIME_HIGH_IMPACT_EVENT = 2
+};
+
+
+//==================================================
+// Trigger Requirement
+//==================================================
+enum ENUM_TRIGGER_REQUIREMENT
+{
+   TRIGGER_REQUIREMENT_UNKNOWN = 0,
+   TRIGGER_STANDARD_CONFIRMATION = 1,
+   TRIGGER_STRONG_CONFIRMATION = 2
+};
+
+//==================================================
+// Market Session
+//==================================================
+enum ENUM_MARKET_SESSION
+{
+   SESSION_UNKNOWN = 0,
+   SESSION_ASIA = 1,
+   SESSION_LONDON = 2,
+   SESSION_NEW_YORK = 3,
+   SESSION_LONDON_NEW_YORK_OVERLAP = 4
+};
+
+//==================================================
+// Volatility Context
+//==================================================
+enum ENUM_VOLATILITY_CONTEXT
+{
+   VOLATILITY_UNKNOWN = 0,
+   VOLATILITY_NORMAL = 1,
+   VOLATILITY_ELEVATED = 2,
+   VOLATILITY_EXTREME = 3
+};
+
+//==================================================
+// News Context
+//==================================================
+enum ENUM_NEWS_CONTEXT
+{
+   NEWS_CONTEXT_UNKNOWN = 0,
+   NEWS_CONTEXT_NONE = 1,
+   NEWS_CONTEXT_MEDIUM = 2,
+   NEWS_CONTEXT_HIGH = 3
+};
+
+
+//==================================================
+// Experimental Volatility State
+//==================================================
+enum ENUM_VOLATILITY_STATE
+{
+   VOL_STATE_UNKNOWN = 0,
+   VOL_STATE_LOW = 1,
+   VOL_STATE_NORMAL = 2,
+   VOL_STATE_HIGH = 3
+};
+
 //==================================================
 // Liquidity State
 //==================================================
@@ -126,6 +194,16 @@ enum ENUM_SWING_CLASS
 //==================================================
 struct StructureData
 {
+
+   ENUM_MARKET_REGIME MarketRegime;
+   ENUM_TRIGGER_REQUIREMENT TriggerRequirement;
+   ENUM_MARKET_SESSION MarketSession;
+   bool ActiveTradingSession;
+   ENUM_VOLATILITY_CONTEXT VolatilityContext;
+   ENUM_NEWS_CONTEXT NewsContext;
+   bool VolatilityRegimeCandidate;
+   ENUM_VOLATILITY_STATE VolatilityState;
+   double CurrentATR;
    ENUM_MARKET_BIAS Bias;
 
    double LastSwingHigh;
@@ -142,6 +220,8 @@ struct StructureData
    datetime         LastProcessedSwingTime;
 
    ENUM_SWING_CLASS LastSwingClass;
+   ENUM_SWING_CLASS LastSwingHighClass;
+   ENUM_SWING_CLASS LastSwingLowClass;
 };
 
 //==================================================
@@ -174,6 +254,16 @@ enum ENUM_LIQUIDITY_LEVEL_TYPE
 };
 
 //==================================================
+// External Liquidity Side
+//==================================================
+enum ENUM_EXTERNAL_LIQUIDITY_SIDE
+{
+   EXTERNAL_SIDE_UNKNOWN = 0,
+   EXTERNAL_SIDE_BUY = 1,
+   EXTERNAL_SIDE_SELL = 2
+};
+
+//==================================================
 // Liquidity Shared Model
 //==================================================
 struct LiquidityData
@@ -191,11 +281,46 @@ struct LiquidityData
    double EqualLowLevel;
    ENUM_LIQUIDITY_STRENGTH PoolStrength;
    ENUM_LIQUIDITY_LEVEL_TYPE LiquidityType;
+   bool ExternalLiquidityQualified;
+   double ExternalLiquidityLevel;
+   ENUM_EXTERNAL_LIQUIDITY_SIDE ExternalLiquiditySide;
+   bool ExternalLiquidityStructureAligned;
+   bool ExternalLiquidityLocationQualified;
+   ENUM_LIQUIDITY_STRENGTH ExternalLiquidityStrength;
+   // STEP134.7A - Independent External BUY/SELL Candidate State
+bool ExternalBuyCandidateQualified;
+double ExternalBuyCandidateLevel;
+ENUM_LIQUIDITY_STRENGTH ExternalBuyCandidateStrength;
+int ExternalBuyCandidateRank;
+
+bool ExternalSellCandidateQualified;
+double ExternalSellCandidateLevel;
+ENUM_LIQUIDITY_STRENGTH ExternalSellCandidateStrength;
+int ExternalSellCandidateRank;
+// STEP134.9 - External Sweep Event Memory Foundation
+bool     ExternalBuySweepActive;
+double   ExternalBuySweepLevel;
+datetime ExternalBuySweepTime;
+
+bool     ExternalSellSweepActive;
+double   ExternalSellSweepLevel;
+datetime ExternalSellSweepTime;
+
+// STEP135.2 - External Displacement State Foundation
+bool     ExternalBuyDisplacementConfirmed;
+datetime ExternalBuyDisplacementTime;
+
+bool     ExternalSellDisplacementConfirmed;
+datetime ExternalSellDisplacementTime;
+   int ExternalLiquidityRank;
    int LiquidityRank;
    bool PriorityTarget;
    double LiquidityScore;
    double TargetLiquidity;
 };
+
+
+
 
 //==================================================
 // Order Block Shared Model
@@ -691,6 +816,11 @@ bool   ExecutionAuditPassed;
 
 //--- STEP123 Primary Block Snapshot
 string PrimaryBlockReason;
+
+//--- STEP129 Entry Quality Learning Layer
+double EntryQualityScore;
+string EntryQualityClass;
+string EntryQualityReason;
 
 //--- STEP121 Execution Bottleneck Analytics
 int ExecutionBlockedByStructure;

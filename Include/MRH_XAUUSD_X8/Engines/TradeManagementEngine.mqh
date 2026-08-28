@@ -4,10 +4,13 @@
 #include <MRH_XAUUSD_X8/Core/SharedMemory.mqh>
 #include <MRH_XAUUSD_X8/Core/Logger.mqh>
 
+#include <Trade/Trade.mqh>
+
 class CTradeManagementEngine
 {
 private:
    CSharedMemory* m_memory;
+CTrade m_trade;
 
 public:
    CTradeManagementEngine()
@@ -15,19 +18,21 @@ public:
       m_memory = NULL;
    }
 
-   bool Init(CSharedMemory* memory)
+  bool Init(CSharedMemory* memory)
+{
+   m_memory = memory;
+
+   if(m_memory == NULL)
    {
-      m_memory = memory;
-
-      if(m_memory == NULL)
-      {
-         MRH_Log("TRADE_MANAGEMENT_ENGINE", "ERROR", "SharedMemory is NULL");
-         return false;
-      }
-
-      MRH_Log("TRADE_MANAGEMENT_ENGINE", "INIT", "Initialized with SharedMemory");
-      return true;
+      MRH_Log("TRADE_MANAGER", "ERROR", "SharedMemory is NULL");
+      return false;
    }
+
+   m_trade.SetAsyncMode(false);
+
+   MRH_Log("TRADE_MANAGER", "INIT", "Initialized with SharedMemory");
+   return true;
+}
 
    void UpdateTradeStateMemory()
    {
@@ -72,72 +77,376 @@ public:
       return;
    }
 
-   double entry = m_memory.Execution.EntryPrice;
-   double sl    = m_memory.Execution.StopLoss;
+   // STEP130A-3 - Live MT5 position is the source of truth
+   if(!PositionSelect(_Symbol))
+   {
+      MRH_Log("TRADE_MANAGEMENT_ENGINE",
+              "STEP130A_RR_BLOCKED",
+              "No live position found for RR calculation");
+      return;
+   }
+
+   double entry = PositionGetDouble(POSITION_PRICE_OPEN);
+   double sl    = PositionGetDouble(POSITION_SL);
+   long positionType = PositionGetInteger(POSITION_TYPE);
 
    if(entry <= 0.0 || sl <= 0.0)
+   {
+      MRH_Log("TRADE_MANAGEMENT_ENGINE",
+              "STEP130A_RR_BLOCKED",
+              "Live Entry or SL is invalid");
       return;
+   }
 
    double riskDistance = MathAbs(entry - sl);
 
    if(riskDistance <= 0.0)
       return;
 
-   bool isBuy  = (sl < entry);
-   bool isSell = (sl > entry);
+   double currentPrice = 0.0;
 
-   double highPrice = iHigh(_Symbol, _Period, 1);
-   double lowPrice  = iLow(_Symbol, _Period, 1);
+   if(positionType == POSITION_TYPE_BUY)
+   {
+      currentPrice = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      m_memory.Trade.CurrentRR =
+         (currentPrice - entry) / riskDistance;
+   }
+   else if(positionType == POSITION_TYPE_SELL)
+   {
+      currentPrice = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      m_memory.Trade.CurrentRR =
+         (entry - currentPrice) / riskDistance;
+   }
+   else
+   {
+      return;
+   }
 
-   if(isBuy)
-      m_memory.Trade.CurrentRR = (highPrice - entry) / riskDistance;
-   else if(isSell)
-      m_memory.Trade.CurrentRR = (entry - lowPrice) / riskDistance;
+   MRH_Log("TRADE_MANAGEMENT_ENGINE",
+           "STEP130A_LIVE_RR",
+           "Entry=" + DoubleToString(entry, _Digits) +
+           " | SL=" + DoubleToString(sl, _Digits) +
+           " | CurrentPrice=" + DoubleToString(currentPrice, _Digits) +
+           " | RiskDistance=" + DoubleToString(riskDistance, _Digits) +
+           " | LiveRR=" + DoubleToString(m_memory.Trade.CurrentRR, 2));
+}
+  void ManageBreakEven()
+{
+   if(m_memory == NULL)
+      return;
+
+   // Break Even فقط بعد از Partial Close واقعی
+   if(m_memory.Trade.State != TRADE_PARTIAL)
+      return;
+
+   if(!m_memory.Trade.PartialClosed)
+      return;
+
+   if(m_memory.Trade.BreakEvenActivated)
+      return;
+
+   if(m_memory.Trade.CurrentRR < m_memory.Trade.BreakEvenRR)
+      return;
+
+   if(!PositionSelect(_Symbol))
+   {
+      MRH_Log("TRADE_MANAGEMENT_ENGINE",
+              "STEP130C_BE_FAILED",
+              "Live position not found");
+      return;
+   }
+
+   ulong ticket = (ulong)PositionGetInteger(POSITION_TICKET);
+
+   double liveEntry = PositionGetDouble(POSITION_PRICE_OPEN);
+   double liveSL    = PositionGetDouble(POSITION_SL);
+   double liveTP    = PositionGetDouble(POSITION_TP);
+
+   if(liveEntry <= 0.0)
+      return;
+
+   double breakEvenSL = NormalizeDouble(liveEntry, _Digits);
+
+   ResetLastError();
+
+   bool result =
+      m_trade.PositionModify(ticket, breakEvenSL, liveTP);
+
+   int  lastError = GetLastError();
+   uint retcode   = m_trade.ResultRetcode();
+
+   if(!result)
+   {
+      MRH_Log("TRADE_MANAGEMENT_ENGINE",
+              "STEP130C_BE_FAILED",
+              "Ticket=" + IntegerToString((long)ticket) +
+              " | OldSL=" + DoubleToString(liveSL, _Digits) +
+              " | RequestedSL=" + DoubleToString(breakEvenSL, _Digits) +
+              " | LastError=" + IntegerToString(lastError) +
+              " | Retcode=" + IntegerToString((int)retcode) +
+              " | Description=" + m_trade.ResultRetcodeDescription());
+      return;
+   }
+
+   // تأیید تغییر واقعی SL از خود پوزیشن MT5
+   if(!PositionSelectByTicket(ticket))
+      return;
+
+   double actualSL = PositionGetDouble(POSITION_SL);
+
+   bool breakEvenConfirmed =
+      MathAbs(actualSL - breakEvenSL) <= (_Point * 2.0);
+
+   if(!breakEvenConfirmed)
+   {
+      MRH_Log("TRADE_MANAGEMENT_ENGINE",
+              "STEP130C_BE_NOT_CONFIRMED",
+              "RequestedSL=" + DoubleToString(breakEvenSL, _Digits) +
+              " | ActualSL=" + DoubleToString(actualSL, _Digits));
+      return;
+   }
+
+   m_memory.Trade.BreakEvenActivated = true;
+   m_memory.Trade.State = TRADE_BE;
+
+   MRH_Log("TRADE_MANAGEMENT_ENGINE",
+           "STEP130C_BE_CONFIRMED",
+           "Real Break Even confirmed"
+           " | Ticket=" + IntegerToString((long)ticket) +
+           " | Entry=" + DoubleToString(liveEntry, _Digits) +
+           " | OldSL=" + DoubleToString(liveSL, _Digits) +
+           " | ActualSL=" + DoubleToString(actualSL, _Digits) +
+           " | Retcode=" + IntegerToString((int)retcode));
 }
 
-   void ManageBreakEven()
+  void ManagePartialClose()
+{
+   if(m_memory == NULL)
+      return;
+
+   // STEP130A - Live position audit
+   if(!PositionSelect(_Symbol))
    {
-      if(m_memory == NULL)
-         return;
+      MRH_Log("TRADE_MANAGEMENT_ENGINE",
+              "STEP130A_POSITION_NOT_FOUND",
+              "No live position found");
 
-      if(m_memory.Trade.State != TRADE_ACTIVE)
-         return;
-
-      if(!m_memory.Trade.BreakEvenActivated &&
-         m_memory.Trade.CurrentRR >= m_memory.Trade.BreakEvenRR)
-      {
-         m_memory.Trade.BreakEvenActivated = true;
-         m_memory.Trade.State = TRADE_BE;
-
-         MRH_Log("TRADE_MANAGEMENT_ENGINE",
-                 "BREAK_EVEN",
-                 "Break Even activated");
-      }
+      return;
    }
 
-   void ManagePartialClose()
+   double liveEntry   = PositionGetDouble(POSITION_PRICE_OPEN);
+   double liveSL      = PositionGetDouble(POSITION_SL);
+   double liveVolume  = PositionGetDouble(POSITION_VOLUME);
+   ulong  ticket      = (ulong)PositionGetInteger(POSITION_TICKET);
+   long   positionType = PositionGetInteger(POSITION_TYPE);
+
+   double livePrice = 0.0;
+   double liveRR    = 0.0;
+
+   if(positionType == POSITION_TYPE_BUY)
+      livePrice = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   else if(positionType == POSITION_TYPE_SELL)
+      livePrice = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   else
+      return;
+
+   double liveRiskDistance = MathAbs(liveEntry - liveSL);
+
+   if(liveRiskDistance > 0.0)
    {
-      if(m_memory == NULL)
-         return;
-
-      if(m_memory.Trade.State != TRADE_ACTIVE &&
-         m_memory.Trade.State != TRADE_BE)
-      {
-         return;
-      }
-
-      if(!m_memory.Trade.PartialClosed &&
-         m_memory.Trade.CurrentRR >= m_memory.Trade.PartialCloseRR)
-      {
-         m_memory.Trade.PartialClosed = true;
-         m_memory.Trade.State = TRADE_PARTIAL;
-
-         MRH_Log("TRADE_MANAGEMENT_ENGINE",
-                 "PARTIAL_CLOSE",
-                 "Partial close condition reached");
-      }
+      if(positionType == POSITION_TYPE_BUY)
+         liveRR = (livePrice - liveEntry) / liveRiskDistance;
+      else
+         liveRR = (liveEntry - livePrice) / liveRiskDistance;
    }
 
+   MRH_Log("TRADE_MANAGEMENT_ENGINE",
+           "STEP130A_LIVE_AUDIT",
+           "PositionFound=TRUE" +
+           " | InternalState=" +
+           IntegerToString((int)m_memory.Trade.State) +
+           " | InternalRR=" +
+           DoubleToString(m_memory.Trade.CurrentRR, 2) +
+           " | PartialTarget=" +
+           DoubleToString(m_memory.Trade.PartialCloseRR, 2) +
+           " | InternalEntry=" +
+           DoubleToString(m_memory.Execution.EntryPrice, _Digits) +
+           " | InternalSL=" +
+           DoubleToString(m_memory.Execution.StopLoss, _Digits) +
+           " | LiveEntry=" +
+           DoubleToString(liveEntry, _Digits) +
+           " | LiveSL=" +
+           DoubleToString(liveSL, _Digits) +
+           " | LivePrice=" +
+           DoubleToString(livePrice, _Digits) +
+           " | LiveRR=" +
+           DoubleToString(liveRR, 2) +
+           " | LiveVolume=" +
+           DoubleToString(liveVolume, 2));
+
+   if(m_memory.Trade.State != TRADE_ACTIVE &&
+      m_memory.Trade.State != TRADE_BE)
+   {
+      return;
+   }
+
+   if(m_memory.Trade.PartialClosed)
+      return;
+
+   if(m_memory.Trade.CurrentRR < m_memory.Trade.PartialCloseRR)
+      return;
+
+   double minLot  = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
+   double lotStep = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
+
+   if(minLot <= 0.0 || lotStep <= 0.0)
+   {
+      MRH_Log("TRADE_MANAGEMENT_ENGINE",
+              "STEP130A_PARTIAL_FAILED",
+              "Invalid broker volume settings");
+
+      return;
+   }
+
+   // Close exactly 50 percent, normalized to broker lot step
+   double closeVolume =
+      MathFloor((liveVolume * 0.50) / lotStep) * lotStep;
+
+   closeVolume = NormalizeDouble(closeVolume, 2);
+
+   double remainingVolume = liveVolume - closeVolume;
+
+   if(closeVolume < minLot)
+   {
+      MRH_Log("TRADE_MANAGEMENT_ENGINE",
+              "STEP130A_PARTIAL_BLOCKED",
+              "Close volume is below broker minimum"
+              " | LiveVolume=" + DoubleToString(liveVolume, 2) +
+              " | CloseVolume=" + DoubleToString(closeVolume, 2) +
+              " | MinLot=" + DoubleToString(minLot, 2));
+
+      return;
+   }
+
+   if(remainingVolume < minLot)
+   {
+      MRH_Log("TRADE_MANAGEMENT_ENGINE",
+              "STEP130A_PARTIAL_BLOCKED",
+              "Remaining volume would be below broker minimum"
+              " | LiveVolume=" + DoubleToString(liveVolume, 2) +
+              " | CloseVolume=" + DoubleToString(closeVolume, 2) +
+              " | RemainingVolume=" +
+              DoubleToString(remainingVolume, 2));
+
+      return;
+   }
+
+   MRH_Log("TRADE_MANAGEMENT_ENGINE",
+           "STEP130A_PARTIAL_TRIGGER",
+           "Ticket=" + IntegerToString((long)ticket) +
+           " | LiveRR=" + DoubleToString(liveRR, 2) +
+           " | VolumeBefore=" + DoubleToString(liveVolume, 2) +
+           " | VolumeToClose=" + DoubleToString(closeVolume, 2));
+
+  // STEP130B - Partial close request audit
+ResetLastError();
+
+ENUM_ACCOUNT_MARGIN_MODE marginMode =
+   (ENUM_ACCOUNT_MARGIN_MODE)AccountInfoInteger(ACCOUNT_MARGIN_MODE);
+
+bool result =
+   m_trade.PositionClosePartial(ticket, closeVolume);
+
+int  lastError = GetLastError();
+uint retcode   = m_trade.ResultRetcode();
+
+if(result)
+{
+   bool positionStillExists = PositionSelectByTicket(ticket);
+   double actualRemainingVolume = 0.0;
+
+   if(positionStillExists)
+      actualRemainingVolume = PositionGetDouble(POSITION_VOLUME);
+
+   bool volumeReduced =
+      positionStillExists &&
+      actualRemainingVolume < liveVolume &&
+      MathAbs(actualRemainingVolume - remainingVolume) <= lotStep;
+
+   MRH_Log("TRADE_MANAGEMENT_ENGINE",
+           "STEP130B_PARTIAL_VERIFY",
+           "Symbol=" + _Symbol +
+           " | Ticket=" + IntegerToString((long)ticket) +
+           " | PositionStillExists=" +
+           (positionStillExists ? "TRUE" : "FALSE") +
+           " | VolumeBefore=" + DoubleToString(liveVolume, 2) +
+           " | RequestedClose=" + DoubleToString(closeVolume, 2) +
+           " | ExpectedRemaining=" +
+           DoubleToString(remainingVolume, 2) +
+           " | ActualRemaining=" +
+           DoubleToString(actualRemainingVolume, 2) +
+           " | VolumeReduced=" +
+           (volumeReduced ? "TRUE" : "FALSE") +
+           " | Deal=" +
+           IntegerToString((long)m_trade.ResultDeal()) +
+           " | Order=" +
+           IntegerToString((long)m_trade.ResultOrder()) +
+           " | Retcode=" + IntegerToString((int)retcode) +
+           " | Description=" + m_trade.ResultRetcodeDescription());
+
+   if(volumeReduced)
+   {
+      m_memory.Trade.PartialClosed = true;
+      m_memory.Trade.State = TRADE_PARTIAL;
+
+      MRH_Log("TRADE_MANAGEMENT_ENGINE",
+              "STEP130B_PARTIAL_CONFIRMED",
+              "Real position volume reduction confirmed");
+   }
+   else
+   {
+      MRH_Log("TRADE_MANAGEMENT_ENGINE",
+              "STEP130B_PARTIAL_NOT_CONFIRMED",
+              "Trade request returned success but live volume reduction was not confirmed");
+   }
+}
+
+
+else
+{
+// STEP130C - Print the actual CTrade request/result on local failure
+m_trade.PrintRequest();
+m_trade.PrintResult();
+   double volumeMin =
+      SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
+
+   double volumeMax =
+      SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MAX);
+
+   double volumeStep =
+      SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
+
+   long tradeMode =
+      SymbolInfoInteger(_Symbol, SYMBOL_TRADE_MODE);
+
+   MRH_Log("TRADE_MANAGEMENT_ENGINE",
+           "STEP130B_PARTIAL_REQUEST_FAILED",
+           "Symbol=" + _Symbol +
+           " | Ticket=" + IntegerToString((long)ticket) +
+           " | Result=FALSE" +
+           " | LastError=" + IntegerToString(lastError) +
+           " | Retcode=" + IntegerToString((int)retcode) +
+           " | Description=" + m_trade.ResultRetcodeDescription() +
+           " | MarginMode=" + IntegerToString((int)marginMode) +
+           " | SymbolTradeMode=" + IntegerToString((int)tradeMode) +
+           " | LiveVolume=" + DoubleToString(liveVolume, 2) +
+           " | CloseVolume=" + DoubleToString(closeVolume, 2) +
+           " | RemainingVolume=" + DoubleToString(remainingVolume, 2) +
+           " | MinLot=" + DoubleToString(volumeMin, 2) +
+           " | MaxLot=" + DoubleToString(volumeMax, 2) +
+           " | LotStep=" + DoubleToString(volumeStep, 2));
+}
+}
    void ManageTrailingStop()
    {
       if(m_memory == NULL)
@@ -548,8 +857,8 @@ void UpdateHistoricalSetupConfidence()
       UpdateTradeStateMemory();
       CalculateCurrentRR();
 
-      ManageBreakEven();
       ManagePartialClose();
+      ManageBreakEven();
       ManageTrailingStop();
       ManageFinalExit();
       PopulateTradeOutcomeOnClose();

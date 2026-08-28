@@ -171,6 +171,37 @@ else if(m_memory.Execution.ConfluenceScore >= 40.0)
    return false;
 }
 
+
+// STEP136.1 - Real Entry Decision Audit
+MRH_Log("EXECUTION_ENGINE",
+        "STEP136_REAL_ENTRY_DECISION_AUDIT",
+        "PermissionScore=" +
+        DoubleToString(m_memory.Execution.PermissionScore, 1) +
+        " | RequiredScore=" +
+        DoubleToString(m_requiredPermissionScore, 1) +
+        " | ScoreApproved=" +
+        string(m_memory.Execution.ScoreApproved ? "TRUE" : "FALSE") +
+        " | StructureScore=" +
+        DoubleToString(m_memory.Execution.StructureScore, 1) +
+        " | LiquidityScore=" +
+        DoubleToString(m_memory.Liquidity.LiquidityScore, 1) +
+        " | OBScore=" +
+        DoubleToString(m_memory.Execution.OBScore, 1) +
+        " | OBValid=" +
+        string(m_memory.OB.Valid ? "TRUE" : "FALSE") +
+        " | ExternalBuyQualified=" +
+        string(m_memory.Liquidity.ExternalBuyCandidateQualified ? "TRUE" : "FALSE") +
+        " | ExternalSellQualified=" +
+        string(m_memory.Liquidity.ExternalSellCandidateQualified ? "TRUE" : "FALSE") +
+        " | ExternalBuySweepActive=" +
+        string(m_memory.Liquidity.ExternalBuySweepActive ? "TRUE" : "FALSE") +
+        " | ExternalSellSweepActive=" +
+        string(m_memory.Liquidity.ExternalSellSweepActive ? "TRUE" : "FALSE") +
+        " | ExternalBuyDisplacement=" +
+        string(m_memory.Liquidity.ExternalBuyDisplacementConfirmed ? "TRUE" : "FALSE") +
+        " | ExternalSellDisplacement=" +
+        string(m_memory.Liquidity.ExternalSellDisplacementConfirmed ? "TRUE" : "FALSE"));
+
    m_memory.Execution.AuditReason = "EXECUTION_ALLOWED";
    MRH_Log("EXECUTION_ENGINE", "AUDIT", "AuditReason=EXECUTION_ALLOWED");
 
@@ -240,6 +271,76 @@ if(!m_memory.OB.Valid)
    return;
 }
 
+
+// STEP131A - Entry Location Audit
+double currentMarketPrice = 0.0;
+
+if(m_memory.Structure.Bias == BIAS_BULLISH)
+   currentMarketPrice = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+else if(m_memory.Structure.Bias == BIAS_BEARISH)
+   currentMarketPrice = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+
+bool priceInsideOB =
+   currentMarketPrice >= m_memory.OB.Low &&
+   currentMarketPrice <= m_memory.OB.High;
+
+double distanceToPlannedEntry =
+   MathAbs(currentMarketPrice - m_memory.Execution.EntryPrice);
+
+
+// STEP131B - OB penetration audit
+double obRange = m_memory.OB.High - m_memory.OB.Low;
+double penetrationPercent = 0.0;
+
+if(obRange > 0.0)
+{
+   if(m_memory.Structure.Bias == BIAS_BEARISH)
+   {
+      penetrationPercent =
+         ((currentMarketPrice - m_memory.OB.Low) / obRange) * 100.0;
+   }
+   else if(m_memory.Structure.Bias == BIAS_BULLISH)
+   {
+      penetrationPercent =
+         ((m_memory.OB.High - currentMarketPrice) / obRange) * 100.0;
+   }
+}
+
+
+MRH_Log("EXECUTION_ENGINE",
+        "STEP131A_ENTRY_LOCATION",
+        "Bias=" + IntegerToString((int)m_memory.Structure.Bias) +
+        " | MarketPrice=" + DoubleToString(currentMarketPrice, _Digits) +
+        " | PlannedEntry=" + DoubleToString(m_memory.Execution.EntryPrice, _Digits) +
+        " | PlannedSL=" + DoubleToString(m_memory.Execution.StopLoss, _Digits) +
+        " | OBHigh=" + DoubleToString(m_memory.OB.High, _Digits) +
+        " | OBLow=" + DoubleToString(m_memory.OB.Low, _Digits) +
+        " | PriceInsideOB=" + (priceInsideOB ? "TRUE" : "FALSE") +
+        " | DistanceToEntry=" + DoubleToString(distanceToPlannedEntry, _Digits) +
+        " | PlannedRiskDistance=" + DoubleToString(riskDistance, _Digits) +
+        " | Timeframe=" + EnumToString(_Period) +
+        " | OBRange=" + DoubleToString(obRange, _Digits) +
+        " | PenetrationPercent=" + DoubleToString(penetrationPercent, 2));
+        
+        
+        if(!priceInsideOB)
+{
+   m_memory.Execution.EntrySignal = false;
+   m_memory.Execution.State = EXECUTION_BLOCKED;
+   m_memory.Execution.AuditReason = "PRICE_OUTSIDE_OB";
+
+   MRH_Log("EXECUTION_ENGINE",
+           "STEP131_ENTRY_BLOCKED",
+           "Reason=PRICE_OUTSIDE_OB"
+           " | MarketPrice=" + DoubleToString(currentMarketPrice, _Digits) +
+           " | OBHigh=" + DoubleToString(m_memory.OB.High, _Digits) +
+           " | OBLow=" + DoubleToString(m_memory.OB.Low, _Digits) +
+           " | PenetrationPercent=" +
+           DoubleToString(penetrationPercent, 2));
+
+   return;
+}
+        
    m_memory.Execution.EntrySignal = true;
    m_memory.Execution.State = EXECUTION_READY;
 
