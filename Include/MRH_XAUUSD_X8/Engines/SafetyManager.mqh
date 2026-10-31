@@ -93,23 +93,91 @@ void UpdateDailyLossGuard()
    MqlDateTime dt;
    TimeToStruct(TimeCurrent(), dt);
 
-   if(m_dayOfYear != dt.day_of_year || m_dayStartBalance <= 0.0)
+   
+if(m_dayOfYear != dt.day_of_year || m_dayStartBalance <= 0.0)
+{
+   m_dayOfYear = dt.day_of_year;
+
+   string accountKey = IntegerToString((long)AccountInfoInteger(ACCOUNT_LOGIN));
+   string dateKey = IntegerToString(dt.year) + "_" +
+                    IntegerToString(dt.mon) + "_" +
+                    IntegerToString(dt.day);
+
+   string baseKey = "MRHX8_" + accountKey + "_" +
+                    IntegerToString(270127) + "_" + dateKey;
+
+   string balanceKey = baseKey + "_BAL";
+   string lockKey = baseKey + "_LOCK";
+
+   
+if(GlobalVariableCheck(balanceKey))
+{
+   m_dayStartBalance = GlobalVariableGet(balanceKey);
+
+   MRH_Log("SAFETY_MANAGER",
+           "STEP136_10C_BASELINE_SOURCE",
+           "Source=RESTORED_FROM_GLOBAL_VARIABLE" +
+           StringFormat(" | Balance=%.2f", m_dayStartBalance));
+}
+else
+{
+   m_dayStartBalance = AccountInfoDouble(ACCOUNT_BALANCE);
+
+   if(m_dayStartBalance > 0.0)
    {
-      m_dayOfYear = dt.day_of_year;
-      m_dayStartBalance = AccountInfoDouble(ACCOUNT_BALANCE);
-      m_memory.Safety.DailyLossPercent = 0.0;
-      m_memory.Safety.DailyLossLimitHit = false;
+      GlobalVariableSet(balanceKey, m_dayStartBalance);
+      GlobalVariablesFlush();
    }
 
-   double currentBalance = AccountInfoDouble(ACCOUNT_BALANCE);
+   MRH_Log("SAFETY_MANAGER",
+           "STEP136_10C_BASELINE_SOURCE",
+           "Source=NEW_BASELINE_CREATED" +
+           StringFormat(" | Balance=%.2f", m_dayStartBalance));
+}
 
-   if(m_dayStartBalance <= 0.0)
-      return;
 
-   double lossMoney = m_dayStartBalance - currentBalance;
+   bool previouslyLocked =
+      GlobalVariableCheck(lockKey) &&
+      GlobalVariableGet(lockKey) > 0.0;
 
-   if(lossMoney < 0.0)
-      lossMoney = 0.0;
+// STEP136.10D - Synchronize daily loss lock
+// with the persisted lock at initialization/day rollover.
+m_memory.Safety.DailyLossLimitHit = previouslyLocked;
+m_memory.Safety.KillSwitch = previouslyLocked;
+
+
+   m_memory.Safety.DailyLossPercent = 0.0;
+
+   MRH_Log("SAFETY_MANAGER",
+           "STEP136_10B_BASELINE",
+           "DayStartBalance=" + DoubleToString(m_dayStartBalance, 2) +
+           " | RestoredLock=" + (previouslyLocked ? "TRUE" : "FALSE") +
+           " | Date=" + dateKey);
+           
+           
+MRH_Log("SAFETY_MANAGER",
+        "STEP136_10H_ROLLOVER_AUDIT",
+        "Date=" + dateKey +
+        " | KillSwitch=" +
+        (m_memory.Safety.KillSwitch ? "TRUE" : "FALSE") +
+        " | DailyLossLimitHit=" +
+        (m_memory.Safety.DailyLossLimitHit ? "TRUE" : "FALSE"));
+
+}
+
+
+
+  
+double currentBalance = AccountInfoDouble(ACCOUNT_BALANCE);
+
+if(m_dayStartBalance <= 0.0)
+   return;
+
+double lossMoney = m_dayStartBalance - currentBalance;
+
+if(lossMoney < 0.0)
+   lossMoney = 0.0;
+
 
    m_memory.Safety.DailyLossPercent =
       (lossMoney / m_dayStartBalance) * 100.0;
@@ -126,6 +194,22 @@ MRH_Log("SAFETY_MANAGER",
    {
       m_memory.Safety.DailyLossLimitHit = true;
       m_memory.Safety.KillSwitch = true;
+
+// STEP136.10B - Persist daily loss lock
+MqlDateTime lockDate;
+TimeToStruct(TimeCurrent(), lockDate);
+
+string lockKey =
+   "MRHX8_" +
+   IntegerToString((long)AccountInfoInteger(ACCOUNT_LOGIN)) +
+   "_270127_" +
+   IntegerToString(lockDate.year) + "_" +
+   IntegerToString(lockDate.mon) + "_" +
+   IntegerToString(lockDate.day) +
+   "_LOCK";
+
+GlobalVariableSet(lockKey, 1.0);
+GlobalVariablesFlush();
 
       MRH_Log("SAFETY_MANAGER",
               "STEP127_DAILY_LOSS_BLOCK",

@@ -569,8 +569,16 @@ if(m_memory.Liquidity.ExternalSellSweepActive &&
    externalSellDisplacementCandidate = true;
 }
 
+// STEP136.7A - External Displacement Confirmation State
+
+m_memory.Liquidity.ExternalBuyDisplacementConfirmed =
+   externalBuyDisplacementCandidate;
+
+m_memory.Liquidity.ExternalSellDisplacementConfirmed =
+   externalSellDisplacementCandidate;
 
 MRH_Log("LIQUIDITY_ENGINE",
+
         "STEP134_EXTERNAL_INTERACTION_AUDIT",
         "BuyInteraction=" +
         externalBuyInteraction +

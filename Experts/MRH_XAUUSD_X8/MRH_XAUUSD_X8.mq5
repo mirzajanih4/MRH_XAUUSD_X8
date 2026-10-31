@@ -64,11 +64,19 @@ bool MRH_BrokerSafetyCheck()
       return false;
    }
 
-   if(!SymbolInfoInteger(_Symbol, SYMBOL_TRADE_MODE))
-   {
-      MRH_Log("BROKER_SAFETY", "BLOCKED", "Symbol trade mode is disabled");
-      return false;
-   }
+   
+ENUM_SYMBOL_TRADE_MODE symbolTradeMode =
+   (ENUM_SYMBOL_TRADE_MODE)SymbolInfoInteger(
+      _Symbol, SYMBOL_TRADE_MODE);
+
+if(symbolTradeMode != SYMBOL_TRADE_MODE_FULL)
+{
+   MRH_Log("BROKER_SAFETY",
+           "BLOCKED",
+           "Symbol does not allow full trading mode");
+   return false;
+}
+
 ENUM_ACCOUNT_TRADE_MODE tradeMode =
    (ENUM_ACCOUNT_TRADE_MODE)AccountInfoInteger(ACCOUNT_TRADE_MODE);
 
@@ -79,43 +87,93 @@ if(tradeMode != ACCOUNT_TRADE_MODE_DEMO)
 }
    return true;
    }
-   bool MRH_StopsSafetyCheck()
+   
+   
+bool MRH_StopsSafetyCheck()
 {
-   double entry = SharedMemory.Execution.EntryPrice;
-   double sl    = SharedMemory.Execution.StopLoss;
-   double tp    = SharedMemory.Execution.TakeProfit;
+   double sl = SharedMemory.Execution.StopLoss;
+   double tp = SharedMemory.Execution.TakeProfit;
 
-   if(entry <= 0.0 || sl <= 0.0 || tp <= 0.0)
+   if(sl <= 0.0 || tp <= 0.0)
    {
-      MRH_Log("BROKER_SAFETY", "BLOCKED", "Entry/SL/TP is invalid");
+      MRH_Log("BROKER_SAFETY", "BLOCKED",
+              "SL/TP is invalid");
       return false;
    }
 
-   int stopsLevel  = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
-   int freezeLevel = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_FREEZE_LEVEL);
+   MqlTick tick;
 
-   double minDistance = MathMax(stopsLevel, freezeLevel) * _Point;
+   if(!SymbolInfoTick(_Symbol, tick) ||
+      tick.bid <= 0.0 ||
+      tick.ask <= 0.0 ||
+      tick.ask < tick.bid)
+   {
+      MRH_Log("BROKER_SAFETY", "BLOCKED",
+              "Invalid market Bid/Ask");
+      return false;
+   }
+
+   int stopsLevel =
+      (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+
+   int freezeLevel =
+      (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_FREEZE_LEVEL);
+
+   double minDistance =
+      MathMax(stopsLevel, freezeLevel) * _Point;
 
    if(minDistance <= 0.0)
       minDistance = 10 * _Point;
 
-   double slDistance = MathAbs(entry - sl);
-   double tpDistance = MathAbs(entry - tp);
+   double slDistance = 0.0;
+   double tpDistance = 0.0;
 
-   if(slDistance < minDistance)
+   
+   // STEP136.8D - Align safety direction with real order direction
+   if(SharedMemory.Structure.Bias == BIAS_BULLISH)
    {
-      MRH_Log("BROKER_SAFETY", "BLOCKED", "SL is too close to entry");
+      // BUY: validate SL/TP against current Bid
+      slDistance = tick.bid - sl;
+      tpDistance = tp - tick.bid;
+   }
+   else if(SharedMemory.Structure.Bias == BIAS_BEARISH)
+   {
+      // SELL: validate SL/TP against current Ask
+      slDistance = sl - tick.ask;
+      tpDistance = tick.ask - tp;
+   }
+   else
+   {
+      MRH_Log("BROKER_SAFETY", "BLOCKED",
+              "Invalid structure bias for stops safety");
       return false;
    }
 
-   if(tpDistance < minDistance)
+
+   if(slDistance < minDistance ||
+      tpDistance < minDistance)
    {
-      MRH_Log("BROKER_SAFETY", "BLOCKED", "TP is too close to entry");
+      MRH_Log("BROKER_SAFETY", "BLOCKED",
+              "Market-price SL/TP safety failed" +
+              StringFormat(
+                 " | Bid=%.2f | Ask=%.2f"
+                 " | SL=%.2f | TP=%.2f"
+                 " | SLDistance=%.2f"
+                 " | TPDistance=%.2f"
+                 " | MinDistance=%.2f",
+                 tick.bid,
+                 tick.ask,
+                 sl,
+                 tp,
+                 slDistance,
+                 tpDistance,
+                 minDistance));
       return false;
    }
 
    return true;
 }
+
 bool MRH_MarginSafetyCheck()
 {
    double lot = SharedMemory.Risk.LotSize;
@@ -242,10 +300,27 @@ bool MRH_CanExecuteTrade()
 //+------------------------------------------------------------------+
 //| Dry execution logger                                             |
 //+------------------------------------------------------------------+
+double MRH_NormalizeVolume(double volume);
 void MRH_DryExecutionCheck()
 {
    if(!MRH_CanExecuteTrade())
       return;
+
+   // STEP136.9D - Dry-run final volume audit
+   double balance = AccountInfoDouble(ACCOUNT_BALANCE);
+   double requestedLot = SharedMemory.Risk.LotSize;
+   double allowedLot = MathFloor(balance / 1000.0) * 0.01;
+   double finalLot = MRH_NormalizeVolume(requestedLot);
+   double brokerMinLot = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
+
+   MRH_Log("EXECUTION_LAYER",
+           "STEP136_9D_VOLUME_AUDIT",
+           "BalanceUSD=" + DoubleToString(balance, 2) +
+           " | RequestedLot=" + DoubleToString(requestedLot, 2) +
+           " | AllowedLot=" + DoubleToString(allowedLot, 2) +
+           " | FinalLot=" + DoubleToString(finalLot, 2) +
+           " | BrokerMinLot=" + DoubleToString(brokerMinLot, 2) +
+           " | VolumeValid=" + (finalLot > 0.0 && finalLot <= allowedLot + 1e-8 ? "TRUE" : "FALSE"));
 
    MRH_Log("EXECUTION_LAYER",
            "READY_TO_EXECUTE",
@@ -259,29 +334,47 @@ void MRH_DryExecutionCheck()
 //+------------------------------------------------------------------+
 //| Real execution skeleton                                          |
 //+------------------------------------------------------------------+
+
 double MRH_NormalizeVolume(double volume)
 {
    double minLot  = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
    double maxLot  = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MAX);
    double lotStep = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
 
+   if(minLot <= 0.0 || maxLot < minLot || lotStep <= 0.0)
+      return 0.0;
+
+   double balance = AccountInfoDouble(ACCOUNT_BALANCE);
+
+   // STEP136.9B - Maximum 0.01 lot per 1000 account currency units
+   double allowedLot = MathFloor(balance / 1000.0) * 0.01;
+
+   volume = MathMin(volume, allowedLot);
+   volume = MathMin(volume, maxLot);
+
    if(volume < minLot)
-      volume = minLot;
+      return 0.0;
 
-   if(volume > maxLot)
-      volume = maxLot;
+   volume = MathFloor((volume + 1e-10) / lotStep) * lotStep;
+   volume = NormalizeDouble(volume, 8);
 
-   volume = MathFloor(volume / lotStep) * lotStep;
+   if(volume < minLot)
+      return 0.0;
 
-   return NormalizeDouble(volume, 2);
+   return volume;
 }
+
 
 double MRH_NormalizePrice(double price)
 {
    return NormalizeDouble(price, _Digits);
 }
+
+
 void MRH_ExecuteTrade()
 {
+
+
    if(!EnableLiveTrading)
    {
       MRH_Log("EXECUTION_LAYER", "BLOCKED", "Live trading is disabled");
@@ -292,6 +385,14 @@ void MRH_ExecuteTrade()
       return;
 
    double lot   = MRH_NormalizeVolume(SharedMemory.Risk.LotSize);
+   // STEP136.9C - Reject invalid final order volume
+if(lot <= 0.0)
+{
+   MRH_Log("EXECUTION_LAYER",
+           "BLOCKED",
+           "Final normalized lot is zero or invalid");
+   return;
+}
    double sl    = MRH_NormalizePrice(SharedMemory.Execution.StopLoss);
    double tp    = MRH_NormalizePrice(SharedMemory.Execution.TakeProfit);
    string note  = "MRH_XAUUSD_X8";
