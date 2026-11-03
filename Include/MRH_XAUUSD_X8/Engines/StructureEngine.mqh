@@ -308,6 +308,21 @@ void DetectStructureBreak()
    double closePrice = iClose(_Symbol, _Period, 1);
    datetime closeTime = iTime(_Symbol, _Period, 1);
 
+// STEP136.16D - Structure break condition audit
+if(m_memory.Structure.Bias == BIAS_BULLISH &&
+   m_memory.Structure.LastSwingLow > 0.0)
+{
+   MRH_Log("STRUCTURE_ENGINE",
+           "STEP136_16D_BREAK_AUDIT",
+           "Close=" + DoubleToString(closePrice, _Digits) +
+           " | LastSwingLow=" +
+           DoubleToString(m_memory.Structure.LastSwingLow, _Digits) +
+           " | BelowLow=" +
+           (closePrice < m_memory.Structure.LastSwingLow ? "TRUE" : "FALSE") +
+           " | Bias=" +
+           EnumToString(m_memory.Structure.Bias));
+}
+
    if(m_memory.Structure.LastSwingHigh > 0.0 &&
       closePrice > m_memory.Structure.LastSwingHigh)
    {
@@ -346,6 +361,22 @@ void DetectStructureBreak()
    if(m_memory.Structure.LastSwingLow > 0.0 &&
       closePrice < m_memory.Structure.LastSwingLow)
    {
+
+   // STEP136.16C - Invalidate bullish structure after confirmed low break
+if(m_memory.Structure.Bias == BIAS_BULLISH)
+{
+   m_memory.Structure.Bias = BIAS_NEUTRAL;
+   m_memory.Structure.State = STRUCTURE_TRANSITION;
+
+   MRH_Log("STRUCTURE_ENGINE",
+           "STEP136_16C_BULLISH_INVALIDATION",
+           "Bullish structure invalidated after close below LastSwingLow" +
+           " | Close=" + DoubleToString(closePrice, _Digits) +
+           " | LastSwingLow=" +
+           DoubleToString(m_memory.Structure.LastSwingLow, _Digits));
+
+   return;
+}
       if(m_memory.Structure.Bias == BIAS_BULLISH)
       {
          if(m_memory.Structure.LastSwingClass == SWING_CLASS_LH ||
@@ -575,8 +606,49 @@ m_memory.Structure.ActiveTradingSession =
       return;
    }
 
-   DetectLatestSwing();
+// STEP136.16E - Trend requalification audit
+datetime previousSwingTime =
+   m_memory.Structure.LastProcessedSwingTime;
+
+int previousBias =
+   (int)m_memory.Structure.Bias;
+
+int previousState =
+   (int)m_memory.Structure.State;
+
+
+   // STEP136.16F - Requalify structure only after a new swing
+DetectLatestSwing();
+
+if(m_memory.Structure.LastProcessedSwingTime != previousSwingTime)
+{
    UpdateInitialBias();
+}
+
+   // STEP136.16E - Detect trend restoration without new swing
+bool newSwingDetected =
+   (m_memory.Structure.LastProcessedSwingTime != previousSwingTime);
+
+if(previousState == (int)STRUCTURE_TRANSITION &&
+   m_memory.Structure.State == STRUCTURE_TRENDING)
+{
+   MRH_Log("STRUCTURE_ENGINE",
+           "STEP136_16E_TREND_REQUALIFICATION_AUDIT",
+           "NewSwing=" +
+           (newSwingDetected ? "TRUE" : "FALSE") +
+           " | PreviousBias=" +
+           IntegerToString(previousBias) +
+           " | CurrentBias=" +
+           EnumToString(m_memory.Structure.Bias) +
+           " | PreviousState=STRUCTURE_TRANSITION" +
+           " | CurrentState=" +
+           EnumToString(m_memory.Structure.State) +
+           " | HighClass=" +
+           EnumToString(m_memory.Structure.LastSwingHighClass) +
+           " | LowClass=" +
+           EnumToString(m_memory.Structure.LastSwingLowClass));
+}
+
    
    // STEP134.4M - Pair Bias Isolation Audit
 MRH_Log("STRUCTURE_ENGINE",
