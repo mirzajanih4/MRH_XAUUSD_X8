@@ -9,12 +9,18 @@ private:
    int m_swingSize;
    int m_atrHandle;
    
+   double m_lastBearishBrokenLevel;
+   
+   
 public:
    CStructureEngine()
    {
       m_memory = NULL;
       m_swingSize = 2;
       m_atrHandle = INVALID_HANDLE;
+      
+      m_lastBearishBrokenLevel = 0.0;
+      
    }
 
    bool Init(CSharedMemory* memory)
@@ -361,7 +367,7 @@ if(m_memory.Structure.Bias == BIAS_BULLISH &&
    if(m_memory.Structure.LastSwingLow > 0.0 &&
       closePrice < m_memory.Structure.LastSwingLow)
    {
-
+   
    // STEP136.16C - Invalidate bullish structure after confirmed low break
 if(m_memory.Structure.Bias == BIAS_BULLISH)
 {
@@ -397,6 +403,60 @@ if(m_memory.Structure.Bias == BIAS_BULLISH)
       if(m_memory.Structure.LastSwingClass == SWING_CLASS_LH ||
    m_memory.Structure.LastSwingClass == SWING_CLASS_LL)
 {
+
+
+   // STEP136.17G6 - Bearish BOS repeat audit only
+   // No changes to structure or execution decisions
+
+   double previousClose = iClose(_Symbol, _Period, 2);
+
+   bool previousCloseBelowLevel =
+      (previousClose < m_memory.Structure.LastSwingLow);
+
+  
+MRH_Log("STRUCTURE_ENGINE",
+        "STEP136_17G6_BEARISH_BOS_AUDIT",
+        "BreakLevel=" +
+        DoubleToString(m_memory.Structure.LastSwingLow, _Digits) +
+        " | PreviousClose=" +
+        DoubleToString(previousClose, _Digits) +
+        " | CurrentClose=" +
+        DoubleToString(closePrice, _Digits) +
+        " | PreviousCloseBelowLevel=" +
+        (previousCloseBelowLevel ? "TRUE" : "FALSE") +
+        " | PreviousBOSTime=" +
+        TimeToString(m_memory.Structure.LastBOS,
+                     TIME_DATE | TIME_MINUTES) +
+        " | CurrentBarTime=" +
+        TimeToString(closeTime,
+                     TIME_DATE | TIME_MINUTES));
+
+
+// STEP136.17G7 - Prevent repeated bearish BOS on same level
+// Runtime-only protection; no persistence across restart
+
+static double lastBearishBrokenLevel = 0.0;
+
+double currentBreakLevel = m_memory.Structure.LastSwingLow;
+
+if(lastBearishBrokenLevel > 0.0 &&
+   MathAbs(currentBreakLevel - lastBearishBrokenLevel) <= _Point * 0.5)
+{
+   MRH_Log("STRUCTURE_ENGINE",
+           "STEP136_17G7_DUPLICATE_BOS_BLOCKED",
+           "BreakLevel=" +
+           DoubleToString(currentBreakLevel, _Digits) +
+           " | LastBOS=" +
+           TimeToString(m_memory.Structure.LastBOS,
+                        TIME_DATE | TIME_MINUTES));
+
+   return;
+}
+
+lastBearishBrokenLevel = currentBreakLevel;
+
+
+
    m_memory.Structure.LastBOS = closeTime;
    m_memory.Structure.Bias = BIAS_BEARISH;
    m_memory.Structure.State = STRUCTURE_TRENDING;
@@ -624,7 +684,7 @@ if(m_memory.Structure.LastProcessedSwingTime != previousSwingTime)
 {
    UpdateInitialBias();
 }
-
+   
    // STEP136.16E - Detect trend restoration without new swing
 bool newSwingDetected =
    (m_memory.Structure.LastProcessedSwingTime != previousSwingTime);
@@ -648,7 +708,7 @@ if(previousState == (int)STRUCTURE_TRANSITION &&
            " | LowClass=" +
            EnumToString(m_memory.Structure.LastSwingLowClass));
 }
-
+   
    
    // STEP134.4M - Pair Bias Isolation Audit
 MRH_Log("STRUCTURE_ENGINE",

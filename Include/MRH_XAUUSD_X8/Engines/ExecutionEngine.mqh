@@ -343,6 +343,36 @@ MRH_Log("EXECUTION_ENGINE",
         
    m_memory.Execution.EntrySignal = true;
    m_memory.Execution.State = EXECUTION_READY;
+   
+   
+   
+   // STEP136.17G1 - Setup context audit only
+   // No execution blocking or setup consumption
+
+   MRH_Log("EXECUTION_ENGINE",
+           "STEP136_17G1_CONTEXT_AUDIT",
+           "Symbol=" + _Symbol +
+           " | TF=" + EnumToString(_Period) +
+           " | Bias=" + EnumToString(m_memory.Structure.Bias) +
+           " | SwingTime=" +
+           TimeToString(m_memory.Structure.LastProcessedSwingTime,
+                        TIME_DATE | TIME_MINUTES) +
+           " | LastBOS=" +
+           TimeToString(m_memory.Structure.LastBOS,
+                        TIME_DATE | TIME_MINUTES) +
+           " | LastCHOCH=" +
+           TimeToString(m_memory.Structure.LastCHOCH,
+                        TIME_DATE | TIME_MINUTES) +
+           " | OBSourceTime=" +
+           TimeToString(iTime(_Symbol, _Period, 2),
+                        TIME_DATE | TIME_MINUTES) +
+           " | OBHigh=" +
+           DoubleToString(m_memory.OB.High, _Digits) +
+           " | OBLow=" +
+           DoubleToString(m_memory.OB.Low, _Digits));
+
+   
+   
 
    MRH_Log("EXECUTION_ENGINE",
            "READY",
