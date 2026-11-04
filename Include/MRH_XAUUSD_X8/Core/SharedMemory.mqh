@@ -47,7 +47,14 @@ public:
    {
       Structure.Bias          = BIAS_NEUTRAL;
       Structure.LastSwingHigh = 0.0;
+      
+      // STEP136.17G11.2 - Initialize independent Swing High time
+      Structure.LastSwingHighTime = 0;
+      
+      
       Structure.LastSwingLow  = 0.0;
+      
+      
       
       // STEP136.17G10.2 - Initialize independent Swing Low time
       Structure.LastSwingLowTime = 0;
