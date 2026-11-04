@@ -153,6 +153,19 @@ m_memory.Structure.LastSwingTime = swingTime;
 m_memory.Structure.LastProcessedSwingTime = swingTime;
 
 
+
+ // STEP136.17G10.4 - Swing Low time preservation audit
+ MRH_Log("STRUCTURE_ENGINE",
+         "STEP136_17G10_4_SWING_TIME_AUDIT",
+         "Detected=HIGH" +
+         " | HighTime=" +
+         TimeToString(swingTime, TIME_DATE | TIME_MINUTES) +
+         " | PreservedLowTime=" +
+         TimeToString(m_memory.Structure.LastSwingLowTime,
+                      TIME_DATE | TIME_MINUTES));
+
+
+
 // STEP134.4H - Structure Swing Pair Audit
 MRH_Log("STRUCTURE_ENGINE",
         "STEP134_SWING_PAIR_AUDIT",
@@ -222,8 +235,14 @@ if(IsSwingLow(i))
 
    m_memory.Structure.LastSwingType = SWING_LOW;
 
-   m_memory.Structure.LastSwingTime = swingTime;
-   m_memory.Structure.LastProcessedSwingTime = swingTime;
+  
+m_memory.Structure.LastSwingTime = swingTime;
+
+// STEP136.17G10.3 - Preserve confirmed Swing Low time
+m_memory.Structure.LastSwingLowTime = swingTime;
+
+m_memory.Structure.LastProcessedSwingTime = swingTime;
+
 
    // STEP134.4I - Structure Swing Pair Audit
    MRH_Log("STRUCTURE_ENGINE",

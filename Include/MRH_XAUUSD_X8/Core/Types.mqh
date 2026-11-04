@@ -206,10 +206,13 @@ struct StructureData
    double CurrentATR;
    ENUM_MARKET_BIAS Bias;
 
-   double LastSwingHigh;
-   double LastSwingLow;
-   double PreviousSwingHigh;
-   double PreviousSwingLow;
+  
+double LastSwingHigh;
+double LastSwingLow;
+datetime LastSwingLowTime; // STEP136.17G10.1
+double PreviousSwingHigh;
+double PreviousSwingLow;
+
    datetime LastBOS;
    datetime LastCHOCH;
 
