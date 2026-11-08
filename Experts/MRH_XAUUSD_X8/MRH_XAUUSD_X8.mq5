@@ -262,6 +262,31 @@ bool MRH_HasOpenPositionByMagic()
 
 bool MRH_CanExecuteTrade()
 {
+
+
+   // STEP136.17G12.8P - Final execution gate audit only
+   // No changes to execution permissions
+
+   if(SharedMemory.Execution.State == EXECUTION_READY ||
+      SharedMemory.Execution.EntrySignal)
+   {
+      MRH_Log("EXECUTION_LAYER",
+              "STEP136_17G12_8P_GATE_AUDIT",
+              "State=" +
+              IntegerToString((int)SharedMemory.Execution.State) +
+              " | EntrySignal=" +
+              (SharedMemory.Execution.EntrySignal ? "TRUE" : "FALSE") +
+              " | RiskApproved=" +
+              (SharedMemory.Risk.RiskApproved ? "TRUE" : "FALSE") +
+              " | TradingAllowed=" +
+              (SharedMemory.Safety.TradingAllowed ? "TRUE" : "FALSE") +
+              " | LotSize=" +
+              DoubleToString(SharedMemory.Risk.LotSize, 2) +
+              " | OpenPosition=" +
+              (MRH_HasOpenPositionByMagic() ? "TRUE" : "FALSE"));
+   }
+
+
    // First confirm that a real execution candidate exists
    if(SharedMemory.Execution.State != EXECUTION_READY)
       return false;
@@ -381,10 +406,193 @@ void MRH_ExecuteTrade()
       return;
    }
 
-   if(!MRH_CanExecuteTrade())
-      return;
+   
+   // STEP136.17G12.9P - Real execution path audit only
 
-   double lot   = MRH_NormalizeVolume(SharedMemory.Risk.LotSize);
+   if(!MRH_CanExecuteTrade())
+   {
+      MRH_Log("EXECUTION_LAYER",
+              "STEP136_17G12_9P_EXEC_PATH_AUDIT",
+              "FinalGate=BLOCKED");
+      return;
+   }
+
+   MRH_Log("EXECUTION_LAYER",
+           "STEP136_17G12_9P_EXEC_PATH_AUDIT",
+           "FinalGate=PASSED");
+
+
+   // STEP136.17G12.10F.3 - Pre-send consumed BOS audit
+   // Audit only - does not block execution
+
+   datetime currentBOS = SharedMemory.Structure.LastBOS;
+
+  
+   if(currentBOS > 0)
+   {
+      string bosKey =
+         "MRHX8_BOS_" +
+         IntegerToString((long)AccountInfoInteger(ACCOUNT_LOGIN)) +
+         "_" + IntegerToString(MagicNumber) +
+         "_" + _Symbol +
+         "_" + IntegerToString((int)_Period) +
+         "_" + IntegerToString((int)SharedMemory.Structure.Bias);
+
+      bool previouslyStored = GlobalVariableCheck(bosKey);
+
+      datetime storedBOS = 0;
+
+      if(previouslyStored)
+         storedBOS = (datetime)(long)GlobalVariableGet(bosKey);
+
+      bool sameConsumedBOS =
+         (previouslyStored && storedBOS == currentBOS);
+
+      MRH_Log("EXECUTION_LAYER",
+              "STEP136_17G12_10F_3_PRE_SEND_BOS_AUDIT",
+              "CurrentBOS=" +
+              TimeToString(currentBOS, TIME_DATE | TIME_MINUTES) +
+              " | StoredBOS=" +
+              TimeToString(storedBOS, TIME_DATE | TIME_MINUTES) +
+              " | PreviouslyStored=" +
+              (previouslyStored ? "TRUE" : "FALSE") +
+              " | SameConsumedBOS=" +
+              (sameConsumedBOS ? "TRUE" : "FALSE"));
+
+
+
+      // STEP136.17G12.10F.5H4
+      // Previous confirmed entry time audit only
+
+      string entryTimeKey = bosKey + "_ENTRY_TIME";
+
+      bool previousEntryStored =
+         GlobalVariableCheck(entryTimeKey);
+
+      datetime previousEntryTime = 0;
+
+      if(previousEntryStored)
+         previousEntryTime =
+            (datetime)(long)GlobalVariableGet(entryTimeKey);
+
+      datetime sourceSwingTime =
+         SharedMemory.Structure.LastBOSSourceSwingTime;
+
+      bool sourceSwingAfterEntry =
+         (previousEntryStored &&
+          previousEntryTime > 0 &&
+          sourceSwingTime > previousEntryTime);
+
+      bool bosAfterEntry =
+         (previousEntryStored &&
+          previousEntryTime > 0 &&
+          currentBOS > previousEntryTime);
+
+      MRH_Log("EXECUTION_LAYER",
+              "STEP136_17G12_10F_5H4_ENTRY_TIME_AUDIT",
+              "PreviousEntryStored=" +
+              (previousEntryStored ? "TRUE" : "FALSE") +
+              " | PreviousEntryTime=" +
+              TimeToString(previousEntryTime,
+                           TIME_DATE | TIME_SECONDS) +
+              " | CurrentBOS=" +
+              TimeToString(currentBOS,
+                           TIME_DATE | TIME_MINUTES) +
+              " | SourceSwingTime=" +
+              TimeToString(sourceSwingTime,
+                           TIME_DATE | TIME_MINUTES) +
+              " | SourceSwingAfterEntry=" +
+              (sourceSwingAfterEntry ? "TRUE" : "FALSE") +
+            
+            
+            
+" | BOSAfterEntry=" +
+(bosAfterEntry ? "TRUE" : "FALSE") +
+" | LastInvalidationTime=" +
+TimeToString(
+   SharedMemory.Structure.LastStructureInvalidationTime,
+   TIME_DATE | TIME_MINUTES) +
+" | InvalidationAfterEntry=" +
+((previousEntryStored &&
+  previousEntryTime > 0 &&
+  SharedMemory.Structure.LastStructureInvalidationTime >
+     previousEntryTime) ? "TRUE" : "FALSE"));
+
+
+
+
+      // STEP136.17G12.10F.5H9.1
+      // Conservative structural rearm guard V1
+
+      if(previouslyStored && !sameConsumedBOS)
+      {
+         datetime pullbackSwingTime = 0;
+
+         if(SharedMemory.Structure.Bias == BIAS_BULLISH)
+            pullbackSwingTime =
+               SharedMemory.Structure.LastSwingLowTime;
+
+         else if(SharedMemory.Structure.Bias == BIAS_BEARISH)
+            pullbackSwingTime =
+               SharedMemory.Structure.LastSwingHighTime;
+
+         bool structuralRearmApproved =
+            previousEntryStored &&
+            previousEntryTime > 0 &&
+            currentBOS > storedBOS &&
+            currentBOS > previousEntryTime &&
+            sourceSwingTime > previousEntryTime &&
+            sourceSwingTime < currentBOS &&
+            pullbackSwingTime > previousEntryTime &&
+            pullbackSwingTime < currentBOS &&
+            SharedMemory.Structure.LastBOSDirection ==
+               SharedMemory.Structure.Bias &&
+            SharedMemory.Structure.State ==
+               STRUCTURE_TRENDING;
+
+         if(!structuralRearmApproved)
+         {
+            MRH_Log("EXECUTION_LAYER",
+                    "STEP136_17G12_10F_5H9_REARM_BLOCK",
+                    "Reason=NO_CONFIRMED_NEW_STRUCTURE_CYCLE" +
+                    " | CurrentBOS=" +
+                    TimeToString(currentBOS,
+                                 TIME_DATE | TIME_MINUTES) +
+                    " | PreviousEntry=" +
+                    TimeToString(previousEntryTime,
+                                 TIME_DATE | TIME_MINUTES) +
+                    " | SourceSwing=" +
+                    TimeToString(sourceSwingTime,
+                                 TIME_DATE | TIME_MINUTES) +
+                    " | PullbackSwing=" +
+                    TimeToString(pullbackSwingTime,
+                                 TIME_DATE | TIME_MINUTES));
+
+            return;
+         }
+      }
+
+
+      // STEP136.17G12.10F.4
+      // Block repeated execution of a consumed BOS
+
+      if(sameConsumedBOS)
+      {
+         MRH_Log("EXECUTION_LAYER",
+                 "STEP136_17G12_10F_4_DUPLICATE_BOS_BLOCK",
+                 "BOS=" +
+                 TimeToString(currentBOS,
+                              TIME_DATE | TIME_MINUTES) +
+                 " | Reason=ALREADY_CONSUMED");
+
+         return;
+      }
+   }
+
+
+
+   double lot = MRH_NormalizeVolume(SharedMemory.Risk.LotSize);
+
    // STEP136.9C - Reject invalid final order volume
 if(lot <= 0.0)
 {
@@ -396,6 +604,92 @@ if(lot <= 0.0)
    double sl    = MRH_NormalizePrice(SharedMemory.Execution.StopLoss);
    double tp    = MRH_NormalizePrice(SharedMemory.Execution.TakeProfit);
    string note  = "MRH_XAUUSD_X8";
+   
+   
+   
+   // STEP136.17G12.9J - Market execution risk guard
+   // Protect risk budget before sending an order
+
+   MqlTick executionTick;
+
+   if(!SymbolInfoTick(_Symbol, executionTick) ||
+      executionTick.bid <= 0.0 ||
+      executionTick.ask < executionTick.bid)
+   {
+      MRH_Log("EXECUTION_LAYER",
+              "RISK_BLOCKED",
+              "Invalid execution tick");
+      return;
+   }
+
+   ENUM_ORDER_TYPE riskOrderType;
+   double worstCaseEntry = 0.0;
+
+   // 30 points matches current trade deviation setting
+   double slippageBuffer = 30.0 * _Point;
+
+   if(SharedMemory.Structure.Bias == BIAS_BULLISH)
+   {
+      riskOrderType = ORDER_TYPE_BUY;
+      worstCaseEntry = executionTick.ask + slippageBuffer;
+   }
+   else if(SharedMemory.Structure.Bias == BIAS_BEARISH)
+   {
+      riskOrderType = ORDER_TYPE_SELL;
+      worstCaseEntry = executionTick.bid - slippageBuffer;
+   }
+   else
+   {
+      return;
+   }
+
+   double estimatedProfit = 0.0;
+
+   if(!OrderCalcProfit(riskOrderType,
+                       _Symbol,
+                       lot,
+                       worstCaseEntry,
+                       sl,
+                       estimatedProfit))
+   {
+      MRH_Log("EXECUTION_LAYER",
+              "RISK_BLOCKED",
+              "Market risk calculation failed");
+      return;
+   }
+
+   double riskPercent =
+      MathMin(SharedMemory.Risk.RiskPercent, 0.50);
+
+   double riskBudget =
+      AccountInfoDouble(ACCOUNT_BALANCE) *
+      riskPercent / 100.0;
+
+   double estimatedLoss = -estimatedProfit;
+
+   if(riskBudget <= 0.0 ||
+      estimatedLoss <= 0.0 ||
+      estimatedLoss > riskBudget)
+   {
+      MRH_Log("EXECUTION_LAYER",
+              "STEP136_17G12_9J_RISK_BLOCKED",
+              "EstimatedLoss=" +
+              DoubleToString(estimatedLoss, 2) +
+              " | RiskBudget=" +
+              DoubleToString(riskBudget, 2));
+      return;
+   }
+
+   MRH_Log("EXECUTION_LAYER",
+           "STEP136_17G12_9J_RISK_APPROVED",
+           "WorstCaseEntry=" +
+           DoubleToString(worstCaseEntry, _Digits) +
+           " | EstimatedLoss=" +
+           DoubleToString(estimatedLoss, 2) +
+           " | RiskBudget=" +
+           DoubleToString(riskBudget, 2));
+
+   
 
    bool result = false;
 
@@ -412,6 +706,120 @@ if(lot <= 0.0)
       MRH_Log("EXECUTION_LAYER", "BLOCKED", "No valid direction bias");
       return;
    }
+
+
+
+   // STEP136.17G12.8 - Broker execution result audit only
+   // Does not change trade decisions or setup consumption
+
+   uint brokerRetcode = Trade.ResultRetcode();
+   ulong brokerDeal = Trade.ResultDeal();
+   ulong brokerOrder = Trade.ResultOrder();
+
+   bool brokerConfirmed =
+      (result &&
+       brokerRetcode == TRADE_RETCODE_DONE &&
+       brokerDeal > 0);
+
+   MRH_Log("EXECUTION_LAYER",
+           "STEP136_17G12_8_BROKER_CONFIRMATION_AUDIT",
+           "SendResult=" + (result ? "TRUE" : "FALSE") +
+           " | Retcode=" + IntegerToString((int)brokerRetcode) +
+           " | Deal=" + IntegerToString((long)brokerDeal) +
+           " | Order=" + IntegerToString((long)brokerOrder) +
+         
+" | BrokerConfirmed=" +
+(brokerConfirmed ? "TRUE" : "FALSE") +
+" | Bias=" +
+EnumToString(SharedMemory.Structure.Bias) +
+" | BOSTime=" +
+TimeToString(SharedMemory.Structure.LastBOS,
+             TIME_DATE | TIME_MINUTES) +
+" | SwingHighTime=" +
+TimeToString(SharedMemory.Structure.LastSwingHighTime,
+             TIME_DATE | TIME_MINUTES) +
+" | SwingLowTime=" +
+TimeToString(SharedMemory.Structure.LastSwingLowTime,
+             TIME_DATE | TIME_MINUTES) +
+" | OBHigh=" +
+DoubleToString(SharedMemory.OB.High, _Digits) +
+" | OBLow=" +
+DoubleToString(SharedMemory.OB.Low, _Digits));
+
+
+
+   // STEP136.17G12.10F.2
+   // Persist confirmed BOS identity - audit only
+
+   if(brokerConfirmed)
+   {
+      datetime confirmedBOS =
+         SharedMemory.Structure.LastBOS;
+
+      if(confirmedBOS > 0)
+      {
+         string setupKey =
+            "MRHX8_BOS_" +
+            IntegerToString((long)AccountInfoInteger(ACCOUNT_LOGIN)) +
+            "_" + IntegerToString(MagicNumber) +
+            "_" + _Symbol +
+            "_" + IntegerToString((int)_Period) +
+            "_" + IntegerToString((int)SharedMemory.Structure.Bias);
+
+        
+         datetime savedTime =
+            GlobalVariableSet(setupKey, (double)confirmedBOS);
+
+         // STEP136.17G12.10F.5H3.1
+         // Persist confirmed entry timestamp for rearm audit
+         // Does not change execution permission
+
+         
+         datetime savedEntryTime = 0;
+
+         if(savedTime > 0)
+            savedEntryTime = GlobalVariableSet(
+               setupKey + "_ENTRY_TIME",
+               (double)TimeCurrent());
+
+
+         if(savedTime > 0)
+            GlobalVariablesFlush();
+
+
+        
+         MRH_Log("EXECUTION_LAYER",
+                 "STEP136_17G12_10F_2_SETUP_CONSUMPTION_AUDIT",
+                 "Deal=" + IntegerToString((long)brokerDeal) +
+                 " | BOS=" +
+                 TimeToString(confirmedBOS,
+                              TIME_DATE | TIME_MINUTES) +
+                 " | Direction=" +
+                 EnumToString(SharedMemory.Structure.LastBOSDirection) +
+                 " | BrokenLevel=" +
+                 DoubleToString(SharedMemory.Structure.LastBOSBrokenLevel,
+                                _Digits) +
+                 " | SourceSwingTime=" +
+                 TimeToString(
+                    SharedMemory.Structure.LastBOSSourceSwingTime,
+                    TIME_DATE | TIME_MINUTES) +
+             
+                 " | Persisted=" +
+                    (savedTime > 0 ? "TRUE" : "FALSE") +
+                 " | EntryTimePersisted=" +
+                    (savedEntryTime > 0 ? "TRUE" : "FALSE"));
+
+
+      }
+      else
+      {
+         MRH_Log("EXECUTION_LAYER",
+                 "STEP136_17G12_10F_2_SETUP_CONSUMPTION_AUDIT",
+                 "Deal=" + IntegerToString((long)brokerDeal) +
+                 " | Persisted=FALSE | Reason=NO_VALID_BOS");
+      }
+   }
+
 
    if(result)
 {

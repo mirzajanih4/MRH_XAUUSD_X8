@@ -1,4 +1,4 @@
-﻿#ifndef MRH_OB_ENGINE_MQH
+#ifndef MRH_OB_ENGINE_MQH
 #define MRH_OB_ENGINE_MQH
 #include <MRH_XAUUSD_X8/Core/SharedMemory.mqh>
 #include <MRH_XAUUSD_X8/Core/Logger.mqh>
@@ -189,6 +189,53 @@ else if(m_memory.OB.Strength == OB_INSTITUTIONAL)
 
    if(newOBDetected)
    {
+   
+   
+   
+   
+   // STEP136.17G12.9H - OB and swing relationship audit only
+
+   datetime obSourceTime = iTime(_Symbol, _Period, 2);
+   datetime swingRefTime = 0;
+
+   double obBoundary = 0.0;
+   double swingReference = 0.0;
+
+   if(m_memory.Structure.Bias == BIAS_BEARISH)
+   {
+      obBoundary = m_memory.OB.High;
+      swingReference = m_memory.Structure.LastSwingHigh;
+      swingRefTime = m_memory.Structure.LastSwingHighTime;
+   }
+   else if(m_memory.Structure.Bias == BIAS_BULLISH)
+   {
+      obBoundary = m_memory.OB.Low;
+      swingReference = m_memory.Structure.LastSwingLow;
+      swingRefTime = m_memory.Structure.LastSwingLowTime;
+   }
+
+   double differencePoints = -1.0;
+
+   if(swingReference > 0.0 && obBoundary > 0.0)
+      differencePoints =
+         MathAbs(obBoundary - swingReference) / _Point;
+
+   MRH_Log("OB_ENGINE",
+           "STEP136_17G12_9H_OB_SWING_AUDIT",
+           "Bias=" + EnumToString(m_memory.Structure.Bias) +
+           " | OBSourceTime=" +
+           TimeToString(obSourceTime, TIME_DATE | TIME_MINUTES) +
+           " | SwingRefTime=" +
+           TimeToString(swingRefTime, TIME_DATE | TIME_MINUTES) +
+           " | OBBoundary=" +
+           DoubleToString(obBoundary, _Digits) +
+           " | SwingReference=" +
+           DoubleToString(swingReference, _Digits) +
+           " | DifferencePoints=" +
+           DoubleToString(differencePoints, 1));
+
+   
+   
       MRH_Log("OB_ENGINE",
               "LIFECYCLE_SKIP",
               "New OB detected; lifecycle check skipped for this cycle");

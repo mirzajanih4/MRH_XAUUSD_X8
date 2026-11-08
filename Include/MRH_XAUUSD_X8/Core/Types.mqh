@@ -216,8 +216,23 @@ datetime LastSwingLowTime;
 double PreviousSwingHigh;
 double PreviousSwingLow;
 
+   
    datetime LastBOS;
+
+   // STEP136.17G12.10F.5C
+   // Confirmed BOS identity snapshot
+   ENUM_MARKET_BIAS LastBOSDirection;
+   double LastBOSBrokenLevel;
+   datetime LastBOSSourceSwingTime;
+
    datetime LastCHOCH;
+   
+   
+   // STEP136.17G12.10F.5H7.1
+   // Last confirmed structure invalidation event
+   datetime LastStructureInvalidationTime;
+
+
 
    ENUM_STRUCTURE_STATE State;
 

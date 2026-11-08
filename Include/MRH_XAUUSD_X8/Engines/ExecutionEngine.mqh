@@ -272,6 +272,119 @@ if(!m_memory.OB.Valid)
 }
 
 
+
+   // STEP136.17G12.9D - Structural SL comparison audit only
+   // No changes to Entry, SL, TP or execution permission
+
+   double structuralReference = 0.0;
+   string structuralSource = "UNKNOWN";
+
+   if(m_memory.Structure.Bias == BIAS_BEARISH)
+   {
+      structuralReference = m_memory.Structure.LastSwingHigh;
+      structuralSource = "LAST_SWING_HIGH";
+   }
+   else if(m_memory.Structure.Bias == BIAS_BULLISH)
+   {
+      structuralReference = m_memory.Structure.LastSwingLow;
+      structuralSource = "LAST_SWING_LOW";
+   }
+
+   double structuralDistancePoints = -1.0;
+
+   if(structuralReference > 0.0)
+   {
+      structuralDistancePoints =
+         MathAbs(m_memory.Execution.EntryPrice -
+                 structuralReference) / _Point;
+   }
+
+   MRH_Log("EXECUTION_ENGINE",
+           "STEP136_17G12_9D_STRUCTURAL_SL_AUDIT",
+           "Direction=" +
+           EnumToString(m_memory.Structure.Bias) +
+           " | PlannedEntry=" +
+           DoubleToString(m_memory.Execution.EntryPrice, _Digits) +
+           " | OBStop=" +
+           DoubleToString(m_memory.Execution.StopLoss, _Digits) +
+           " | StructuralSource=" + structuralSource +
+           " | StructuralReference=" +
+           DoubleToString(structuralReference, _Digits) +
+           " | OBStopDistancePoints=" +
+           DoubleToString(riskDistance / _Point, 1) +
+           " | StructuralDistancePoints=" +
+           DoubleToString(structuralDistancePoints, 1));
+
+
+
+   // STEP136.17G12.9G - Structural SL candidate audit only
+   // Does NOT change Entry, SL, TP or execution permission
+
+   double obStop = m_memory.Execution.StopLoss;
+   double candidateSL = obStop;
+
+   bool swingUsable = false;
+
+   if(m_memory.Structure.Bias == BIAS_BEARISH)
+   {
+      swingUsable =
+         structuralReference > m_memory.Execution.EntryPrice;
+
+      if(swingUsable)
+         candidateSL = MathMax(obStop, structuralReference);
+   }
+   else if(m_memory.Structure.Bias == BIAS_BULLISH)
+   {
+      swingUsable =
+         structuralReference > 0.0 &&
+         structuralReference < m_memory.Execution.EntryPrice;
+
+      if(swingUsable)
+         candidateSL = MathMin(obStop, structuralReference);
+   }
+
+   double additionalPoints =
+      MathAbs(candidateSL - obStop) / _Point;
+
+   MqlTick slTick;
+   bool quoteValid =
+      SymbolInfoTick(_Symbol, slTick) &&
+      slTick.bid > 0.0 &&
+      slTick.ask >= slTick.bid;
+
+   double marketDistancePoints = -1.0;
+   double spreadPoints = -1.0;
+
+   if(quoteValid)
+   {
+      spreadPoints = (slTick.ask - slTick.bid) / _Point;
+
+      if(m_memory.Structure.Bias == BIAS_BEARISH)
+         marketDistancePoints =
+            (candidateSL - slTick.ask) / _Point;
+
+      else if(m_memory.Structure.Bias == BIAS_BULLISH)
+         marketDistancePoints =
+            (slTick.bid - candidateSL) / _Point;
+   }
+
+   MRH_Log("EXECUTION_ENGINE",
+           "STEP136_17G12_9G_SL_CANDIDATE_AUDIT",
+           "Direction=" + EnumToString(m_memory.Structure.Bias) +
+           " | OBStop=" + DoubleToString(obStop, _Digits) +
+           " | SwingReference=" +
+           DoubleToString(structuralReference, _Digits) +
+           " | SwingUsable=" + (swingUsable ? "TRUE" : "FALSE") +
+           " | CandidateSL=" +
+           DoubleToString(candidateSL, _Digits) +
+           " | AdditionalPoints=" +
+           DoubleToString(additionalPoints, 1) +
+           " | SpreadPoints=" +
+           DoubleToString(spreadPoints, 1) +
+           " | MarketDistancePoints=" +
+           DoubleToString(marketDistancePoints, 1));
+
+
 // STEP131A - Entry Location Audit
 double currentMarketPrice = 0.0;
 

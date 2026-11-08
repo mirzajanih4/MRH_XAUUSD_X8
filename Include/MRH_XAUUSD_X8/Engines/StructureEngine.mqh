@@ -375,6 +375,11 @@ if(m_memory.Structure.Bias == BIAS_BULLISH &&
    m_memory.Structure.LastSwingClass == SWING_CLASS_HL)
 {
    m_memory.Structure.LastCHOCH = closeTime;
+   
+    // STEP136.17G12.10F.5H7.4
+    // Record bearish-to-bullish structural reversal time
+   m_memory.Structure.LastStructureInvalidationTime = closeTime;
+   
    m_memory.Structure.Bias = BIAS_BULLISH;
    m_memory.Structure.State = STRUCTURE_TRANSITION;
 
@@ -389,13 +394,60 @@ if(m_memory.Structure.Bias == BIAS_BULLISH &&
       if(m_memory.Structure.LastSwingClass == SWING_CLASS_HH ||
    m_memory.Structure.LastSwingClass == SWING_CLASS_HL)
 {
+
+
+
+   // STEP136.17G12.10F.5G1
+   // Prevent repeated bullish BOS on the same source swing
+
+   bool sameBullishBOS =
+      (m_memory.Structure.LastBOSDirection == BIAS_BULLISH &&
+       m_memory.Structure.LastBOSSourceSwingTime > 0 &&
+       m_memory.Structure.LastBOSSourceSwingTime ==
+          m_memory.Structure.LastSwingHighTime &&
+       MathAbs(m_memory.Structure.LastBOSBrokenLevel -
+               m_memory.Structure.LastSwingHigh) <= _Point * 0.5);
+
+   if(sameBullishBOS)
+   {
+      MRH_Log("STRUCTURE_ENGINE",
+              "STEP136_17G12_10F_5G1_DUPLICATE_BULLISH_BOS",
+              "Reason=SAME_SOURCE_SWING");
+
+      return;
+   }
+
+
+  
    m_memory.Structure.LastBOS = closeTime;
+
+   // STEP136.17G12.10F.5E2
+   // Capture confirmed bullish BOS identity
+   m_memory.Structure.LastBOSDirection = BIAS_BULLISH;
+   m_memory.Structure.LastBOSBrokenLevel =
+      m_memory.Structure.LastSwingHigh;
+   m_memory.Structure.LastBOSSourceSwingTime =
+      m_memory.Structure.LastSwingHighTime;
+
    m_memory.Structure.Bias = BIAS_BULLISH;
    m_memory.Structure.State = STRUCTURE_TRENDING;
 
-   MRH_Log("STRUCTURE_ENGINE",
-           "BOS",
-           "Bullish BOS confirmed by HH/HL structure");
+
+   
+MRH_Log("STRUCTURE_ENGINE",
+        "BOS",
+        "Bullish BOS confirmed by HH/HL structure" +
+        " | Direction=" +
+        EnumToString(m_memory.Structure.LastBOSDirection) +
+        " | BrokenLevel=" +
+        DoubleToString(m_memory.Structure.LastBOSBrokenLevel, _Digits) +
+        " | SourceSwingTime=" +
+        TimeToString(m_memory.Structure.LastBOSSourceSwingTime,
+                     TIME_DATE | TIME_MINUTES) +
+        " | BOSTime=" +
+        TimeToString(m_memory.Structure.LastBOS,
+                     TIME_DATE | TIME_MINUTES));
+
 
    return;
 }
@@ -411,12 +463,23 @@ if(m_memory.Structure.Bias == BIAS_BULLISH)
    m_memory.Structure.Bias = BIAS_NEUTRAL;
    m_memory.Structure.State = STRUCTURE_TRANSITION;
 
-   MRH_Log("STRUCTURE_ENGINE",
-           "STEP136_16C_BULLISH_INVALIDATION",
-           "Bullish structure invalidated after close below LastSwingLow" +
-           " | Close=" + DoubleToString(closePrice, _Digits) +
-           " | LastSwingLow=" +
-           DoubleToString(m_memory.Structure.LastSwingLow, _Digits));
+
+    m_memory.Structure.LastStructureInvalidationTime = closeTime;
+
+
+   
+MRH_Log("STRUCTURE_ENGINE",
+        "STEP136_16C_BULLISH_INVALIDATION",
+        "Bullish structure invalidated after close below LastSwingLow" +
+        " | Close=" +
+        DoubleToString(closePrice, _Digits) +
+        " | LastSwingLow=" +
+        DoubleToString(m_memory.Structure.LastSwingLow, _Digits) +
+        " | InvalidationTime=" +
+        TimeToString(
+           m_memory.Structure.LastStructureInvalidationTime,
+           TIME_DATE | TIME_MINUTES));
+
 
    return;
 }
@@ -476,6 +539,42 @@ static double lastBearishBrokenLevel = 0.0;
 
 double currentBreakLevel = m_memory.Structure.LastSwingLow;
 
+
+
+   // STEP136.17G12.2 - Bearish BOS identity comparison audit only
+   // Does not modify BOS or execution decisions
+
+   static datetime lastAuditedSwingLowTime = 0;
+   static double lastAuditedBreakLevel = 0.0;
+
+   datetime currentSwingLowTime =
+      m_memory.Structure.LastSwingLowTime;
+
+   bool sameSwingIdentity =
+      (lastAuditedSwingLowTime != 0 &&
+       currentSwingLowTime == lastAuditedSwingLowTime &&
+       MathAbs(currentBreakLevel - lastAuditedBreakLevel)
+          <= _Point * 0.5);
+
+   MRH_Log("STRUCTURE_ENGINE",
+           "STEP136_17G12_2_BOS_IDENTITY_COMPARISON",
+           "BreakLevel=" +
+           DoubleToString(currentBreakLevel, _Digits) +
+           " | SwingLowTime=" +
+           TimeToString(currentSwingLowTime,
+                        TIME_DATE | TIME_MINUTES) +
+           " | PreviousSwingLowTime=" +
+           TimeToString(lastAuditedSwingLowTime,
+                        TIME_DATE | TIME_MINUTES) +
+           " | PreviousBreakLevel=" +
+           DoubleToString(lastAuditedBreakLevel, _Digits) +
+           " | SameSwingIdentity=" +
+           (sameSwingIdentity ? "TRUE" : "FALSE"));
+
+   lastAuditedSwingLowTime = currentSwingLowTime;
+   lastAuditedBreakLevel = currentBreakLevel;
+
+
 if(lastBearishBrokenLevel > 0.0 &&
    MathAbs(currentBreakLevel - lastBearishBrokenLevel) <= _Point * 0.5)
 {
@@ -493,14 +592,52 @@ if(lastBearishBrokenLevel > 0.0 &&
 lastBearishBrokenLevel = currentBreakLevel;
 
 
+ // STEP136.17G12.1 - Bearish BOS identity audit only
+ MRH_Log("STRUCTURE_ENGINE",
+         "STEP136_17G12_1_BOS_IDENTITY_AUDIT",
+         "Direction=SELL" +
+         " | BreakLevel=" +
+         DoubleToString(currentBreakLevel, _Digits) +
+         " | SwingLowTime=" +
+         TimeToString(m_memory.Structure.LastSwingLowTime,
+                      TIME_DATE | TIME_MINUTES) +
+         " | BreakTime=" +
+         TimeToString(closeTime,
+                      TIME_DATE | TIME_MINUTES) +
+         " | PreviousBOSTime=" +
+         TimeToString(m_memory.Structure.LastBOS,
+                      TIME_DATE | TIME_MINUTES));
 
+
+ 
    m_memory.Structure.LastBOS = closeTime;
+
+   // STEP136.17G12.10F.5E1
+   // Capture confirmed bearish BOS identity
+   m_memory.Structure.LastBOSDirection = BIAS_BEARISH;
+   m_memory.Structure.LastBOSBrokenLevel = currentBreakLevel;
+   m_memory.Structure.LastBOSSourceSwingTime =
+      m_memory.Structure.LastSwingLowTime;
+
    m_memory.Structure.Bias = BIAS_BEARISH;
    m_memory.Structure.State = STRUCTURE_TRENDING;
 
-   MRH_Log("STRUCTURE_ENGINE",
-           "BOS",
-           "Bearish BOS confirmed by LH/LL structure");
+
+  
+MRH_Log("STRUCTURE_ENGINE",
+        "BOS",
+        "Bearish BOS confirmed by LH/LL structure" +
+        " | Direction=" +
+        EnumToString(m_memory.Structure.LastBOSDirection) +
+        " | BrokenLevel=" +
+        DoubleToString(m_memory.Structure.LastBOSBrokenLevel, _Digits) +
+        " | SourceSwingTime=" +
+        TimeToString(m_memory.Structure.LastBOSSourceSwingTime,
+                     TIME_DATE | TIME_MINUTES) +
+        " | BOSTime=" +
+        TimeToString(m_memory.Structure.LastBOS,
+                     TIME_DATE | TIME_MINUTES));
+
 
    return;
 }

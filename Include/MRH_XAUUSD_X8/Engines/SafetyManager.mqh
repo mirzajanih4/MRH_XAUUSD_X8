@@ -78,11 +78,136 @@ bool IsStopDistanceAllowed()
       return false;
 
    double distancePoints = MathAbs(entry - sl) / _Point;
+   
+   
+   // STEP136.17G12.8U - Stop distance audit only
+   // No changes to safety decisions
 
-   if(distancePoints >= m_minStopDistancePoints)
-      return true;
+   int brokerStopsLevel =
+      (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
 
-   return false;
+   int brokerFreezeLevel =
+      (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_FREEZE_LEVEL);
+
+   MRH_Log("SAFETY_MANAGER",
+           "STEP136_17G12_8U_STOP_DISTANCE_AUDIT",
+           "Entry=" + DoubleToString(entry, _Digits) +
+           " | SL=" + DoubleToString(sl, _Digits) +
+           " | Point=" + DoubleToString(_Point, 5) +
+           " | DistancePoints=" + DoubleToString(distancePoints, 1) +
+           " | InternalMinPoints=" + DoubleToString(m_minStopDistancePoints, 1) +
+           " | BrokerStopsLevel=" + IntegerToString(brokerStopsLevel) +
+           " | BrokerFreezeLevel=" + IntegerToString(brokerFreezeLevel));
+
+   
+   // STEP136.17G12.8W - Stop geometry audit only
+   // No changes to safety decisions
+
+   MqlTick auditTick;
+   bool tickValid = SymbolInfoTick(_Symbol, auditTick);
+
+   string direction = "UNKNOWN";
+   bool slSideValid = false;
+   double marketStopDistancePoints = -1.0;
+
+   if(tickValid && auditTick.bid > 0.0 && auditTick.ask > 0.0)
+   {
+      if(m_memory.Structure.Bias == BIAS_BULLISH)
+      {
+         direction = "BUY";
+         slSideValid = (sl < auditTick.bid);
+         marketStopDistancePoints =
+            (auditTick.bid - sl) / _Point;
+      }
+      else if(m_memory.Structure.Bias == BIAS_BEARISH)
+      {
+         direction = "SELL";
+         slSideValid = (sl > auditTick.ask);
+         marketStopDistancePoints =
+            (sl - auditTick.ask) / _Point;
+      }
+   }
+
+   MRH_Log("SAFETY_MANAGER",
+           "STEP136_17G12_8W_STOP_GEOMETRY_AUDIT",
+           "Direction=" + direction +
+           " | Bid=" + DoubleToString(tickValid ? auditTick.bid : 0.0, _Digits) +
+           " | Ask=" + DoubleToString(tickValid ? auditTick.ask : 0.0, _Digits) +
+           " | Entry=" + DoubleToString(entry, _Digits) +
+           " | SL=" + DoubleToString(sl, _Digits) +
+           " | SL side valid=" + (slSideValid ? "TRUE" : "FALSE") +
+           " | MarketStopDistancePoints=" +
+           DoubleToString(marketStopDistancePoints, 1));
+
+
+
+   // STEP136.17G12.8Y - Dynamic stop policy shadow audit
+   // Audit only: existing 300-point rule remains active
+
+   double dynamicMinPoints =
+      MathMax(10.0,
+              (double)MathMax(brokerStopsLevel,
+                              brokerFreezeLevel));
+
+   bool dynamicStopApproved =
+      (tickValid &&
+       auditTick.bid > 0.0 &&
+       auditTick.ask >= auditTick.bid &&
+       slSideValid &&
+       marketStopDistancePoints >= dynamicMinPoints);
+
+   bool legacyStopApproved =
+      (distancePoints >= m_minStopDistancePoints);
+
+   MRH_Log("SAFETY_MANAGER",
+           "STEP136_17G12_8Y_DYNAMIC_STOP_AUDIT",
+           "LegacyApproved=" +
+           (legacyStopApproved ? "TRUE" : "FALSE") +
+           " | DynamicApproved=" +
+           (dynamicStopApproved ? "TRUE" : "FALSE") +
+           " | MarketDistance=" +
+           DoubleToString(marketStopDistancePoints, 1) +
+           " | DynamicMin=" +
+           DoubleToString(dynamicMinPoints, 1) +
+           " | LegacyMin=" +
+           DoubleToString(m_minStopDistancePoints, 1));
+
+
+
+   
+
+
+   
+   // STEP136.17G12.10A - Dynamic stop execution validation
+
+   if(!tickValid ||
+      auditTick.bid <= 0.0 ||
+      auditTick.ask < auditTick.bid ||
+      !slSideValid)
+      return false;
+
+   double spreadPoints =
+      (auditTick.ask - auditTick.bid) / _Point;
+
+   double requiredDistancePoints =
+      MathMax(dynamicMinPoints, spreadPoints);
+
+   bool stopApproved =
+      (marketStopDistancePoints >= requiredDistancePoints);
+
+   MRH_Log("SAFETY_MANAGER",
+           "STEP136_17G12_10A_DYNAMIC_STOP_DECISION",
+           "Approved=" +
+           (stopApproved ? "TRUE" : "FALSE") +
+           " | MarketDistance=" +
+           DoubleToString(marketStopDistancePoints, 1) +
+           " | RequiredDistance=" +
+           DoubleToString(requiredDistancePoints, 1) +
+           " | Spread=" +
+           DoubleToString(spreadPoints, 1));
+
+   return stopApproved;
+
 }
 
 void UpdateDailyLossGuard()

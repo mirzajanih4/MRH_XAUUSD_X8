@@ -124,6 +124,79 @@ MRH_Log("RISK_MANAGER",
         " | BalanceLotCap=" + DoubleToString(balanceLotCap, 4) +
         " | FinalLot=" + DoubleToString(lot, 2));
 
+
+
+   // STEP136.17G12.8Z - Market entry risk audit only
+   // No changes to volume, approval, or stop loss
+
+   MqlTick riskTick;
+   bool riskTickValid = SymbolInfoTick(_Symbol, riskTick);
+
+   ENUM_ORDER_TYPE riskOrderType;
+   double marketEntry = 0.0;
+   string riskDirection = "UNKNOWN";
+
+   if(m_memory.Structure.Bias == BIAS_BULLISH)
+   {
+      riskOrderType = ORDER_TYPE_BUY;
+      marketEntry = riskTickValid ? riskTick.ask : 0.0;
+      riskDirection = "BUY";
+   }
+   else
+   {
+      riskOrderType = ORDER_TYPE_SELL;
+      marketEntry = riskTickValid ? riskTick.bid : 0.0;
+      riskDirection =
+         (m_memory.Structure.Bias == BIAS_BEARISH)
+         ? "SELL" : "UNKNOWN";
+   }
+
+   double plannedProfit = 0.0;
+   double marketProfit = 0.0;
+
+   bool plannedCalcValid = false;
+   bool marketCalcValid = false;
+
+   if(riskDirection != "UNKNOWN" && lot > 0.0)
+   {
+      plannedCalcValid =
+         OrderCalcProfit(riskOrderType, _Symbol,
+                         lot, entry, sl, plannedProfit);
+
+      if(riskTickValid &&
+         riskTick.bid > 0.0 &&
+         riskTick.ask >= riskTick.bid &&
+         marketEntry > 0.0)
+      {
+         marketCalcValid =
+            OrderCalcProfit(riskOrderType, _Symbol,
+                            lot, marketEntry, sl,
+                            marketProfit);
+      }
+   }
+
+   double plannedRisk =
+      plannedCalcValid ? MathMax(0.0, -plannedProfit) : -1.0;
+
+   double marketRisk =
+      marketCalcValid ? MathMax(0.0, -marketProfit) : -1.0;
+
+   MRH_Log("RISK_MANAGER",
+           "STEP136_17G12_8Z_MARKET_RISK_AUDIT",
+           "Direction=" + riskDirection +
+           " | PlannedEntry=" + DoubleToString(entry, _Digits) +
+           " | MarketEntry=" + DoubleToString(marketEntry, _Digits) +
+           " | SL=" + DoubleToString(sl, _Digits) +
+           " | Lot=" + DoubleToString(lot, 2) +
+           " | RiskBudget=" + DoubleToString(riskMoney, 2) +
+           " | PlannedRisk=" + DoubleToString(plannedRisk, 2) +
+           " | MarketRisk=" + DoubleToString(marketRisk, 2) +
+           " | PlannedCalcValid=" +
+           (plannedCalcValid ? "TRUE" : "FALSE") +
+           " | MarketCalcValid=" +
+           (marketCalcValid ? "TRUE" : "FALSE"));
+
+
 return lot;
 }
 void DebugRiskState()

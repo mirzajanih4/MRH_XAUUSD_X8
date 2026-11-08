@@ -61,8 +61,24 @@ public:
       
       Structure.PreviousSwingHigh = 0.0;
       Structure.PreviousSwingLow  = 0.0;
-      Structure.LastBOS       = 0;
-      Structure.LastCHOCH     = 0;
+     
+      Structure.LastBOS = 0;
+
+      // STEP136.17G12.10F.5D
+      // Initialize confirmed BOS identity snapshot
+      Structure.LastBOSDirection = BIAS_NEUTRAL;
+      Structure.LastBOSBrokenLevel = 0.0;
+      Structure.LastBOSSourceSwingTime = 0;
+
+      Structure.LastCHOCH = 0;
+
+
+      // STEP136.17G12.10F.5H7.2
+      // Initialize structure invalidation timestamp
+      Structure.LastStructureInvalidationTime = 0;
+
+
+
       Structure.State         = STRUCTURE_RANGE;
       Structure.MarketRegime = REGIME_NORMAL;
       Structure.TriggerRequirement = TRIGGER_REQUIREMENT_UNKNOWN;
