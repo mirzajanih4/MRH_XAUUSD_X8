@@ -787,6 +787,39 @@ DoubleToString(SharedMemory.OB.Low, _Digits));
             GlobalVariablesFlush();
 
 
+         // STEP136.17G12.10F.5H11.1
+         // Shared cross-timeframe entry reference
+         // Persistence only - no execution decision changes
+
+        
+if(savedEntryTime > 0)
+{
+   string crossTFEntryKey =
+      "MRHX8_CTF_ENTRY_" +
+      IntegerToString((long)AccountInfoInteger(ACCOUNT_LOGIN)) +
+      "_" + IntegerToString(MagicNumber) +
+      "_" + _Symbol +
+      "_" + IntegerToString(
+         (int)SharedMemory.Structure.LastBOSDirection);
+
+   datetime crossTFSaved =
+      GlobalVariableSet(
+         crossTFEntryKey,
+         (double)TimeCurrent());
+
+   if(crossTFSaved > 0)
+      GlobalVariablesFlush();
+
+   MRH_Log(
+      "EXECUTION_LAYER",
+      "STEP136_17G12_10F_5H11_1_CTF_WRITE_AUDIT",
+      "Key=" + crossTFEntryKey +
+      " | Persisted=" +
+      (crossTFSaved > 0 ? "TRUE" : "FALSE")
+   );
+}
+
+
         
          MRH_Log("EXECUTION_LAYER",
                  "STEP136_17G12_10F_2_SETUP_CONSUMPTION_AUDIT",
@@ -884,6 +917,37 @@ if(!SharedMemory.Ready())
    MRH_Log("SYSTEM",
            "INIT",
            "MRH_XAUUSD_X8 initialized successfully");
+
+
+
+   // STEP136.17G12.10F.5H10.1
+   // Startup persistence audit - no execution changes
+
+   string lockPrefix =
+      "MRHX8_BOS_" +
+      IntegerToString((long)AccountInfoInteger(ACCOUNT_LOGIN)) +
+      "_" + IntegerToString(MagicNumber) +
+      "_" + _Symbol +
+      "_" + IntegerToString((int)_Period) + "_";
+
+   string buyLockKey =
+      lockPrefix + IntegerToString((int)BIAS_BULLISH);
+
+   string sellLockKey =
+      lockPrefix + IntegerToString((int)BIAS_BEARISH);
+
+   bool buyLockExists = GlobalVariableCheck(buyLockKey);
+   bool sellLockExists = GlobalVariableCheck(sellLockKey);
+
+   MRH_Log("SYSTEM",
+           "STEP136_17G12_10F_5H10_1_STARTUP_LOCK_AUDIT",
+           "BuyLockExists=" +
+           (buyLockExists ? "TRUE" : "FALSE") +
+           " | SellLockExists=" +
+           (sellLockExists ? "TRUE" : "FALSE") +
+           " | TF=" + EnumToString(_Period));
+
+
 
    return INIT_SUCCEEDED;
 }
