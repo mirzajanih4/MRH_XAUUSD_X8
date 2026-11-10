@@ -850,6 +850,40 @@ if(savedEntryTime > 0)
    if(crossTFSaved > 0)
       GlobalVariablesFlush();
 
+
+
+   // STEP136.17G12.10F.5H11.3A
+   // Persist confirmed source swing reference
+
+   datetime sourceSwingTime =
+      SharedMemory.Structure.LastBOSSourceSwingTime;
+
+   if(crossTFSaved > 0 && sourceSwingTime > 0)
+   {
+      string crossTFSwingKey =
+         crossTFEntryKey + "_SWING";
+
+      datetime swingSaved =
+         GlobalVariableSet(
+            crossTFSwingKey,
+            (double)sourceSwingTime);
+
+      if(swingSaved > 0)
+         GlobalVariablesFlush();
+
+      MRH_Log(
+         "EXECUTION_LAYER",
+         "STEP136_17G12_10F_5H11_3A_SWING_WRITE_AUDIT",
+         "SourceSwing=" +
+         TimeToString(sourceSwingTime,
+                      TIME_DATE | TIME_MINUTES) +
+         " | Persisted=" +
+         (swingSaved > 0 ? "TRUE" : "FALSE")
+      );
+   }
+
+
+
    MRH_Log(
       "EXECUTION_LAYER",
       "STEP136_17G12_10F_5H11_1_CTF_WRITE_AUDIT",
