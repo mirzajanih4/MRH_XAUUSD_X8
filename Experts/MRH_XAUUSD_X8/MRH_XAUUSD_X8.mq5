@@ -591,8 +591,17 @@ TimeToString(
       // STEP136.17G12.10F.5H11.3B
       // Conservative cross-timeframe structural rearm
 
+     
+      // STEP136.17G12.10F.5H11.3E
+      // Prefer the latest confirmed entry reference
+
       bool crossTFOnly =
-         (!previouslyStored && crossTFEntryExists);
+         crossTFEntryExists &&
+         crossTFEntryTime > 0 &&
+         (!previousEntryStored ||
+          previousEntryTime <= 0 ||
+          crossTFEntryTime > previousEntryTime);
+
 
       if((previouslyStored && !sameConsumedBOS) ||
          crossTFOnly)
