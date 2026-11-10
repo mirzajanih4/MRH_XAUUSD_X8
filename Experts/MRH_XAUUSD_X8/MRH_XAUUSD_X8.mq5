@@ -447,6 +447,46 @@ void MRH_ExecuteTrade()
 
       bool sameConsumedBOS =
          (previouslyStored && storedBOS == currentBOS);
+         
+         
+         
+      // STEP136.17G12.10F.5H11.2
+      // Cross-timeframe entry read audit only
+
+      string crossTFReadKey =
+         "MRHX8_CTF_ENTRY_" +
+         IntegerToString((long)AccountInfoInteger(ACCOUNT_LOGIN)) +
+         "_" + IntegerToString(MagicNumber) +
+         "_" + _Symbol +
+         "_" + IntegerToString(
+            (int)SharedMemory.Structure.LastBOSDirection);
+
+      bool crossTFEntryExists =
+         GlobalVariableCheck(crossTFReadKey);
+
+      datetime crossTFEntryTime = 0;
+
+      if(crossTFEntryExists)
+         crossTFEntryTime =
+            (datetime)(long)GlobalVariableGet(crossTFReadKey);
+
+      MRH_Log(
+         "EXECUTION_LAYER",
+         "STEP136_17G12_10F_5H11_2_CTF_READ_AUDIT",
+         "TF=" + EnumToString(_Period) +
+         " | CTFExists=" +
+         (crossTFEntryExists ? "TRUE" : "FALSE") +
+         " | CTFEntryTime=" +
+         (crossTFEntryExists
+            ? TimeToString(crossTFEntryTime,
+                           TIME_DATE | TIME_SECONDS)
+            : "NONE") +
+         " | SameTFStored=" +
+         (previouslyStored ? "TRUE" : "FALSE")
+      );
+
+         
+         
 
       MRH_Log("EXECUTION_LAYER",
               "STEP136_17G12_10F_3_PRE_SEND_BOS_AUDIT",
