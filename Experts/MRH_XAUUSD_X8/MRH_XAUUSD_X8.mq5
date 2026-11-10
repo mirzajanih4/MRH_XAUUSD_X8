@@ -430,6 +430,30 @@ void MRH_ExecuteTrade()
   
    if(currentBOS > 0)
    {
+   
+   
+      // STEP136.17G12.10F.5H11.3C
+      // Prevent execution using a BOS opposite to current bias
+
+      if(SharedMemory.Structure.LastBOSDirection !=
+         SharedMemory.Structure.Bias)
+      {
+         MRH_Log(
+            "EXECUTION_LAYER",
+            "STEP136_17G12_10F_5H11_3C_DIRECTION_MISMATCH_BLOCK",
+            "Bias=" +
+            EnumToString(SharedMemory.Structure.Bias) +
+            " | BOSDirection=" +
+            EnumToString(SharedMemory.Structure.LastBOSDirection) +
+            " | CurrentBOS=" +
+            TimeToString(currentBOS,
+                         TIME_DATE | TIME_MINUTES)
+         );
+
+         return;
+      }
+
+   
       string bosKey =
          "MRHX8_BOS_" +
          IntegerToString((long)AccountInfoInteger(ACCOUNT_LOGIN)) +
@@ -474,6 +498,8 @@ void MRH_ExecuteTrade()
          "EXECUTION_LAYER",
          "STEP136_17G12_10F_5H11_2_CTF_READ_AUDIT",
          "TF=" + EnumToString(_Period) +
+         " | Bias=" + EnumToString(SharedMemory.Structure.Bias) +
+" | BOSDirection=" + EnumToString(SharedMemory.Structure.LastBOSDirection) +
          " | CTFExists=" +
          (crossTFEntryExists ? "TRUE" : "FALSE") +
          " | CTFEntryTime=" +
@@ -561,11 +587,26 @@ TimeToString(
 
 
 
-      // STEP136.17G12.10F.5H9.1
-      // Conservative structural rearm guard V1
+    
+      // STEP136.17G12.10F.5H11.3B
+      // Conservative cross-timeframe structural rearm
 
-      if(previouslyStored && !sameConsumedBOS)
+      bool crossTFOnly =
+         (!previouslyStored && crossTFEntryExists);
+
+      if((previouslyStored && !sameConsumedBOS) ||
+         crossTFOnly)
       {
+         datetime referenceEntryTime =
+            crossTFOnly
+            ? crossTFEntryTime
+            : previousEntryTime;
+
+         bool referenceEntryStored =
+            crossTFOnly
+            ? crossTFEntryExists
+            : previousEntryStored;
+
          datetime pullbackSwingTime = 0;
 
          if(SharedMemory.Structure.Bias == BIAS_BULLISH)
@@ -577,13 +618,13 @@ TimeToString(
                SharedMemory.Structure.LastSwingHighTime;
 
          bool structuralRearmApproved =
-            previousEntryStored &&
-            previousEntryTime > 0 &&
-            currentBOS > storedBOS &&
-            currentBOS > previousEntryTime &&
-            sourceSwingTime > previousEntryTime &&
+            referenceEntryStored &&
+            referenceEntryTime > 0 &&
+            (crossTFOnly || currentBOS > storedBOS) &&
+            currentBOS > referenceEntryTime &&
+            sourceSwingTime > referenceEntryTime &&
             sourceSwingTime < currentBOS &&
-            pullbackSwingTime > previousEntryTime &&
+            pullbackSwingTime > referenceEntryTime &&
             pullbackSwingTime < currentBOS &&
             SharedMemory.Structure.LastBOSDirection ==
                SharedMemory.Structure.Bias &&
@@ -592,21 +633,24 @@ TimeToString(
 
          if(!structuralRearmApproved)
          {
-            MRH_Log("EXECUTION_LAYER",
-                    "STEP136_17G12_10F_5H9_REARM_BLOCK",
-                    "Reason=NO_CONFIRMED_NEW_STRUCTURE_CYCLE" +
-                    " | CurrentBOS=" +
-                    TimeToString(currentBOS,
-                                 TIME_DATE | TIME_MINUTES) +
-                    " | PreviousEntry=" +
-                    TimeToString(previousEntryTime,
-                                 TIME_DATE | TIME_MINUTES) +
-                    " | SourceSwing=" +
-                    TimeToString(sourceSwingTime,
-                                 TIME_DATE | TIME_MINUTES) +
-                    " | PullbackSwing=" +
-                    TimeToString(pullbackSwingTime,
-                                 TIME_DATE | TIME_MINUTES));
+            MRH_Log(
+               "EXECUTION_LAYER",
+               "STEP136_17G12_10F_5H11_3B_REARM_BLOCK",
+               "Reason=NO_CONFIRMED_NEW_STRUCTURE_CYCLE" +
+               " | Source=" +
+               (crossTFOnly ? "CROSS_TF" : "SAME_TF") +
+               " | CurrentBOS=" +
+               TimeToString(currentBOS,
+                            TIME_DATE | TIME_MINUTES) +
+               " | PreviousEntry=" +
+               TimeToString(referenceEntryTime,
+                            TIME_DATE | TIME_MINUTES) +
+               " | SourceSwing=" +
+               TimeToString(sourceSwingTime,
+                            TIME_DATE | TIME_MINUTES) +
+               " | PullbackSwing=" +
+               TimeToString(pullbackSwingTime,
+                            TIME_DATE | TIME_MINUTES));
 
             return;
          }
