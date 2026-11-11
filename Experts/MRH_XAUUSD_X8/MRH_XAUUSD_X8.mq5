@@ -427,10 +427,18 @@ void MRH_ExecuteTrade()
 
    datetime currentBOS = SharedMemory.Structure.LastBOS;
 
-  
+   // STEP136.17G12.10F.5H11.3K.1
+   // Fail closed when no confirmed BOS identity exists after restart
+   if(currentBOS <= 0)
+   {
+      MRH_Log("EXECUTION_LAYER",
+              "STEP136_17G12_10F_5H11_3K_1_NO_BOS_BLOCK",
+              "Reason=NO_CONFIRMED_BOS");
+      return;
+   }
+
    if(currentBOS > 0)
    {
-   
    
       // STEP136.17G12.10F.5H11.3C
       // Prevent execution using a BOS opposite to current bias
@@ -463,11 +471,31 @@ void MRH_ExecuteTrade()
          "_" + IntegerToString((int)SharedMemory.Structure.Bias);
 
       bool previouslyStored = GlobalVariableCheck(bosKey);
-
       datetime storedBOS = 0;
 
+      // STEP136.17G12.10F.5H11.3K.2
+      // Reject invalid legacy BOS timestamps without modifying Global Variables
       if(previouslyStored)
-         storedBOS = (datetime)(long)GlobalVariableGet(bosKey);
+   {
+      double storedBOSValue = GlobalVariableGet(bosKey);
+
+      storedBOS = (datetime)(long)storedBOSValue;
+
+      if(storedBOSValue < (double)D'2000.01.01 00:00' ||
+      storedBOSValue > (double)TimeCurrent())
+   {
+      MRH_Log(
+         "EXECUTION_LAYER",
+         "STEP136_17G12_10F_5H11_3K_2_LEGACY_LOCK_BLOCK",
+         "Key=" + bosKey +
+         " | Value=" + DoubleToString(storedBOSValue, 2) +
+         " | Reason=INVALID_BOS_TIMESTAMP"
+      );
+
+      return;
+   }
+}
+
 
       bool sameConsumedBOS =
          (previouslyStored && storedBOS == currentBOS);
