@@ -1123,6 +1123,46 @@ if(!SharedMemory.Ready())
    );
 
 
+   // STEP137.6B.2 - EA entry deal identification audit only
+   // Read-only broker history analysis
+
+   int eaEntryDeals = 0;
+
+   if(historyAvailable)
+   {
+      int totalDeals = HistoryDealsTotal();
+
+      for(int i = 0; i < totalDeals; i++)
+      {
+         ulong dealTicket = HistoryDealGetTicket(i);
+
+         if(dealTicket == 0)
+            continue;
+
+         if(HistoryDealGetString(dealTicket, DEAL_SYMBOL) != _Symbol)
+            continue;
+
+         if(HistoryDealGetInteger(dealTicket, DEAL_MAGIC) != MagicNumber)
+            continue;
+
+         ENUM_DEAL_ENTRY dealEntry =
+            (ENUM_DEAL_ENTRY)HistoryDealGetInteger(
+               dealTicket, DEAL_ENTRY);
+
+         if(dealEntry == DEAL_ENTRY_IN)
+            eaEntryDeals++;
+      }
+   }
+
+   MRH_Log(
+      "BROKER_OUTCOME_AUDIT",
+      "STEP137_6B_2_EA_ENTRY_AUDIT",
+      "EAEntryDeals=" + IntegerToString(eaEntryDeals) +
+      " | Symbol=" + _Symbol +
+      " | Magic=" + IntegerToString(MagicNumber)
+   );
+
+
    return INIT_SUCCEEDED;
 }
 
