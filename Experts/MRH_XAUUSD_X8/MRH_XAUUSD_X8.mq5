@@ -1265,6 +1265,40 @@ if(!SharedMemory.Ready())
                DoubleToString(matchedExitVolume, 2)
             );
 
+            // STEP137.6B.7 - Broker position status audit only
+            bool brokerPositionOpen = false;
+            double brokerOpenVolume = 0.0;
+
+            for(int p = 0; p < PositionsTotal(); p++)
+            {
+               ulong openTicket = PositionGetTicket(p);
+
+               if(openTicket == 0)
+                  continue;
+
+               if((long)PositionGetInteger(POSITION_IDENTIFIER) != positionId)
+                  continue;
+
+               brokerPositionOpen = true;
+               brokerOpenVolume = PositionGetDouble(POSITION_VOLUME);
+               break;
+            }
+
+            MRH_Log(
+               "BROKER_OUTCOME_AUDIT",
+               "STEP137_6B_7_POSITION_STATUS_AUDIT",
+               "PositionID=" + IntegerToString(positionId) +
+               " | EntryVolume=" +
+               DoubleToString(matchedEntryVolume, 2) +
+               " | ExitVolume=" +
+               DoubleToString(matchedExitVolume, 2) +
+               " | BrokerPositionOpen=" +
+               (brokerPositionOpen ? "TRUE" : "FALSE") +
+               " | BrokerOpenVolume=" +
+               DoubleToString(brokerOpenVolume, 2)
+            );
+
+
          } // پایان if(dealEntry == DEAL_ENTRY_IN)
       } // پایان حلقه for
 
