@@ -1179,6 +1179,10 @@ if(!SharedMemory.Ready())
 
             int matchedExitDeals = 0;
             double matchedExitVolume = 0.0;
+             
+            int matchedEntryDeals = 0;
+            double matchedEntryVolume = 0.0;
+
 
             for(int j = 0; j < totalDeals; j++)
             {
@@ -1197,6 +1201,14 @@ if(!SharedMemory.Ready())
                ENUM_DEAL_ENTRY exitEntry =
                   (ENUM_DEAL_ENTRY)HistoryDealGetInteger(
                      exitDeal, DEAL_ENTRY);
+
+               // STEP137.6B.6 - Count all pure entry deals
+               if(exitEntry == DEAL_ENTRY_IN)
+               {
+                  matchedEntryDeals++;
+                  matchedEntryVolume +=
+                     HistoryDealGetDouble(exitDeal, DEAL_VOLUME);
+               }
 
                if(exitEntry != DEAL_ENTRY_OUT &&
                   exitEntry != DEAL_ENTRY_OUT_BY &&
@@ -1238,6 +1250,19 @@ if(!SharedMemory.Ready())
                DoubleToString(HistoryDealGetDouble(dealTicket, DEAL_VOLUME), 2) +
                " | ExitDeals=" + IntegerToString(matchedExitDeals) +
                " | TotalExitVolume=" + DoubleToString(matchedExitVolume, 2)
+            );
+
+            // STEP137.6B.6 - Total entry volume audit only
+            MRH_Log(
+               "BROKER_OUTCOME_AUDIT",
+               "STEP137_6B_6_ENTRY_VOLUME_AUDIT",
+               "EntryDeal=" + IntegerToString((long)dealTicket) +
+               " | PositionID=" + IntegerToString(positionId) +
+               " | EntryDeals=" + IntegerToString(matchedEntryDeals) +
+               " | TotalEntryVolume=" +
+               DoubleToString(matchedEntryVolume, 2) +
+               " | TotalExitVolume=" +
+               DoubleToString(matchedExitVolume, 2)
             );
 
          } // پایان if(dealEntry == DEAL_ENTRY_IN)
