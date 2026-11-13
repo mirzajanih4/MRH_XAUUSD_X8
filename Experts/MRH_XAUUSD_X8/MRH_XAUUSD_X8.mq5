@@ -1179,7 +1179,7 @@ if(!SharedMemory.Ready())
 
             int matchedExitDeals = 0;
             double matchedExitVolume = 0.0;
-             
+            double brokerExitProfit = 0.0; 
             int matchedEntryDeals = 0;
             double matchedEntryVolume = 0.0;
 
@@ -1217,7 +1217,7 @@ if(!SharedMemory.Ready())
 
                matchedExitDeals++;
                matchedExitVolume += HistoryDealGetDouble(exitDeal, DEAL_VOLUME);
-
+               brokerExitProfit += HistoryDealGetDouble(exitDeal, DEAL_PROFIT);
                MRH_Log(
                   "BROKER_OUTCOME_AUDIT",
                   "STEP137_6B_4_MATCHED_EXIT",
@@ -1296,6 +1296,17 @@ if(!SharedMemory.Ready())
                (brokerPositionOpen ? "TRUE" : "FALSE") +
                " | BrokerOpenVolume=" +
                DoubleToString(brokerOpenVolume, 2)
+            );
+
+            // STEP137.6B.8 - Broker exit profit audit only
+            MRH_Log(
+               "BROKER_OUTCOME_AUDIT",
+               "STEP137_6B_8_EXIT_PROFIT_AUDIT",
+               "PositionID=" + IntegerToString(positionId) +
+               " | ExitDeals=" + IntegerToString(matchedExitDeals) +
+               " | ExitProfit=" + DoubleToString(brokerExitProfit, 2) +
+               " | BrokerPositionOpen=" +
+               (brokerPositionOpen ? "TRUE" : "FALSE")
             );
 
 
