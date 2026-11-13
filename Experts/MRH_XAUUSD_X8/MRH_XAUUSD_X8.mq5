@@ -1149,8 +1149,30 @@ if(!SharedMemory.Ready())
             (ENUM_DEAL_ENTRY)HistoryDealGetInteger(
                dealTicket, DEAL_ENTRY);
 
+         
          if(dealEntry == DEAL_ENTRY_IN)
+         {
             eaEntryDeals++;
+
+            // STEP137.6B.3 - Entry position identity audit only
+            long positionId =
+               HistoryDealGetInteger(
+                  dealTicket, DEAL_POSITION_ID);
+
+            MRH_Log(
+               "BROKER_OUTCOME_AUDIT",
+               "STEP137_6B_3_ENTRY_POSITION_AUDIT",
+               "EntryDeal=" +
+               IntegerToString((long)dealTicket) +
+               " | PositionID=" +
+               IntegerToString(positionId) +
+               " | Volume=" +
+               DoubleToString(
+                  HistoryDealGetDouble(
+                     dealTicket, DEAL_VOLUME), 2)
+            );
+         }
+
       }
    }
 
