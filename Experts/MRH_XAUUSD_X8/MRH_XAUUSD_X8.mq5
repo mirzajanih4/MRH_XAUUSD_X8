@@ -1159,6 +1159,7 @@ if(!SharedMemory.Ready())
                HistoryDealGetInteger(
                   dealTicket, DEAL_POSITION_ID);
 
+        
             MRH_Log(
                "BROKER_OUTCOME_AUDIT",
                "STEP137_6B_3_ENTRY_POSITION_AUDIT",
@@ -1171,10 +1172,63 @@ if(!SharedMemory.Ready())
                   HistoryDealGetDouble(
                      dealTicket, DEAL_VOLUME), 2)
             );
-         }
 
-      }
-   }
+           
+            // STEP137.6B.4 - Match broker exit deals by PositionID
+            // AUDIT ONLY - No trading or memory writes
+
+            for(int j = 0; j < totalDeals; j++)
+            {
+               ulong exitDeal = HistoryDealGetTicket(j);
+
+               if(exitDeal == 0)
+                  continue;
+
+               long exitPositionId =
+                  HistoryDealGetInteger(
+                     exitDeal, DEAL_POSITION_ID);
+
+               if(exitPositionId != positionId)
+                  continue;
+
+               ENUM_DEAL_ENTRY exitEntry =
+                  (ENUM_DEAL_ENTRY)HistoryDealGetInteger(
+                     exitDeal, DEAL_ENTRY);
+
+               if(exitEntry != DEAL_ENTRY_OUT &&
+                  exitEntry != DEAL_ENTRY_OUT_BY &&
+                  exitEntry != DEAL_ENTRY_INOUT)
+                  continue;
+
+               MRH_Log(
+                  "BROKER_OUTCOME_AUDIT",
+                  "STEP137_6B_4_MATCHED_EXIT",
+                  "EntryDeal=" +
+                  IntegerToString((long)dealTicket) +
+                  " | ExitDeal=" +
+                  IntegerToString((long)exitDeal) +
+                  " | PositionID=" +
+                  IntegerToString(positionId) +
+                  " | ExitType=" +
+                  EnumToString(exitEntry) +
+                  " | ExitVolume=" +
+                  DoubleToString(
+                     HistoryDealGetDouble(
+                        exitDeal, DEAL_VOLUME), 2) +
+                  " | DealProfit=" +
+                  DoubleToString(
+                     HistoryDealGetDouble(
+                        exitDeal, DEAL_PROFIT), 2)
+               );
+            }
+
+
+         } // پایان if(dealEntry == DEAL_ENTRY_IN)
+
+      } // پایان حلقه for
+
+   } // پایان if(historyAvailable)
+
 
    MRH_Log(
       "BROKER_OUTCOME_AUDIT",
