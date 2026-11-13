@@ -1103,6 +1103,25 @@ if(!SharedMemory.Ready())
            " | TF=" + EnumToString(_Period));
 
 
+   // STEP137.6B.1 - Startup broker history audit only
+   // No trading, ML update, or Global Variable changes
+
+   datetime historyTo = TimeCurrent();
+   datetime historyFrom = historyTo - 30 * 86400;
+
+   bool historyAvailable = HistorySelect(historyFrom, historyTo);
+
+   MRH_Log(
+      "BROKER_OUTCOME_AUDIT",
+      "STEP137_6B_1_HISTORY_STARTUP",
+      "HistoryAvailable=" +
+      (historyAvailable ? "TRUE" : "FALSE") +
+      " | HistoryDeals=" +
+      IntegerToString(
+         historyAvailable ? HistoryDealsTotal() : 0
+      )
+   );
+
 
    return INIT_SUCCEEDED;
 }
