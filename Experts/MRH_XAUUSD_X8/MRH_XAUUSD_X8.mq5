@@ -1116,6 +1116,60 @@ void OnDeinit(const int reason)
    MRH_Log("SYSTEM", "DEINIT", "MRH_XAUUSD_X8 stopped");
 }
 
+
+//+------------------------------------------------------------------+
+//| STEP137.6A - Broker exit deal observation (AUDIT ONLY)            |
+//| No order execution, dataset update, or Global Variable writes     |
+//+------------------------------------------------------------------+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+{
+   if(trans.type != TRADE_TRANSACTION_DEAL_ADD || trans.deal == 0)
+      return;
+
+   if(!HistoryDealSelect(trans.deal))
+   {
+      MRH_Log("BROKER_OUTCOME_AUDIT",
+              "STEP137_6A_HISTORY_UNAVAILABLE",
+              "Deal=" + IntegerToString((long)trans.deal));
+      return;
+   }
+
+   string dealSymbol = HistoryDealGetString(trans.deal, DEAL_SYMBOL);
+   if(dealSymbol != _Symbol)
+      return;
+
+   ENUM_DEAL_ENTRY dealEntry =
+      (ENUM_DEAL_ENTRY)HistoryDealGetInteger(trans.deal, DEAL_ENTRY);
+
+   // OUT can be partial; INOUT can be a netting reversal.
+   // None of these events alone proves a complete position closure.
+   if(dealEntry != DEAL_ENTRY_OUT &&
+      dealEntry != DEAL_ENTRY_OUT_BY &&
+      dealEntry != DEAL_ENTRY_INOUT)
+      return;
+
+   long dealMagic = HistoryDealGetInteger(trans.deal, DEAL_MAGIC);
+   long positionId = HistoryDealGetInteger(trans.deal, DEAL_POSITION_ID);
+   double dealVolume = HistoryDealGetDouble(trans.deal, DEAL_VOLUME);
+   double dealPrice = HistoryDealGetDouble(trans.deal, DEAL_PRICE);
+   double dealProfit = HistoryDealGetDouble(trans.deal, DEAL_PROFIT);
+
+   // Report the deal's magic instead of filtering it: manually closed
+   // positions may have an exit-deal magic different from the entry.
+   // This is raw broker evidence, NOT a validated ML outcome.
+   MRH_Log("BROKER_OUTCOME_AUDIT",
+           "STEP137_6A_EXIT_DEAL_OBSERVED",
+           "Deal=" + IntegerToString((long)trans.deal) +
+           " | PositionID=" + IntegerToString(positionId) +
+           " | Magic=" + IntegerToString(dealMagic) +
+           " | Entry=" + EnumToString(dealEntry) +
+           " | Volume=" + DoubleToString(dealVolume, 2) +
+           " | Price=" + DoubleToString(dealPrice, _Digits) +
+           " | DealProfit=" + DoubleToString(dealProfit, 2));
+}
+
 //+------------------------------------------------------------------+
 //| Expert tick                                                      |
 //+------------------------------------------------------------------+
