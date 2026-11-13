@@ -1177,6 +1177,9 @@ if(!SharedMemory.Ready())
             // STEP137.6B.4 - Match broker exit deals by PositionID
             // AUDIT ONLY - No trading or memory writes
 
+            int matchedExitDeals = 0;
+            double matchedExitVolume = 0.0;
+
             for(int j = 0; j < totalDeals; j++)
             {
                ulong exitDeal = HistoryDealGetTicket(j);
@@ -1200,6 +1203,9 @@ if(!SharedMemory.Ready())
                   exitEntry != DEAL_ENTRY_INOUT)
                   continue;
 
+               matchedExitDeals++;
+               matchedExitVolume += HistoryDealGetDouble(exitDeal, DEAL_VOLUME);
+
                MRH_Log(
                   "BROKER_OUTCOME_AUDIT",
                   "STEP137_6B_4_MATCHED_EXIT",
@@ -1218,13 +1224,23 @@ if(!SharedMemory.Ready())
                   " | DealProfit=" +
                   DoubleToString(
                      HistoryDealGetDouble(
-                        exitDeal, DEAL_PROFIT), 2)
+                                            exitDeal, DEAL_PROFIT), 2)
                );
-            }
+            } // پایان حلقه for(int j...)
 
+            // STEP137.6B.5 - Exit volume summary audit only
+            MRH_Log(
+               "BROKER_OUTCOME_AUDIT",
+               "STEP137_6B_5_EXIT_VOLUME_AUDIT",
+               "EntryDeal=" + IntegerToString((long)dealTicket) +
+               " | PositionID=" + IntegerToString(positionId) +
+               " | EntryDealVolume=" +
+               DoubleToString(HistoryDealGetDouble(dealTicket, DEAL_VOLUME), 2) +
+               " | ExitDeals=" + IntegerToString(matchedExitDeals) +
+               " | TotalExitVolume=" + DoubleToString(matchedExitVolume, 2)
+            );
 
          } // پایان if(dealEntry == DEAL_ENTRY_IN)
-
       } // پایان حلقه for
 
    } // پایان if(historyAvailable)
