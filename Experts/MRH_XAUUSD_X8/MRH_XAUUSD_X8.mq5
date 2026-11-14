@@ -1323,6 +1323,31 @@ if(!SharedMemory.Ready())
                (brokerPositionOpen ? "TRUE" : "FALSE")
             );
 
+            // STEP137.6B.10 - Closed outcome candidate audit only
+            double volumeStep =
+               SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
+
+            double volumeTolerance =
+               (volumeStep > 0.0 ? volumeStep * 0.5 : 0.00000001);
+
+            bool closedOutcomeCandidate =
+               (matchedEntryDeals > 0 &&
+                matchedExitDeals > 0 &&
+                matchedEntryVolume > 0.0 &&
+                MathAbs(matchedEntryVolume - matchedExitVolume)
+                   <= volumeTolerance &&
+                !brokerPositionOpen);
+
+            MRH_Log(
+               "BROKER_OUTCOME_AUDIT",
+               "STEP137_6B_10_OUTCOME_CANDIDATE",
+               "PositionID=" + IntegerToString(positionId) +
+               " | ClosedCandidate=" +
+               (closedOutcomeCandidate ? "TRUE" : "FALSE") +
+               " | KnownNetPnL=" +
+               DoubleToString(brokerKnownNetPnL, 2)
+            );
+
 
          } // پایان if(dealEntry == DEAL_ENTRY_IN)
       } // پایان حلقه for
