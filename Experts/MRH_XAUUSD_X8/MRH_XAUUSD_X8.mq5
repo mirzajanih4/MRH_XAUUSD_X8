@@ -1365,6 +1365,7 @@ if(!SharedMemory.Ready())
       bool positionHistoryAvailable =
          HistorySelectByPosition(historyAuditPositionId);
 
+     
       MRH_Log(
          "BROKER_OUTCOME_AUDIT",
          "STEP137_6B_11_POSITION_HISTORY_AUDIT",
@@ -1375,7 +1376,76 @@ if(!SharedMemory.Ready())
          IntegerToString(
             positionHistoryAvailable ? HistoryDealsTotal() : 0)
       );
-   }
+
+      // STEP137.6B.12 - Position history consistency audit only
+      if(positionHistoryAvailable)
+      {
+         int entryCount = 0;
+         int exitCount = 0;
+         double entryVolume = 0.0;
+         double exitVolume = 0.0;
+         bool unsupportedEntryType = false;
+
+         for(int k = 0; k < HistoryDealsTotal(); k++)
+         {
+            ulong d = HistoryDealGetTicket(k);
+
+            if(d == 0)
+            {
+               unsupportedEntryType = true;
+               continue;
+            }
+
+            ENUM_DEAL_ENTRY entryType =
+               (ENUM_DEAL_ENTRY)HistoryDealGetInteger(
+                  d, DEAL_ENTRY);
+
+            double volume =
+               HistoryDealGetDouble(d, DEAL_VOLUME);
+
+            if(entryType == DEAL_ENTRY_IN)
+            {
+               entryCount++;
+               entryVolume += volume;
+            }
+            else if(entryType == DEAL_ENTRY_OUT)
+            {
+               exitCount++;
+               exitVolume += volume;
+            }
+            else
+            {
+               unsupportedEntryType = true;
+            }
+         }
+
+         double step =
+            SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
+
+         double tolerance =
+            (step > 0.0 ? step * 0.5 : 0.00000001);
+
+         bool historyConsistent =
+            (entryCount > 0 &&
+             exitCount > 0 &&
+             !unsupportedEntryType &&
+             MathAbs(entryVolume - exitVolume) <= tolerance);
+
+         MRH_Log(
+            "BROKER_OUTCOME_AUDIT",
+            "STEP137_6B_12_HISTORY_CONSISTENCY",
+            "PositionID=" +
+            IntegerToString(historyAuditPositionId) +
+            " | EntryDeals=" + IntegerToString(entryCount) +
+            " | ExitDeals=" + IntegerToString(exitCount) +
+            " | EntryVolume=" + DoubleToString(entryVolume, 2) +
+            " | ExitVolume=" + DoubleToString(exitVolume, 2) +
+            " | Consistent=" +
+            (historyConsistent ? "TRUE" : "FALSE")
+         );
+      }
+
+   } // End of if(historyAuditPositionId > 0)
 
 
    MRH_Log(
@@ -1385,6 +1455,7 @@ if(!SharedMemory.Ready())
       " | Symbol=" + _Symbol +
       " | Magic=" + IntegerToString(MagicNumber)
    );
+
 
 
    return INIT_SUCCEEDED;
