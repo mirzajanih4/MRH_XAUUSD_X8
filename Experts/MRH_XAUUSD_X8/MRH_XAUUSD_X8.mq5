@@ -1180,6 +1180,9 @@ if(!SharedMemory.Ready())
             int matchedExitDeals = 0;
             double matchedExitVolume = 0.0;
             double brokerExitProfit = 0.0; 
+            
+            double brokerKnownNetPnL = 0.0;
+
             int matchedEntryDeals = 0;
             double matchedEntryVolume = 0.0;
 
@@ -1197,6 +1200,13 @@ if(!SharedMemory.Ready())
 
                if(exitPositionId != positionId)
                   continue;
+
+               // STEP137.6B.9 - Net result of all matched broker deals
+               brokerKnownNetPnL +=
+                  HistoryDealGetDouble(exitDeal, DEAL_PROFIT) +
+                  HistoryDealGetDouble(exitDeal, DEAL_COMMISSION) +
+                  HistoryDealGetDouble(exitDeal, DEAL_SWAP) +
+                  HistoryDealGetDouble(exitDeal, DEAL_FEE);
 
                ENUM_DEAL_ENTRY exitEntry =
                   (ENUM_DEAL_ENTRY)HistoryDealGetInteger(
@@ -1305,6 +1315,10 @@ if(!SharedMemory.Ready())
                "PositionID=" + IntegerToString(positionId) +
                " | ExitDeals=" + IntegerToString(matchedExitDeals) +
                " | ExitProfit=" + DoubleToString(brokerExitProfit, 2) +
+               
+               " | KnownNetPnL=" +
+               DoubleToString(brokerKnownNetPnL, 2) +
+
                " | BrokerPositionOpen=" +
                (brokerPositionOpen ? "TRUE" : "FALSE")
             );
