@@ -1127,7 +1127,7 @@ if(!SharedMemory.Ready())
    // Read-only broker history analysis
 
    int eaEntryDeals = 0;
-
+   long historyAuditPositionId = 0;
    if(historyAvailable)
    {
       int totalDeals = HistoryDealsTotal();
@@ -1338,6 +1338,9 @@ if(!SharedMemory.Ready())
                    <= volumeTolerance &&
                 !brokerPositionOpen);
 
+            if(closedOutcomeCandidate && historyAuditPositionId == 0)
+               historyAuditPositionId = positionId;
+
             MRH_Log(
                "BROKER_OUTCOME_AUDIT",
                "STEP137_6B_10_OUTCOME_CANDIDATE",
@@ -1353,6 +1356,26 @@ if(!SharedMemory.Ready())
       } // پایان حلقه for
 
    } // پایان if(historyAvailable)
+
+   // STEP137.6B.11 - Position history availability audit only
+   // Run after the history loops to avoid changing their selection
+
+   if(historyAuditPositionId > 0)
+   {
+      bool positionHistoryAvailable =
+         HistorySelectByPosition(historyAuditPositionId);
+
+      MRH_Log(
+         "BROKER_OUTCOME_AUDIT",
+         "STEP137_6B_11_POSITION_HISTORY_AUDIT",
+         "PositionID=" + IntegerToString(historyAuditPositionId) +
+         " | HistoryAvailable=" +
+         (positionHistoryAvailable ? "TRUE" : "FALSE") +
+         " | PositionDeals=" +
+         IntegerToString(
+            positionHistoryAvailable ? HistoryDealsTotal() : 0)
+      );
+   }
 
 
    MRH_Log(
