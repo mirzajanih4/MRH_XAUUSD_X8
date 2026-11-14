@@ -976,6 +976,7 @@ if(savedEntryTime > 0)
 
 
         
+        
          MRH_Log("EXECUTION_LAYER",
                  "STEP136_17G12_10F_2_SETUP_CONSUMPTION_AUDIT",
                  "Deal=" + IntegerToString((long)brokerDeal) +
@@ -991,14 +992,54 @@ if(savedEntryTime > 0)
                  TimeToString(
                     SharedMemory.Structure.LastBOSSourceSwingTime,
                     TIME_DATE | TIME_MINUTES) +
-             
                  " | Persisted=" +
                     (savedTime > 0 ? "TRUE" : "FALSE") +
                  " | EntryTimePersisted=" +
                     (savedEntryTime > 0 ? "TRUE" : "FALSE"));
 
 
-      }
+         // STEP137.6C.1 - Broker-confirmed entry identity audit
+         // READ ONLY - No execution or Global Variable changes
+
+         bool entryDealAvailable = HistoryDealSelect(brokerDeal);
+         long entryPositionId = 0;
+         bool entryDealVerified = false;
+
+         if(entryDealAvailable)
+         {
+            ENUM_DEAL_ENTRY confirmedEntryType =
+               (ENUM_DEAL_ENTRY)HistoryDealGetInteger(
+                  brokerDeal, DEAL_ENTRY);
+
+            entryDealVerified =
+               (confirmedEntryType == DEAL_ENTRY_IN &&
+                HistoryDealGetString(brokerDeal, DEAL_SYMBOL) == _Symbol &&
+                HistoryDealGetInteger(brokerDeal, DEAL_MAGIC) == MagicNumber);
+
+            if(entryDealVerified)
+            {
+               entryPositionId =
+                  HistoryDealGetInteger(
+                     brokerDeal, DEAL_POSITION_ID);
+            }
+         }
+
+         MRH_Log(
+            "BROKER_OUTCOME_AUDIT",
+            "STEP137_6C_1_ENTRY_IDENTITY_AUDIT",
+            "BOS=" +
+            TimeToString(confirmedBOS, TIME_DATE | TIME_MINUTES) +
+            " | EntryDeal=" +
+            IntegerToString((long)brokerDeal) +
+            " | PositionID=" +
+            IntegerToString(entryPositionId) +
+            " | Verified=" +
+            ((entryDealVerified && entryPositionId > 0)
+               ? "TRUE" : "FALSE")
+         );
+
+
+      } // End of if(confirmedBOS > 0)
       else
       {
          MRH_Log("EXECUTION_LAYER",
@@ -1006,7 +1047,7 @@ if(savedEntryTime > 0)
                  "Deal=" + IntegerToString((long)brokerDeal) +
                  " | Persisted=FALSE | Reason=NO_VALID_BOS");
       }
-   }
+   } // End of if(brokerConfirmed)
 
 
    if(result)
