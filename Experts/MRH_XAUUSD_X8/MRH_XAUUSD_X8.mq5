@@ -1073,6 +1073,89 @@ if(savedEntryTime > 0)
          );
 
 
+         // STEP137.7.1C - Persistent broker entry identity
+         // No execution or Global Variable changes
+
+         if(entryDealVerified && entryPositionId > 0)
+         {
+            string identityFile = "MRH_X8_EntryLinks_v1.tsv";
+
+            int identityHandle = FileOpen(
+               identityFile,
+               FILE_TXT | FILE_READ | FILE_WRITE |
+               FILE_ANSI | FILE_COMMON | FILE_SHARE_READ
+            );
+
+            if(identityHandle == INVALID_HANDLE)
+            {
+               MRH_Log(
+                  "BROKER_OUTCOME_AUDIT",
+                  "STEP137_7_1C_FILE_ERROR",
+                  "Failed to open entry identity file"
+               );
+            }
+            else
+            {
+               bool alreadyRecorded = false;
+               string identityPrefix = positionIdentity + "\t";
+
+               while(!FileIsEnding(identityHandle))
+               {
+                  string existingRow =
+                     FileReadString(identityHandle);
+
+                  if(StringFind(existingRow, identityPrefix) == 0)
+                  {
+                     alreadyRecorded = true;
+                     break;
+                  }
+               }
+
+               if(!alreadyRecorded)
+               {
+                  if(FileSeek(identityHandle, 0, SEEK_END))
+                  {
+                     string identityRow =
+                        positionIdentity + "\t" +
+                        IntegerToString((long)brokerDeal) + "\t" +
+                        IntegerToString((long)confirmedBOS) + "\t" +
+                        IntegerToString(
+                           (int)SharedMemory.Structure.LastBOSDirection) + "\t" +
+                        DoubleToString(
+                           SharedMemory.Structure.LastBOSBrokenLevel,
+                           _Digits) + "\t" +
+                        IntegerToString(
+                           (long)SharedMemory.Structure.LastBOSSourceSwingTime);
+
+                     uint written =
+                        FileWriteString(identityHandle,
+                                        identityRow + "\r\n");
+
+                     if(written > 0)
+                        FileFlush(identityHandle);
+
+                     MRH_Log(
+                        "BROKER_OUTCOME_AUDIT",
+                        "STEP137_7_1C_PERSISTENCE_AUDIT",
+                        "Identity=" + positionIdentity +
+                        " | Written=" +
+                        (written > 0 ? "TRUE" : "FALSE")
+                     );
+                  }
+               }
+               else
+               {
+                  MRH_Log(
+                     "BROKER_OUTCOME_AUDIT",
+                     "STEP137_7_1C_DUPLICATE_BLOCK",
+                     "Identity=" + positionIdentity
+                  );
+               }
+
+               FileClose(identityHandle);
+            }
+         }
+
 
       } // End of if(confirmedBOS > 0)
       else
@@ -1532,9 +1615,62 @@ if(!SharedMemory.Ready())
       " | Magic=" + IntegerToString(MagicNumber)
    );
 
+   
+   // STEP137.7.1D - Persistent entry memory read audit
+   // READ ONLY - No execution or Global Variable changes
 
+   string memoryFile = "MRH_X8_EntryLinks_v1.tsv";
 
-   return INIT_SUCCEEDED;
+   int memoryHandle = FileOpen(
+      memoryFile,
+      FILE_TXT | FILE_READ | FILE_ANSI |
+      FILE_COMMON | FILE_SHARE_READ
+   );
+
+   if(memoryHandle == INVALID_HANDLE)
+   {
+      MRH_Log(
+         "BROKER_OUTCOME_AUDIT",
+         "STEP137_7_1D_MEMORY_READ_AUDIT",
+         "FileAvailable=FALSE | Records=0"
+      );
+   }
+   else
+   {
+      int totalRecords = 0;
+      int matchingRecords = 0;
+
+      string accountPrefix =
+         AccountInfoString(ACCOUNT_SERVER) + "|" +
+         IntegerToString(
+            (long)AccountInfoInteger(ACCOUNT_LOGIN)) + "|" +
+         IntegerToString(MagicNumber) + "|" +
+         _Symbol + "|";
+
+      while(!FileIsEnding(memoryHandle))
+      {
+         string record = FileReadString(memoryHandle);
+
+         if(StringLen(record) == 0)
+            continue;
+
+         totalRecords++;
+
+         if(StringFind(record, accountPrefix) == 0)
+            matchingRecords++;
+      }
+
+      FileClose(memoryHandle);
+
+      MRH_Log(
+         "BROKER_OUTCOME_AUDIT",
+         "STEP137_7_1D_MEMORY_READ_AUDIT",
+         "FileAvailable=TRUE" +
+         " | TotalRecords=" + IntegerToString(totalRecords) +
+         " | MatchingRecords=" + IntegerToString(matchingRecords)
+      );
+   }
+      return INIT_SUCCEEDED;
 }
 
 //+------------------------------------------------------------------+
