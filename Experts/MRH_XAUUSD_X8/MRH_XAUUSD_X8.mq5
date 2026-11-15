@@ -1873,13 +1873,106 @@ if(!SharedMemory.Ready())
          " | MatchingRecords=" + IntegerToString(matchingRecords)
       );
    }
+
+
+   // STEP137.9.2A - Read-only entry/outcome identity join
+   {
+      int linkHandle = FileOpen(
+         "MRH_X8_EntryLinks_v1.tsv",
+         FILE_READ | FILE_TXT | FILE_ANSI |
+         FILE_COMMON | FILE_SHARE_READ
+      );
+
+      if(linkHandle == INVALID_HANDLE)
+      {
+         MRH_Log(
+            "BROKER_OUTCOME_AUDIT",
+            "STEP137_9_2A_JOIN",
+            "Status=WAITING_FOR_ENTRY_LINK | Matched=0"
+         );
+      }
+      else
+      {
+         int outcomeHandle = FileOpen(
+            "MRH_X8_BrokerOutcomes_v1.tsv",
+            FILE_READ | FILE_TXT | FILE_ANSI |
+            FILE_COMMON | FILE_SHARE_READ
+         );
+
+         if(outcomeHandle == INVALID_HANDLE)
+         {
+            MRH_Log(
+               "BROKER_OUTCOME_AUDIT",
+               "STEP137_9_2A_JOIN",
+               "Status=WAITING_FOR_BROKER_OUTCOME"
+            );
+         }
+         else
+         {
+            int outcomeCount = 0;
+            int matchedCount = 0;
+
+            while(!FileIsEnding(outcomeHandle))
+            {
+               string outcomeRow = FileReadString(outcomeHandle);
+               string outcomeFields[];
+
+               if(StringSplit(outcomeRow, '\t', outcomeFields) != 3)
+                  continue;
+
+               if(outcomeFields[0] == "")
+                  continue;
+
+               outcomeCount++;
+
+               if(!FileSeek(linkHandle, 0, SEEK_SET))
+                  continue;
+
+               while(!FileIsEnding(linkHandle))
+               {
+                  string entryRow = FileReadString(linkHandle);
+                  string entryFields[];
+
+                  int fieldCount =
+                     StringSplit(entryRow, '\t', entryFields);
+
+                  if(fieldCount < 12)
+                     continue;
+
+                  if(entryFields[0] != outcomeFields[0])
+                     continue;
+
+                  if(StringToInteger(entryFields[6]) <= 0)
+                     continue;
+
+                  if(StringToDouble(entryFields[11]) <= 0.0)
+                     continue;
+
+                  matchedCount++;
+                  break;
+               }
+            }
+
+            MRH_Log(
+               "BROKER_OUTCOME_AUDIT",
+               "STEP137_9_2A_JOIN",
+               "Status=READ_ONLY" +
+               " | Outcomes=" + IntegerToString(outcomeCount) +
+               " | Matched=" + IntegerToString(matchedCount) +
+               " | Unmatched=" +
+                  IntegerToString(outcomeCount - matchedCount) +
+               " | TrainingAllowed=FALSE"
+            );
+            FileClose(outcomeHandle);
+         }
+         FileClose(linkHandle);
+      }
+   }
       return INIT_SUCCEEDED;
 }
-
 //+------------------------------------------------------------------+
 //| Expert deinitialization                                          |
 //+------------------------------------------------------------------+
-
 void OnDeinit(const int reason)
 {
    MRH_Log("SYSTEM", "DEINIT", "MRH_XAUUSD_X8 stopped");
