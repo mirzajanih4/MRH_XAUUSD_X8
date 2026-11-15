@@ -1620,7 +1620,8 @@ if(!SharedMemory.Ready())
          double entryVolume = 0.0;
          double exitVolume = 0.0;
          bool unsupportedEntryType = false;
-
+      // STEP137.8.2A - Broker position net PnL audit
+         double positionNetPnL = 0.0;
          for(int k = 0; k < HistoryDealsTotal(); k++)
          {
             ulong d = HistoryDealGetTicket(k);
@@ -1637,6 +1638,13 @@ if(!SharedMemory.Ready())
 
             double volume =
                HistoryDealGetDouble(d, DEAL_VOLUME);
+
+            // STEP137.8.2A - Sum broker financial components
+            positionNetPnL +=
+               HistoryDealGetDouble(d, DEAL_PROFIT) +
+               HistoryDealGetDouble(d, DEAL_COMMISSION) +
+               HistoryDealGetDouble(d, DEAL_SWAP) +
+               HistoryDealGetDouble(d, DEAL_FEE);
 
             if(entryType == DEAL_ENTRY_IN)
             {
@@ -1678,6 +1686,22 @@ if(!SharedMemory.Ready())
             " | Consistent=" +
             (historyConsistent ? "TRUE" : "FALSE")
          );
+         
+         
+         // STEP137.8.2A - Broker net PnL audit
+         // Audit only - No ML dataset update
+
+         MRH_Log(
+            "BROKER_OUTCOME_AUDIT",
+            "STEP137_8_2A_NET_PNL_AUDIT",
+            "PositionID=" +
+            IntegerToString(historyAuditPositionId) +
+            " | NetPnL=" +
+            DoubleToString(positionNetPnL, 2) +
+            " | HistoryConsistent=" +
+            (historyConsistent ? "TRUE" : "FALSE")
+         );
+
       }
 
    } // End of STEP137.8.1B candidate loop
