@@ -1115,10 +1115,30 @@ if(savedEntryTime > 0)
                {
                   if(FileSeek(identityHandle, 0, SEEK_END))
                   {
+                     
+                     // STEP137.7.2A - Broker entry time and price
                      string identityRow =
                         positionIdentity + "\t" +
                         IntegerToString((long)brokerDeal) + "\t" +
+                        IntegerToString(
+                           (long)HistoryDealGetInteger(
+                              brokerDeal, DEAL_TIME)) + "\t" +
+                       
+                        DoubleToString(
+                           HistoryDealGetDouble(
+                              brokerDeal, DEAL_PRICE), _Digits) + "\t" +
+
+                        // STEP137.7.2B - Actual broker entry volume
+                       
+                        DoubleToString(
+                           HistoryDealGetDouble(
+                              brokerDeal, DEAL_VOLUME), 8) + "\t" +
+
+                        // STEP137.7.2C - Entry timeframe
+                        IntegerToString((int)_Period) + "\t" +
+
                         IntegerToString((long)confirmedBOS) + "\t" +
+
                         IntegerToString(
                            (int)SharedMemory.Structure.LastBOSDirection) + "\t" +
                         DoubleToString(
