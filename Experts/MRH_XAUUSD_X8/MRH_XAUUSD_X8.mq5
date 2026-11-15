@@ -1702,6 +1702,99 @@ if(!SharedMemory.Ready())
             (historyConsistent ? "TRUE" : "FALSE")
          );
 
+         // STEP137.8.3A - Persistent broker outcome memory
+         // No ML training, execution, or Global Variable changes
+
+         if(historyConsistent)
+         {
+            string outcomeKey =
+               AccountInfoString(ACCOUNT_SERVER) + "|" +
+               IntegerToString(
+                  (long)AccountInfoInteger(ACCOUNT_LOGIN)) + "|" +
+               IntegerToString(MagicNumber) + "|" +
+               _Symbol + "|" +
+               IntegerToString(historyAuditPositionId);
+
+            string outcomeRow =
+               outcomeKey + "\t" +
+               AccountInfoString(ACCOUNT_CURRENCY) + "\t" +
+               DoubleToString(positionNetPnL, 8);
+
+            int outcomeHandle = FileOpen(
+               "MRH_X8_BrokerOutcomes_v1.tsv",
+               FILE_TXT | FILE_READ | FILE_WRITE |
+               FILE_ANSI | FILE_COMMON | FILE_SHARE_READ
+            );
+
+            if(outcomeHandle == INVALID_HANDLE)
+            {
+               MRH_Log(
+                  "BROKER_OUTCOME_AUDIT",
+                  "STEP137_8_3A_OUTCOME_MEMORY",
+                  "State=FILE_OPEN_FAILED"
+               );
+            }
+            else
+            {
+               bool alreadyRecorded = false;
+               bool sameRecord = false;
+
+               while(!FileIsEnding(outcomeHandle))
+               {
+                  string existingRow =
+                     FileReadString(outcomeHandle);
+
+                  if(StringFind(
+                        existingRow, outcomeKey + "\t") == 0)
+                  {
+                     alreadyRecorded = true;
+                     sameRecord = (existingRow == outcomeRow);
+                     break;
+                  }
+               }
+
+               if(alreadyRecorded)
+               {
+                  MRH_Log(
+                     "BROKER_OUTCOME_AUDIT",
+                     "STEP137_8_3A_OUTCOME_MEMORY",
+                     "PositionID=" +
+                     IntegerToString(historyAuditPositionId) +
+                     " | State=" +
+                     (sameRecord
+                        ? "ALREADY_RECORDED"
+                        : "CONFLICT_REVIEW_REQUIRED")
+                  );
+               }
+               else
+               {
+                  bool saved = false;
+
+                  if(FileSeek(outcomeHandle, 0, SEEK_END))
+                  {
+                     uint written = FileWriteString(
+                        outcomeHandle, outcomeRow + "\r\n");
+
+                     saved = (written > 0);
+
+                     if(saved)
+                        FileFlush(outcomeHandle);
+                  }
+
+                  MRH_Log(
+                     "BROKER_OUTCOME_AUDIT",
+                     "STEP137_8_3A_OUTCOME_MEMORY",
+                     "PositionID=" +
+                     IntegerToString(historyAuditPositionId) +
+                     " | State=" +
+                     (saved ? "SAVED" : "WRITE_FAILED")
+                  );
+               }
+
+               FileClose(outcomeHandle);
+            }
+         }
+
       }
 
    } // End of STEP137.8.1B candidate loop
