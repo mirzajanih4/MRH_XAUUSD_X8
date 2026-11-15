@@ -1307,6 +1307,8 @@ if(!SharedMemory.Ready())
 
    int eaEntryDeals = 0;
    long historyAuditPositionId = 0;
+   // STEP137.8.1A - Unique closed position candidates
+   long closedCandidatePositionIds[];
    if(historyAvailable)
    {
       int totalDeals = HistoryDealsTotal();
@@ -1517,8 +1519,48 @@ if(!SharedMemory.Ready())
                    <= volumeTolerance &&
                 !brokerPositionOpen);
 
-            if(closedOutcomeCandidate && historyAuditPositionId == 0)
-               historyAuditPositionId = positionId;
+            
+            // STEP137.8.1A - Collect unique closed candidates
+            // Preserve the previous single-position audit
+
+            if(closedOutcomeCandidate)
+            {
+               if(historyAuditPositionId == 0)
+                  historyAuditPositionId = positionId;
+
+               bool alreadyListed = false;
+
+               for(int n = 0;
+                   n < ArraySize(closedCandidatePositionIds);
+                   n++)
+               {
+                  if(closedCandidatePositionIds[n] == positionId)
+                  {
+                     alreadyListed = true;
+                     break;
+                  }
+               }
+
+               if(!alreadyListed)
+               {
+                  int count = ArraySize(closedCandidatePositionIds);
+
+                  if(ArrayResize(closedCandidatePositionIds,
+                                 count + 1) == count + 1)
+                  {
+                     closedCandidatePositionIds[count] = positionId;
+                  }
+                  else
+                  {
+                     MRH_Log(
+                        "BROKER_OUTCOME_AUDIT",
+                        "STEP137_8_1A_ARRAY_ERROR",
+                        "Failed to collect PositionID=" +
+                        IntegerToString(positionId)
+                     );
+                  }
+               }
+            }
 
             MRH_Log(
                "BROKER_OUTCOME_AUDIT",
@@ -1539,10 +1581,24 @@ if(!SharedMemory.Ready())
    // STEP137.6B.11 - Position history availability audit only
    // Run after the history loops to avoid changing their selection
 
-   if(historyAuditPositionId > 0)
+   
+   // STEP137.8.1B - Audit all unique closed candidates
+   // Run after the original history loops
+   // Audit only - No dataset or execution changes
+
+   for(int auditIndex = 0;
+       auditIndex < ArraySize(closedCandidatePositionIds);
+       auditIndex++)
    {
+      historyAuditPositionId =
+         closedCandidatePositionIds[auditIndex];
+
+      if(historyAuditPositionId <= 0)
+         continue;
+
       bool positionHistoryAvailable =
          HistorySelectByPosition(historyAuditPositionId);
+
 
      
       MRH_Log(
@@ -1624,7 +1680,7 @@ if(!SharedMemory.Ready())
          );
       }
 
-   } // End of if(historyAuditPositionId > 0)
+   } // End of STEP137.8.1B candidate loop
 
 
    MRH_Log(
