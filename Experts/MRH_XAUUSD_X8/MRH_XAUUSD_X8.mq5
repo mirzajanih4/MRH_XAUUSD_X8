@@ -1144,8 +1144,18 @@ if(savedEntryTime > 0)
                         DoubleToString(
                            SharedMemory.Structure.LastBOSBrokenLevel,
                            _Digits) + "\t" +
+                       
                         IntegerToString(
-                           (long)SharedMemory.Structure.LastBOSSourceSwingTime);
+                           (long)SharedMemory.Structure.LastBOSSourceSwingTime) + "\t" +
+
+                        // STEP137.9.1A - Entry permission quality feature
+                        
+                        DoubleToString(
+                           SharedMemory.Execution.PermissionScore, 2) + "\t" +
+
+                        // STEP137.9.1B - Submitted structural stop loss
+                        DoubleToString(sl, _Digits);
+
 
                      uint written =
                         FileWriteString(identityHandle,
