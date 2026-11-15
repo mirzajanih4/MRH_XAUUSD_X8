@@ -1011,10 +1011,26 @@ if(savedEntryTime > 0)
                (ENUM_DEAL_ENTRY)HistoryDealGetInteger(
                   brokerDeal, DEAL_ENTRY);
 
+           
+            // STEP137.7.1B - Verify broker deal direction
+            // Audit only - No execution changes
+
+            ENUM_DEAL_TYPE confirmedDealType =
+               (ENUM_DEAL_TYPE)HistoryDealGetInteger(
+                  brokerDeal, DEAL_TYPE);
+
+            bool directionMatchesBOS =
+               (SharedMemory.Structure.LastBOSDirection == BIAS_BULLISH &&
+                confirmedDealType == DEAL_TYPE_BUY) ||
+               (SharedMemory.Structure.LastBOSDirection == BIAS_BEARISH &&
+                confirmedDealType == DEAL_TYPE_SELL);
+
             entryDealVerified =
                (confirmedEntryType == DEAL_ENTRY_IN &&
                 HistoryDealGetString(brokerDeal, DEAL_SYMBOL) == _Symbol &&
-                HistoryDealGetInteger(brokerDeal, DEAL_MAGIC) == MagicNumber);
+                HistoryDealGetInteger(brokerDeal, DEAL_MAGIC) == MagicNumber &&
+                directionMatchesBOS);
+
 
             if(entryDealVerified)
             {
