@@ -1024,10 +1024,28 @@ if(savedEntryTime > 0)
             }
          }
 
+         
+         // STEP137.7.1A - Broker-scoped position identity
+         // Audit only - No persistent writes or execution changes
+
+         string positionIdentity = "UNVERIFIED";
+
+         if(entryDealVerified && entryPositionId > 0)
+         {
+            positionIdentity =
+               AccountInfoString(ACCOUNT_SERVER) + "|" +
+               IntegerToString(
+                  (long)AccountInfoInteger(ACCOUNT_LOGIN)) + "|" +
+               IntegerToString(MagicNumber) + "|" +
+               _Symbol + "|" +
+               IntegerToString(entryPositionId);
+         }
+
          MRH_Log(
             "BROKER_OUTCOME_AUDIT",
-            "STEP137_6C_1_ENTRY_IDENTITY_AUDIT",
-            "BOS=" +
+            "STEP137_7_1A_POSITION_IDENTITY_AUDIT",
+            "Identity=" + positionIdentity +
+            " | BOS=" +
             TimeToString(confirmedBOS, TIME_DATE | TIME_MINUTES) +
             " | EntryDeal=" +
             IntegerToString((long)brokerDeal) +
@@ -1037,6 +1055,7 @@ if(savedEntryTime > 0)
             ((entryDealVerified && entryPositionId > 0)
                ? "TRUE" : "FALSE")
          );
+
 
 
       } // End of if(confirmedBOS > 0)
