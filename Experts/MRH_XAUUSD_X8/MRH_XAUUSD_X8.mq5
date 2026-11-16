@@ -1873,8 +1873,8 @@ if(!SharedMemory.Ready())
          " | MatchingRecords=" + IntegerToString(matchingRecords)
       );
    }
-
-
+   
+   
    // STEP137.9.2A - Read-only entry/outcome identity join
    {
       int linkHandle = FileOpen(
@@ -1944,7 +1944,9 @@ if(!SharedMemory.Ready())
 
                   if(StringToInteger(entryFields[6]) <= 0)
                      continue;
-
+                  // STEP137.9.2B - Validate entry permission score
+                  if(StringToDouble(entryFields[10]) <= 0.0)
+                     continue;
                   if(StringToDouble(entryFields[11]) <= 0.0)
                      continue;
 
