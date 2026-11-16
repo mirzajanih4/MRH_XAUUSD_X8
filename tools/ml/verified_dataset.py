@@ -81,3 +81,60 @@ if outcome_file.is_file():
 
 print(f"ValidOutcomeRecords={len(valid_outcomes)}")
 print(f"RejectedOutcomeRecords={rejected_outcomes}")
+
+# STEP137.10.1C - Verified entry/outcome join
+valid_entries = {}
+rejected_entries = 0
+
+if entry_file.is_file():
+    with entry_file.open("r", encoding="utf-8-sig") as source:
+        for raw in source:
+            if not raw.strip():
+                continue
+
+            fields = raw.rstrip("\r\n").split("\t")
+
+            try:
+                if len(fields) != 12:
+                    raise ValueError("Invalid entry schema")
+
+                identity = fields[0]
+                deal_id = int(fields[1])
+                entry_time = int(fields[2])
+                bos_time = int(fields[6])
+                swing_time = int(fields[9])
+
+                entry_price = Decimal(fields[3])
+                volume = Decimal(fields[4])
+                broken_level = Decimal(fields[8])
+                permission = Decimal(fields[10])
+                stop_loss = Decimal(fields[11])
+
+                values = (
+                    entry_price, volume, broken_level,
+                    permission, stop_loss
+                )
+
+                if (
+                    len(identity.split("|")) != 5
+                    or not all(identity.split("|"))
+                    or identity in valid_entries
+                    or deal_id <= 0
+                    or not (0 < swing_time <= bos_time <= entry_time)
+                    or not all(value.is_finite() for value in values)
+                    or any(value <= 0 for value in values)
+                ):
+                    raise ValueError("Invalid entry record")
+
+            except (ValueError, InvalidOperation):
+                rejected_entries += 1
+                continue
+
+            valid_entries[identity] = fields
+
+joined_ids = valid_entries.keys() & valid_outcomes.keys()
+
+print(f"ValidEntryRecords={len(valid_entries)}")
+print(f"RejectedEntryRecords={rejected_entries}")
+print(f"VerifiedJoinedRecords={len(joined_ids)}")
+print("MLTrainingStatus=BLOCKED_PENDING_DATA_VALIDATION")
