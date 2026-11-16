@@ -230,3 +230,34 @@ print(f"ValidEntryRecords={len(valid_entries)}")
 print(f"RejectedEntryRecords={rejected_entries}")
 print(f"VerifiedJoinedRecords={len(joined_ids)}")
 print("MLTrainingStatus=BLOCKED_PENDING_DATA_VALIDATION")
+
+
+# STEP137.10.2E - Chronological evaluation plan
+def build_walk_forward_plan():
+    ordered_ids = sorted(
+        model_features,
+        key=lambda identity: (
+            int(valid_entries[identity][2]),
+            identity,
+        ),
+    )
+
+    plan = []
+
+    for test_id in ordered_ids:
+        training_ids = eligible_past_training_ids(test_id)
+
+        if not training_ids:
+            continue
+
+        training_ids = sorted(
+            training_ids,
+            key=lambda identity: (
+                valid_exit_times[identity],
+                identity,
+            ),
+        )
+
+        plan.append((test_id, training_ids))
+
+    return plan
