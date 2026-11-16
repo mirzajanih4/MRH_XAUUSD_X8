@@ -212,6 +212,20 @@ for identity in temporally_valid_ids:
 
 print(f"ModelFeatureRows={len(model_features)}")
 
+# STEP137.10.2D - Prevent future-outcome leakage
+def eligible_past_training_ids(test_identity):
+    if test_identity not in model_features:
+        return []
+
+    test_entry_time = int(valid_entries[test_identity][2])
+
+    return [
+        identity
+        for identity in model_features
+        if identity != test_identity
+        and valid_exit_times[identity] < test_entry_time
+    ]
+
 print(f"ValidEntryRecords={len(valid_entries)}")
 print(f"RejectedEntryRecords={rejected_entries}")
 print(f"VerifiedJoinedRecords={len(joined_ids)}")
