@@ -110,6 +110,15 @@ if entry_file.is_file():
                 permission = Decimal(fields[10])
                 stop_loss = Decimal(fields[11])
 
+                bos_direction = int(fields[7])
+
+                if (
+                    bos_direction not in (-1, 1)
+                    or (bos_direction == 1 and stop_loss >= entry_price)
+                    or (bos_direction == -1 and stop_loss <= entry_price)
+                ):
+                    raise ValueError("Invalid stop-loss direction")
+
                 values = (
                     entry_price, volume, broken_level,
                     permission, stop_loss
