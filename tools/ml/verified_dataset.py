@@ -123,6 +123,7 @@ if entry_file.is_file():
                     or not (0 < swing_time <= bos_time <= entry_time)
                     or not all(value.is_finite() for value in values)
                     or any(value <= 0 for value in values)
+                    or entry_price == stop_loss
                 ):
                     raise ValueError("Invalid entry record")
 
