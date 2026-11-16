@@ -60,6 +60,38 @@ class EntryQualityModel:
         self.trained_samples += 1
 
 
+    # STEP137.10.3A - In-memory model rollback foundation
+    def snapshot_state(self):
+        return (
+            tuple(self.weights),
+            self.bias,
+            self.trained_samples,
+        )
+
+    def restore_state(self, state):
+        try:
+            weights, bias, count = state
+
+            if (
+                len(weights) != 2
+                or not all(isfinite(float(w)) for w in weights)
+                or not isfinite(float(bias))
+                or type(count) is not int
+                or count < 0
+            ):
+                raise ValueError
+
+            restored_weights = [float(w) for w in weights]
+            restored_bias = float(bias)
+
+        except (TypeError, ValueError, OverflowError):
+            raise ValueError("INVALID_MODEL_STATE")
+
+        self.weights = restored_weights
+        self.bias = restored_bias
+        self.trained_samples = count
+
+
 # STEP137.10.2F - Offline walk-forward model evaluation
 def evaluate_walk_forward(plan, features, outcomes):
     results = []
