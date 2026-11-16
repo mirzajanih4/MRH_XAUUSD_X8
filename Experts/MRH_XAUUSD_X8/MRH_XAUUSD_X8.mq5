@@ -1632,6 +1632,8 @@ if(!SharedMemory.Ready())
          bool unsupportedEntryType = false;
       // STEP137.8.2A - Broker position net PnL audit
          double positionNetPnL = 0.0;
+         // STEP137.10.2A - Last broker-confirmed exit time
+         datetime lastBrokerExitTime = 0;
          for(int k = 0; k < HistoryDealsTotal(); k++)
          {
             ulong d = HistoryDealGetTicket(k);
@@ -1661,11 +1663,19 @@ if(!SharedMemory.Ready())
                entryCount++;
                entryVolume += volume;
             }
+            
             else if(entryType == DEAL_ENTRY_OUT)
-            {
+      {
                exitCount++;
                exitVolume += volume;
-            }
+
+            datetime dealExitTime =
+           (datetime)HistoryDealGetInteger(d, DEAL_TIME);
+
+           if(dealExitTime > lastBrokerExitTime)
+               lastBrokerExitTime = dealExitTime;
+      }
+
             else
             {
                unsupportedEntryType = true;
@@ -1707,8 +1717,12 @@ if(!SharedMemory.Ready())
             "PositionID=" +
             IntegerToString(historyAuditPositionId) +
             " | NetPnL=" +
+           
             DoubleToString(positionNetPnL, 2) +
+            " | BrokerCloseTime=" +
+            TimeToString(lastBrokerExitTime, TIME_DATE | TIME_SECONDS) +
             " | HistoryConsistent=" +
+
             (historyConsistent ? "TRUE" : "FALSE")
          );
 
