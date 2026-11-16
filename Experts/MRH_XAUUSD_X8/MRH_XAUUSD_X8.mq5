@@ -764,6 +764,28 @@ if(lot <= 0.0)
       return;
    }
 
+
+   // STEP137 - Final TP profitability direction guard
+   // Validate TP against worst-case market entry
+
+   if((riskOrderType == ORDER_TYPE_BUY &&
+       tp <= worstCaseEntry) ||
+      (riskOrderType == ORDER_TYPE_SELL &&
+       tp >= worstCaseEntry))
+   {
+      MRH_Log(
+         "EXECUTION_LAYER",
+         "STEP137_TP_DIRECTION_BLOCK",
+         "Invalid TP direction" +
+         " | TP=" + DoubleToString(tp, _Digits) +
+         " | WorstCaseEntry=" +
+         DoubleToString(worstCaseEntry, _Digits)
+      );
+
+      return;
+   }
+
+
    double estimatedProfit = 0.0;
 
    if(!OrderCalcProfit(riskOrderType,
