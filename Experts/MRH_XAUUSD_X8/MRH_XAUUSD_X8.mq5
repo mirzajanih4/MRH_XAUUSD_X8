@@ -1942,6 +1942,18 @@ if(!SharedMemory.Ready())
                   if(entryFields[0] != outcomeFields[0])
                      continue;
 
+                  // STEP137.9.3B - Entry chronology validation
+                  long entryTime = StringToInteger(entryFields[2]);
+                  long bosTime   = StringToInteger(entryFields[6]);
+                  long swingTime = StringToInteger(entryFields[9]);
+
+                  if(entryTime <= 0 ||
+                     bosTime <= 0 ||
+                     swingTime <= 0 ||
+                     swingTime > bosTime ||
+                     bosTime > entryTime)
+                     continue;
+
                   if(StringToInteger(entryFields[6]) <= 0)
                      continue;
                   // STEP137.9.2B - Validate entry permission score
