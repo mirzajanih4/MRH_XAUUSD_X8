@@ -1817,6 +1817,84 @@ if(!SharedMemory.Ready())
 
                FileClose(outcomeHandle);
             }
+            
+         // STEP137.10.2B - Persistent broker exit time
+         // Independent of BrokerOutcomes_v1
+
+         if(lastBrokerExitTime > 0)
+         {
+            string exitTimeRow =
+               outcomeKey + "\t" +
+               IntegerToString((long)lastBrokerExitTime);
+
+            int timeHandle = FileOpen(
+               "MRH_X8_BrokerExitTimes_v1.tsv",
+               FILE_TXT | FILE_READ | FILE_WRITE |
+               FILE_ANSI | FILE_COMMON | FILE_SHARE_READ
+            );
+
+            if(timeHandle == INVALID_HANDLE)
+            {
+               MRH_Log(
+                  "BROKER_OUTCOME_AUDIT",
+                  "STEP137_10_2B_EXIT_TIME",
+                  "State=FILE_OPEN_FAILED"
+               );
+            }
+            else
+            {
+               bool found = false;
+               bool identical = false;
+
+               while(!FileIsEnding(timeHandle))
+               {
+                  string oldRow = FileReadString(timeHandle);
+
+                  if(StringFind(oldRow, outcomeKey + "\t") == 0)
+                  {
+                     found = true;
+                     identical = (oldRow == exitTimeRow);
+                     break;
+                  }
+               }
+
+               string state = "WRITE_FAILED";
+
+               if(found)
+               {
+                  state = identical
+                     ? "ALREADY_RECORDED"
+                     : "CONFLICT_REVIEW_REQUIRED";
+               }
+               else if(FileSeek(timeHandle, 0, SEEK_END))
+               {
+                  uint written = FileWriteString(
+                     timeHandle, exitTimeRow + "\r\n"
+                  );
+
+                  if(written > 0)
+                  {
+                     FileFlush(timeHandle);
+                     state = "SAVED";
+                  }
+               }
+
+               MRH_Log(
+                  "BROKER_OUTCOME_AUDIT",
+                  "STEP137_10_2B_EXIT_TIME",
+                  "PositionID=" +
+                  IntegerToString(historyAuditPositionId) +
+                  " | State=" + state +
+                  " | BrokerCloseTime=" +
+                  TimeToString(
+                     lastBrokerExitTime,
+                     TIME_DATE | TIME_SECONDS)
+               );
+
+               FileClose(timeHandle);
+            }
+         }
+
          }
 
       }
