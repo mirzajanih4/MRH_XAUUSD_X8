@@ -144,10 +144,56 @@ if entry_file.is_file():
 
 joined_ids = valid_entries.keys() & valid_outcomes.keys()
 
+# STEP137.10.2C - Read-only broker exit time validation
+exit_time_file = common_dir / "MRH_X8_BrokerExitTimes_v1.tsv"
+valid_exit_times = {}
+rejected_exit_times = 0
+
+if exit_time_file.is_file():
+    with exit_time_file.open("r", encoding="utf-8-sig") as source:
+        for raw in source:
+            if not raw.strip():
+                continue
+
+            fields = raw.rstrip("\r\n").split("\t")
+
+            try:
+                if len(fields) != 2:
+                    raise ValueError("Invalid exit time schema")
+
+                identity, time_text = fields
+                close_time = int(time_text)
+
+                if (
+                    identity not in valid_outcomes
+                    or identity in valid_exit_times
+                    or close_time <= 0
+                ):
+                    raise ValueError("Invalid exit time record")
+
+            except ValueError:
+                rejected_exit_times += 1
+                continue
+
+            valid_exit_times[identity] = close_time
+
+temporally_valid_ids = {
+    identity for identity in joined_ids
+    if identity in valid_exit_times
+    and valid_exit_times[identity] >= int(valid_entries[identity][2])
+}
+
+print(f"ValidExitTimeRecords={len(valid_exit_times)}")
+print(f"RejectedExitTimeRecords={rejected_exit_times}")
+print(f"TemporallyValidJoinedRecords={len(temporally_valid_ids)}")
+
+
 # STEP137.10.1F - Entry-time normalized ML features
 model_features = {}
 
-for identity in joined_ids:
+
+for identity in temporally_valid_ids:
+
     fields = valid_entries[identity]
 
     entry_price = Decimal(fields[3])
