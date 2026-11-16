@@ -144,6 +144,28 @@ if entry_file.is_file():
 
 joined_ids = valid_entries.keys() & valid_outcomes.keys()
 
+# STEP137.10.1F - Entry-time normalized ML features
+model_features = {}
+
+for identity in joined_ids:
+    fields = valid_entries[identity]
+
+    entry_price = Decimal(fields[3])
+    stop_loss = Decimal(fields[11])
+    permission = Decimal(fields[10])
+
+    if not (Decimal("0") < permission <= Decimal("100")):
+        continue
+
+    model_features[identity] = {
+        "permission_scaled": float(permission / Decimal("100")),
+        "stop_distance_ratio": float(
+            abs(entry_price - stop_loss) / entry_price
+        ),
+    }
+
+print(f"ModelFeatureRows={len(model_features)}")
+
 print(f"ValidEntryRecords={len(valid_entries)}")
 print(f"RejectedEntryRecords={rejected_entries}")
 print(f"VerifiedJoinedRecords={len(joined_ids)}")
