@@ -58,3 +58,40 @@ class EntryQualityModel:
 
         self.bias += learning_rate * error
         self.trained_samples += 1
+
+
+# STEP137.10.2F - Offline walk-forward model evaluation
+def evaluate_walk_forward(plan, features, outcomes):
+    results = []
+
+    for test_id, training_ids in plan:
+        model = EntryQualityModel()
+
+        for train_id in training_ids:
+            pnl = outcomes[train_id][1]
+
+            if pnl == 0:
+                continue
+
+            label = int(pnl > 0)
+            model.learn_one(features[train_id], label)
+
+        if model.trained_samples == 0:
+            continue
+
+        # Predict before reading the test outcome
+        probability = model.predict_probability(features[test_id])
+
+        test_pnl = outcomes[test_id][1]
+
+        if test_pnl == 0:
+            continue
+
+        results.append({
+            "test_id": test_id,
+            "trained_samples": model.trained_samples,
+            "probability": probability,
+            "actual_label": int(test_pnl > 0),
+        })
+
+    return results
