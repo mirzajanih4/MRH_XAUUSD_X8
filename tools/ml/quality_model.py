@@ -196,6 +196,45 @@ class EntryQualityModel:
             ) from error
 
 
+    # STEP137.10.3 - Controlled model update with rollback
+    def try_learn_with_validation(
+        self, features, label, validation_samples
+    ):
+        if not validation_samples:
+            raise ValueError("EMPTY_VALIDATION")
+
+        previous_state = self.snapshot_state()
+
+        try:
+            def validation_error():
+                errors = []
+
+                for sample_features, actual_label in validation_samples:
+                    if type(actual_label) is not int or actual_label not in (0, 1):
+                        raise ValueError("INVALID_VALIDATION_LABEL")
+
+                    prediction = self.predict_probability(sample_features)
+                    errors.append((prediction - actual_label) ** 2)
+
+                return sum(errors) / len(errors)
+
+            before = validation_error()
+
+            self.learn_one(features, label)
+
+            after = validation_error()
+
+            if not isfinite(after) or after >= before:
+                self.restore_state(previous_state)
+                return False
+
+            return True
+
+        except Exception:
+            self.restore_state(previous_state)
+            raise
+
+
 # STEP137.10.2F - Offline walk-forward model evaluation
 def evaluate_walk_forward(plan, features, outcomes):
     results = []
