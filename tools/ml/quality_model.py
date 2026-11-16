@@ -1,4 +1,3 @@
-
 # STEP137.10.1G - Lightweight incremental ML foundation
 
 from math import exp, isfinite
@@ -91,17 +90,33 @@ class EntryQualityModel:
         self.bias = restored_bias
         self.trained_samples = count
 
+    # STEP137.11.1 - Account-scoped model checkpoint
+    @staticmethod
+    def _validate_account_scope(scope):
+        parts = scope.split("|") if isinstance(scope, str) else []
+
+        if (
+            len(parts) != 4
+            or not all(parts)
+            or not parts[1].isdigit()
+            or not parts[2].isdigit()
+        ):
+            raise ValueError("INVALID_ACCOUNT_SCOPE")
+
     # STEP137.10.3B - Persistent model checkpoint
-    def save_checkpoint(self, file_path):
+    def save_checkpoint(self, file_path, account_scope):
         import hashlib
         import json
         import os
         import tempfile
         from pathlib import Path
 
+        self._validate_account_scope(account_scope)
+
         path = Path(file_path)
         payload = {
-            "version": 1,
+            "version": 2,
+            "account_scope": account_scope,
             "state": self.snapshot_state(),
         }
 
@@ -142,27 +157,32 @@ class EntryQualityModel:
                 temp_path.unlink(missing_ok=True)
 
     @classmethod
-    def load_checkpoint(cls, file_path):
+    def load_checkpoint(cls, file_path, expected_account_scope):
         import hashlib
         import json
         from pathlib import Path
 
         try:
+            cls._validate_account_scope(expected_account_scope)
+
             record = json.loads(
                 Path(file_path).read_text(encoding="utf-8")
             )
 
             if (
                 type(record) is not dict
-                or set(record) != {"version", "state", "sha256"}
+                or set(record) != {"version", "account_scope", "state", "sha256"}
                 or type(record["version"]) is not int
-                or record["version"] != 1
+                or record["version"] != 2
+                or type(record["account_scope"]) is not str
+                or record["account_scope"] != expected_account_scope
                 or type(record["sha256"]) is not str
             ):
                 raise ValueError
 
             payload = {
                 "version": record["version"],
+                "account_scope": record["account_scope"],
                 "state": record["state"],
             }
 
