@@ -91,6 +91,110 @@ class EntryQualityModel:
         self.bias = restored_bias
         self.trained_samples = count
 
+    # STEP137.10.3B - Persistent model checkpoint
+    def save_checkpoint(self, file_path):
+        import hashlib
+        import json
+        import os
+        import tempfile
+        from pathlib import Path
+
+        path = Path(file_path)
+        payload = {
+            "version": 1,
+            "state": self.snapshot_state(),
+        }
+
+        canonical = json.dumps(
+            payload,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        )
+
+        record = {
+            **payload,
+            "sha256": hashlib.sha256(
+                canonical.encode("utf-8")
+            ).hexdigest(),
+        }
+
+        temp_path = None
+
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode="w",
+                encoding="utf-8",
+                dir=path.parent,
+                prefix=path.name + ".",
+                suffix=".tmp",
+                delete=False,
+            ) as file:
+                temp_path = Path(file.name)
+                json.dump(record, file, allow_nan=False)
+                file.flush()
+                os.fsync(file.fileno())
+
+            os.replace(temp_path, path)
+
+        finally:
+            if temp_path is not None:
+                temp_path.unlink(missing_ok=True)
+
+    @classmethod
+    def load_checkpoint(cls, file_path):
+        import hashlib
+        import json
+        from pathlib import Path
+
+        try:
+            record = json.loads(
+                Path(file_path).read_text(encoding="utf-8")
+            )
+
+            if (
+                type(record) is not dict
+                or set(record) != {"version", "state", "sha256"}
+                or type(record["version"]) is not int
+                or record["version"] != 1
+                or type(record["sha256"]) is not str
+            ):
+                raise ValueError
+
+            payload = {
+                "version": record["version"],
+                "state": record["state"],
+            }
+
+            canonical = json.dumps(
+                payload,
+                sort_keys=True,
+                separators=(",", ":"),
+                allow_nan=False,
+            )
+
+            expected_hash = hashlib.sha256(
+                canonical.encode("utf-8")
+            ).hexdigest()
+
+            if expected_hash != record["sha256"]:
+                raise ValueError
+
+            model = cls()
+            model.restore_state(record["state"])
+            return model
+
+        except (
+            OSError,
+            ValueError,
+            TypeError,
+            KeyError,
+            OverflowError,
+        ) as error:
+            raise ValueError(
+                "INVALID_MODEL_CHECKPOINT"
+            ) from error
+
 
 # STEP137.10.2F - Offline walk-forward model evaluation
 def evaluate_walk_forward(plan, features, outcomes):
