@@ -112,10 +112,12 @@ if entry_file.is_file():
 
                 bos_direction = int(fields[7])
 
+
+                # Match MQL5 enum: BULLISH=0, BEARISH=1
                 if (
-                    bos_direction not in (-1, 1)
-                    or (bos_direction == 1 and stop_loss >= entry_price)
-                    or (bos_direction == -1 and stop_loss <= entry_price)
+                    bos_direction not in (0, 1)
+                    or (bos_direction == 0 and stop_loss >= entry_price)
+                    or (bos_direction == 1 and stop_loss <= entry_price)
                 ):
                     raise ValueError("Invalid stop-loss direction")
 
