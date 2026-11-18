@@ -1954,7 +1954,12 @@ if(!SharedMemory.Ready())
    // STEP137.7.1D - Persistent entry memory read audit
    // READ ONLY - No execution or Global Variable changes
 
-   string memoryFile = "MRH_X8_EntryLinks_v1.tsv";
+   
+string memoryFile =
+   MQLInfoInteger(MQL_TESTER)
+   ? "MRH_X8_Tester_EntryLinks_v1.tsv"
+   : "MRH_X8_EntryLinks_v1.tsv";
+
 
    int memoryHandle = FileOpen(
       memoryFile,
