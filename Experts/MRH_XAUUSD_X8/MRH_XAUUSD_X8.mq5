@@ -2033,7 +2033,9 @@ string memoryFile =
       else
       {
          int outcomeHandle = FileOpen(
-            "MRH_X8_BrokerOutcomes_v1.tsv",
+   MQLInfoInteger(MQL_TESTER)
+   ? "MRH_X8_Tester_BrokerOutcomes_v1.tsv"
+   : "MRH_X8_BrokerOutcomes_v1.tsv",
             FILE_READ | FILE_TXT | FILE_ANSI |
             FILE_COMMON | FILE_SHARE_READ
          );
