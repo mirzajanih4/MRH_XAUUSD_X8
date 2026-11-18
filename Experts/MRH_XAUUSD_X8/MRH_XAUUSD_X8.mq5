@@ -1100,7 +1100,12 @@ if(savedEntryTime > 0)
 
          if(entryDealVerified && entryPositionId > 0)
          {
-            string identityFile = "MRH_X8_EntryLinks_v1.tsv";
+            
+         string identityFile =
+           MQLInfoInteger(MQL_TESTER)
+           ? "MRH_X8_Tester_EntryLinks_v1.tsv"
+           : "MRH_X8_EntryLinks_v1.tsv";
+
 
             int identityHandle = FileOpen(
                identityFile,
