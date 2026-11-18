@@ -2015,7 +2015,9 @@ string memoryFile =
    // STEP137.9.2A - Read-only entry/outcome identity join
    {
       int linkHandle = FileOpen(
-         "MRH_X8_EntryLinks_v1.tsv",
+   MQLInfoInteger(MQL_TESTER)
+   ? "MRH_X8_Tester_EntryLinks_v1.tsv"
+   : "MRH_X8_EntryLinks_v1.tsv",
          FILE_READ | FILE_TXT | FILE_ANSI |
          FILE_COMMON | FILE_SHARE_READ
       );
