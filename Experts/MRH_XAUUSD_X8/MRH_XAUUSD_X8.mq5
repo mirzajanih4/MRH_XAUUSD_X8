@@ -1771,8 +1771,14 @@ if(!SharedMemory.Ready())
                AccountInfoString(ACCOUNT_CURRENCY) + "\t" +
                DoubleToString(positionNetPnL, 8);
 
+           
+            string outcomeFile =
+               MQLInfoInteger(MQL_TESTER)
+               ? "MRH_X8_Tester_BrokerOutcomes_v1.tsv"
+               : "MRH_X8_BrokerOutcomes_v1.tsv";
+
             int outcomeHandle = FileOpen(
-               "MRH_X8_BrokerOutcomes_v1.tsv",
+                outcomeFile,
                FILE_TXT | FILE_READ | FILE_WRITE |
                FILE_ANSI | FILE_COMMON | FILE_SHARE_READ
             );
