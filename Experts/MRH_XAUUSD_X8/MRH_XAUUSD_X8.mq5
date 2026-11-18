@@ -1860,8 +1860,15 @@ if(!SharedMemory.Ready())
                outcomeKey + "\t" +
                IntegerToString((long)lastBrokerExitTime);
 
+            
+            string exitTimeFile =
+               MQLInfoInteger(MQL_TESTER)
+               ? "MRH_X8_Tester_BrokerExitTimes_v1.tsv"
+               : "MRH_X8_BrokerExitTimes_v1.tsv";
+
             int timeHandle = FileOpen(
-               "MRH_X8_BrokerExitTimes_v1.tsv",
+               exitTimeFile,
+
                FILE_TXT | FILE_READ | FILE_WRITE |
                FILE_ANSI | FILE_COMMON | FILE_SHARE_READ
             );
