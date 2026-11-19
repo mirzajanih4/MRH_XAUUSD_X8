@@ -202,12 +202,13 @@ for identity in temporally_valid_ids:
     stop_loss = Decimal(fields[11])
     permission = Decimal(fields[10])
 
+
     if not (Decimal("0") < permission <= Decimal("160")):
         continue
 
-
     model_features[identity] = {
         "permission_scaled": float(permission / Decimal("160")),
+        "bos_direction": int(fields[7]),
         "stop_distance_ratio": float(
             abs(entry_price - stop_loss) / entry_price
         ),
