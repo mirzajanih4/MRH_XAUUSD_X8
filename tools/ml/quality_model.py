@@ -14,14 +14,16 @@ class EntryQualityModel:
         stop_ratio = float(features["stop_distance_ratio"])
 
         if (
-            not isfinite(permission)
-            or not isfinite(stop_ratio)
-            or not 0.0 < permission <= 1.0
-            or not 0.0 < stop_ratio < 1.0
+                not isfinite(permission)
+                or not isfinite(stop_ratio)
+                or not 0.0 < permission <= 1.0
+                or not 0.0 < stop_ratio < 1.0
         ):
             raise ValueError("Invalid ML features")
 
-        return [permission, stop_ratio]
+        stop_scaled = stop_ratio / (stop_ratio + 0.0005)
+
+        return [permission, stop_scaled]
 
     def _probability(self, values):
         score = self.bias + sum(
@@ -115,7 +117,7 @@ class EntryQualityModel:
 
         path = Path(file_path)
         payload = {
-            "version": 2,
+            "version": 4,
             "account_scope": account_scope,
             "state": self.snapshot_state(),
         }
@@ -173,7 +175,7 @@ class EntryQualityModel:
                 type(record) is not dict
                 or set(record) != {"version", "account_scope", "state", "sha256"}
                 or type(record["version"]) is not int
-                or record["version"] != 2
+                or record["version"] != 4
                 or type(record["account_scope"]) is not str
                 or record["account_scope"] != expected_account_scope
                 or type(record["sha256"]) is not str
