@@ -257,12 +257,15 @@ class EntryQualityModel:
             raise
 
 
+
 # STEP137.10.2F - Offline walk-forward model evaluation
-def evaluate_walk_forward(plan, features, outcomes):
+def evaluate_walk_forward(
+    plan, features, outcomes, model_factory=EntryQualityModel
+):
     results = []
 
     for test_id, training_ids in plan:
-        model = EntryQualityModel()
+        model = model_factory()
 
         for train_id in training_ids:
             pnl = outcomes[train_id][1]
