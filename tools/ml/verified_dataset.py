@@ -190,11 +190,67 @@ print(f"RejectedExitTimeRecords={rejected_exit_times}")
 print(f"TemporallyValidJoinedRecords={len(temporally_valid_ids)}")
 
 
+# STEP137.9.3 - Broker-linked structure integrity
+structure_file = common_dir / "MRH_X8_EntryStructure_v1.tsv"
+
+valid_structure_ids = set()
+seen_structure_ids = set()
+duplicate_structure_ids = set()
+rejected_structure_records = 0
+
+if structure_file.is_file():
+    with structure_file.open(
+        "r", encoding="utf-8-sig"
+    ) as source:
+        for raw in source:
+            if not raw.strip():
+                continue
+
+            fields = raw.rstrip("\r\n").split("\t")
+
+            if len(fields) != 5:
+                rejected_structure_records += 1
+                continue
+
+            identity, deal, direction, sweep, displacement = fields
+
+            if identity in seen_structure_ids:
+                duplicate_structure_ids.add(identity)
+                rejected_structure_records += 1
+                continue
+
+            seen_structure_ids.add(identity)
+
+            try:
+                valid = (
+                    identity in valid_entries
+                    and int(deal) > 0
+                    and int(deal) == int(valid_entries[identity][1])
+                    and direction in ("BUY", "SELL")
+                    and sweep in ("0", "1")
+                    and displacement in ("0", "1")
+                )
+            except ValueError:
+                valid = False
+
+            if valid:
+                valid_structure_ids.add(identity)
+            else:
+                rejected_structure_records += 1
+
+valid_structure_ids.difference_update(duplicate_structure_ids)
+
+print(f"ValidStructureRecords={len(valid_structure_ids)}")
+print(f"RejectedStructureRecords={rejected_structure_records}")
+print(f"DuplicateStructureIDs={len(duplicate_structure_ids)}")
+
 # STEP137.10.1F - Entry-time normalized ML features
 model_features = {}
 
 
-for identity in temporally_valid_ids:
+
+for identity in temporally_valid_ids & valid_structure_ids:
+
 
     fields = valid_entries[identity]
 

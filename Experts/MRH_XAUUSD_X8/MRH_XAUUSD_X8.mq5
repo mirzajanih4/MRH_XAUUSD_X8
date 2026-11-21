@@ -833,6 +833,29 @@ if(lot <= 0.0)
            DoubleToString(riskBudget, 2));
 
    
+   // STEP137.9.1 - Entry-time structural snapshot
+   // Capture before submitting the broker order.
+
+   bool entryIsBuy =
+      (SharedMemory.Structure.Bias == BIAS_BULLISH);
+
+   bool entryIsSell =
+      (SharedMemory.Structure.Bias == BIAS_BEARISH);
+
+   bool entrySweepActive =
+      entryIsBuy
+      ? SharedMemory.Liquidity.ExternalSellSweepActive
+      : (entryIsSell
+         ? SharedMemory.Liquidity.ExternalBuySweepActive
+         : false);
+
+   bool entryDisplacementConfirmed =
+      entryIsBuy
+      ? SharedMemory.Liquidity.ExternalSellDisplacementConfirmed
+      : (entryIsSell
+         ? SharedMemory.Liquidity.ExternalBuyDisplacementConfirmed
+         : false);
+
 
    bool result = false;
 
@@ -1188,8 +1211,57 @@ if(savedEntryTime > 0)
                         FileWriteString(identityHandle,
                                         identityRow + "\r\n");
 
+                     
                      if(written > 0)
+                     {
                         FileFlush(identityHandle);
+
+                        // STEP137.9.1 - Broker-linked
+                        // entry-time structural features
+
+                        string structureFile =
+                           MQLInfoInteger(MQL_TESTER)
+                           ? "MRH_X8_Tester_EntryStructure_v1.tsv"
+                           : "MRH_X8_EntryStructure_v1.tsv";
+
+                        int structureHandle = FileOpen(
+                           structureFile,
+                           FILE_TXT | FILE_READ | FILE_WRITE |
+                           FILE_ANSI | FILE_COMMON | FILE_SHARE_READ
+                        );
+
+                        if(structureHandle != INVALID_HANDLE)
+                        {
+                           if(FileSeek(structureHandle, 0, SEEK_END))
+                           {
+                              string structureRow =
+                                 positionIdentity + "\t" +
+                                 IntegerToString((long)brokerDeal) + "\t" +
+                                 (entryIsBuy ? "BUY" : "SELL") + "\t" +
+                                 (entrySweepActive ? "1" : "0") + "\t" +
+                                 (entryDisplacementConfirmed ? "1" : "0");
+
+                              uint structureWritten = FileWriteString(
+                                 structureHandle,
+                                 structureRow + "\r\n"
+                              );
+
+                              if(structureWritten > 0)
+                                 FileFlush(structureHandle);
+                           }
+
+                           FileClose(structureHandle);
+                        }
+                        else
+                        {
+                           MRH_Log(
+                              "BROKER_OUTCOME_AUDIT",
+                              "STEP137_9_1_STRUCTURE_FILE_ERROR",
+                              "Failed to open entry structure file"
+                           );
+                        }
+                     }
+
 
                      MRH_Log(
                         "BROKER_OUTCOME_AUDIT",
